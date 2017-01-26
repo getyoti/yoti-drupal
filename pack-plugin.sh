@@ -1,9 +1,9 @@
 #!/bin/bash
-NAME="yoti_connect-1.0.1-edge.zip"
+NAME="yoti_connect-1.0.2-edge.zip"
 SDK_RELATIVE_PATH="sdk"
 curl https://github.com/getyoti/php/archive/master.zip -O -L
 unzip master.zip -d sdk
-mv sdk/php-master/* sdk
+mv sdk/php-master/src/* sdk
 rm -rf sdk/php-master
 
 if [ ! -d "./yoti_connect" ]; then
