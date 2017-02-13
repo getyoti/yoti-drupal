@@ -1,0 +1,103 @@
+<?php
+use Drupal\user\UserInterface;
+use Drupal\yoti_connect\YotiConnectHelper;
+use Yoti\ActivityDetails;
+
+require_once __DIR__ . '/src/YotiConnectHelper.php';
+require_once __DIR__ . '/sdk/boot.php';
+
+// display these fields
+function yoti_map_params()
+{
+    return array(
+        ActivityDetails::ATTR_SELFIE => 'Selfie',
+        ActivityDetails::ATTR_PHONE_NUMBER => 'Phone number',
+        ActivityDetails::ATTR_GIVEN_NAMES => 'Given names',
+        ActivityDetails::ATTR_FAMILY_NAME => 'Family name',
+        ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
+        ActivityDetails::ATTR_NATIONALITY => 'Nationality',
+    );
+}
+
+function yoti_connect_entity_extra_field_info()
+{
+    $map = yoti_map_params();
+
+    $fields = [];
+    foreach ($map as $param => $label)
+    {
+        $fields['user']['yoti_connect']['display'][$param] = array(
+            'label' => t($label),
+            'description' => t($label),
+            'weight' => 10,
+        );
+    }
+
+    $fields['user']['yoti_connect']['display']['yoti_connect_unlink'] = array(
+        'label' => t('Unlink'),
+        'description' => t('Unlink Yoti account'),
+        'weight' => 5,
+    );
+
+    return $fields;
+}
+
+
+/**
+ * Implements hook_ENTITY_TYPE_view() for user entities.
+ * @param array $build
+ * @param \Drupal\user\UserInterface $account
+ */
+function yoti_connect_user_view(array &$build, UserInterface $account)
+{
+    $map = yoti_map_params();
+
+    $current = \Drupal::currentUser();
+    $dbProfile = Drupal::service('user.data')->get('yoti_connect', $account->id());
+    if (!$dbProfile)
+    {
+        return;
+    }
+
+    // set up profile
+    $userId = $dbProfile['identifier'];
+    unset($dbProfile['identifier']);
+    $profile = new ActivityDetails($dbProfile, $userId);
+
+    foreach ($map as $param => $label)
+    {
+        $value = $profile->getProfileAttribute($param);
+        if ($param == ActivityDetails::ATTR_SELFIE)
+        {
+            $selfieFullPath = YotiConnectHelper::uploadDir() . "/{$dbProfile['selfie_filename']}";
+            if ($dbProfile['selfie_filename'] && file_exists($selfieFullPath))
+            {
+                $selfieUrl = \Drupal\Core\Url::fromRoute('yoti_connect.bin-file', ['field' => 'selfie'])->toString();
+//                $selfieUrl = YotiConnectHelper::uploadUrl() . "/{$dbProfile['selfie_filename']}";
+                $value = '<img src="' . $selfieUrl . '" width="100" />';
+            }
+            else
+            {
+                $value = '';
+            }
+        }
+
+        if (!$value)
+        {
+            $value = '<i>(empty)</i>';
+        }
+
+        $build[$param] = array(
+            '#type' => 'item',
+            '#markup' => '<h4 class="label">' . t($label) . '</h4> ' . $value,
+        );
+    }
+
+    if ($current->id() == $account->id())
+    {
+        $build['yoti_connect_unlink'] = array(
+            '#type' => 'item',
+            '#markup' => \Drupal::l(t('Unlink Yoti'), \Drupal\Core\Url::fromRoute('yoti_connect.unlink')),
+        );
+    }
+}

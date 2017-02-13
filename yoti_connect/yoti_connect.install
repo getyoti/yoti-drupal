@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the Yoti Connect module.
+ */
+
+require_once __DIR__ . '/src/Controller/YotiConnectStartController.php';
+
+
+/**
+ * Implements hook_requirements().
+ */
+function yoti_connect_requirements($phase)
+{
+    $requirements = array();
+
+    if ($phase == 'install') {
+        $privatePath = \Drupal\Core\Site\Settings::get('file_private_path');
+        if (!$privatePath) {
+            $requirements['yoti_connect'] = [
+                'description' => t("Yoti Connect requires that you have the file_private_path setting enabled for your website. Don't forget to clear the cache after you enable this setting."),
+                'severity' => REQUIREMENT_ERROR,
+            ];
+        }
+        else {
+            drupal_mkdir($privatePath.'/yoti', 0777, true);
+        }
+    }
+
+    return $requirements;
+}

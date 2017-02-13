@@ -1,0 +1,7 @@
+name: 'Yoti Connect'
+dependencies: {  }
+description: 'Let Yoti users quickly register on your site. Note: Need to enable module in module manager'
+core: 8.x
+package: Authentication
+type: module
+project: 'yoti_connect'
