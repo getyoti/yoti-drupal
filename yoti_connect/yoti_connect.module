@@ -85,9 +85,17 @@ function yoti_connect_menu()
 //        'file' => 'yoti_connect.pages.inc',
 //    );
 
-    $items['yoti-connect/unlink'] = array(
-        'page callback' => 'yoti_connect_unlink',
-        'access callback' => 'user_is_logged_in',
+//    $items['yoti-connect/unlink'] = array(
+//        'page callback' => 'yoti_connect_unlink',
+//        'access callback' => 'user_is_logged_in',
+//        'type' => MENU_CALLBACK,
+//        'file' => 'yoti_connect.pages.inc',
+//    );
+
+    $items['yoti-connect/register'] = array(
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('yoti_connect_register'),
+        'access callback' => 'user_is_anonymous',
         'type' => MENU_CALLBACK,
         'file' => 'yoti_connect.pages.inc',
     );
@@ -173,24 +181,14 @@ function yoti_connect_block_view($delta = '')
             _ybg.init();
         </script>';
 
-    // check if user already has account
-    $isUserLoggedIn = false;
-    if ($user) {
-        $tableName = YotiConnectHelper::tableName();
-        $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
-        if ($dbProfile) {
-            $isUserLoggedIn = true;
-        }
-    }
-
-    if (!$isUserLoggedIn) {
+    if (!$user->uid) {
         $button = sprintf($linkButton, 'Log in with Yoti');
     }
     else {
         $tableName = YotiConnectHelper::tableName();
         $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
         if (!$dbProfile) {
-            $button = sprintf($linkButton, 'Link account with Yoti');
+            $button = sprintf($linkButton, 'Link with Yoti');
         }
         else {
             $url = url('yoti-connect/unlink');
