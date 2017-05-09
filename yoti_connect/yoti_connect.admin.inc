@@ -37,6 +37,14 @@ function yoti_connect_api_keys_settings($form, &$form_state)
         '#description' => t('Copy the App ID of your Yoti App here'),
     );
 
+    $form['yoti_connect_settings']['yoti_scenario_id'] = array(
+        '#type' => 'textfield',
+        '#required' => true,
+        '#title' => t('Scenario ID'),
+        '#default_value' => variable_get('yoti_scenario_id'),
+        '#description' => t('Copy the Scenario ID of your Yoti App here'),
+    );
+
     $form['yoti_connect_settings']['yoti_sdk_id'] = array(
         '#type' => 'textfield',
         '#required' => true,

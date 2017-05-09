@@ -357,6 +357,7 @@ class YotiConnectHelper
         }
         return array(
             'yoti_app_id' => variable_get('yoti_app_id'),
+            'yoti_scenario_id' => variable_get('yoti_scenario_id'),
             'yoti_sdk_id' => variable_get('yoti_sdk_id'),
             'yoti_pem' => array(
                 'name' => $name,

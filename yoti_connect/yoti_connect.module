@@ -77,13 +77,13 @@ function yoti_connect_menu()
         'file' => 'yoti_connect.admin.inc',
     );
 
-    $items['yoti-connect/link'] = array(
-        'title' => 'Yoti Connect',
-        'page callback' => 'yoti_connect_link',
-        'access callback' => 'user_is_anonymous',
-        'type' => MENU_NORMAL_ITEM,
-        'file' => 'yoti_connect.pages.inc',
-    );
+//    $items['yoti-connect/link'] = array(
+//        'title' => 'Yoti Connect',
+//        'page callback' => 'yoti_connect_link',
+//        'access callback' => 'user_is_anonymous',
+//        'type' => MENU_NORMAL_ITEM,
+//        'file' => 'yoti_connect.pages.inc',
+//    );
 
     $items['yoti-connect/unlink'] = array(
         'page callback' => 'yoti_connect_unlink',
@@ -114,6 +114,104 @@ function yoti_connect_menu()
 
 
     return $items;
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function yoti_connect_block_info()
+{
+    $blocks = array();
+    $blocks['yoti_connect_link'] = array(
+        'info' => t('Yoti Connect Button'),
+    );
+
+    return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ * @param string $delta
+ * @return array
+ */
+function yoti_connect_block_view($delta = '')
+{
+    global $user;
+
+    $block = array();
+
+    // add sdk url
+    drupal_add_js('https://sdk.yoti.com/clients/browser.js');
+
+    /*switch ($delta) {
+        case 'yoti_connect_link' :
+            $block['content'] = my_block_view();
+            break;
+    }*/
+
+    $testToken = null;
+    if (YotiConnectHelper::mockRequests()) {
+        $testToken = file_get_contents(__DIR__ . '/sdk/sample-data/connect-token.txt');
+    }
+
+    // no config? no button
+    $config = YotiConnectHelper::getConfig();
+    if (!$config && !$testToken) {
+        return $block;
+    }
+
+    $linkButton = '<span
+            data-yoti-application-id="' . $config['yoti_app_id'] . '"
+            data-yoti-type="inline"
+            data-yoti-scenario-id="' . $config['yoti_scenario_id'] . '"
+            data-size="small">
+            %s
+        </span>
+        <script>
+            _ybg.config.service = "https://www.yoti.com/connect/";
+            _ybg.init();
+        </script>';
+
+    // check if user already has account
+    $isUserLoggedIn = false;
+    if ($user) {
+        $tableName = YotiConnectHelper::tableName();
+        $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
+        if ($dbProfile) {
+            $isUserLoggedIn = true;
+        }
+    }
+
+    if (!$isUserLoggedIn) {
+        $button = sprintf($linkButton, 'Log in with Yoti');
+    }
+    else {
+        $tableName = YotiConnectHelper::tableName();
+        $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
+        if (!$dbProfile) {
+            $button = sprintf($linkButton, 'Link account with Yoti');
+        }
+        else {
+            $url = url('yoti-connect/unlink');
+            $label = 'Unlink account from Yoti';
+            $button = '<a class="yoti-connect-button" href="' . $url . '">' . $label . '</a>';
+        }
+    }
+
+    $html = '<div class="yoti-connect"> ';
+    //    $message = YotiConnectHelper::getFlash();
+    //    if ($message) {
+    //        $html .= '<div class="' . ($message['type'] == 'error' ? 'error' : 'message') . ' notice">' .
+    //            '<p><strong>' . $message['message'] . '</strong></p>' .
+    //            '</div>';
+    //    }
+    $html .= $button;
+    $html .= '</div>';
+
+    $block['content'] = $html;
+
+    return $block;
 }
 
 /**
