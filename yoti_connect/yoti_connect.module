@@ -92,14 +92,6 @@ function yoti_connect_menu()
 //        'file' => 'yoti_connect.pages.inc',
 //    );
 
-    $items['yoti-connect/register'] = array(
-        'page callback' => 'drupal_get_form',
-        'page arguments' => array('yoti_connect_register'),
-        'access callback' => 'user_is_anonymous',
-        'type' => MENU_CALLBACK,
-        'file' => 'yoti_connect.pages.inc',
-    );
-
     $items['yoti-connect/bin-file'] = array(
         'page callback' => 'yoti_connect_binFile',
         'access callback' => 'user_is_logged_in',
