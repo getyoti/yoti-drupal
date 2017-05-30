@@ -1,11 +1,8 @@
 name = Yoti Connect
 description = "A simple module to allow users to login/signup with their Yoti account"
 package = Yoti
+project = "yoti_connect"
+version = "1.0.9"
 core = 7.x
 configure = admin/config/people/yoti-connect
-; Information added by Drupal.org packaging script on 2016-04-01
-version = "7.x-2.5"
-core = "7.x"
-project = "yoti_connect"
 datestamp = "1459503240"
-

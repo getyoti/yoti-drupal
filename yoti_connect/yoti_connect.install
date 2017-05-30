@@ -1,5 +1,8 @@
 <?php
-require_once __DIR__ . '/YotiConnectHelper.php';
+
+/**
+ * @file
+ */
 
 /**
  * Implements hook_requirements().
@@ -47,10 +50,20 @@ function yoti_connect_install()
 {
     $table_name = YotiConnectHelper::tableName();
     db_query("CREATE TABLE IF NOT EXISTS `{$table_name}` (
+        `id` INT(10) UNSIGNED AUTO_INCREMENT,
         `uid` int(10) UNSIGNED NOT NULL,
         `identifier` VARCHAR(255) NOT NULL,
+        `selfie_filename` VARCHAR(255) NOT NULL,
+        `phone_number` VARCHAR(255) NULL,
+        `date_of_birth` VARCHAR(255) NULL,
+        `given_names` VARCHAR(255) NULL,
+        `family_name` VARCHAR(255) NULL,
+        `nationality` VARCHAR(255) NULL,
+        `gender` VARCHAR(255) NULL,
+        `email_address` VARCHAR(255) NULL,
         `data` TEXT NULL,
-        PRIMARY KEY `uid` (`uid`)
+        PRIMARY KEY `id` (`id`),
+        UNIQUE KEY `uid` (`uid`)
     )")->execute();
 }
 
