@@ -25,6 +25,7 @@ class YotiConnectHelper
         ActivityDetails::ATTR_NATIONALITY => 'Nationality',
         ActivityDetails::ATTR_GENDER => 'Gender',
         ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
+        ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
     );
 
     /**
