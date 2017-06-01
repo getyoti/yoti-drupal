@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\yoti_connect\Controller;
 
 use Drupal;
@@ -7,6 +8,7 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\user\UserInterface;
 use Drupal\yoti_connect\YotiConnectHelper;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 require_once __DIR__ . '/../YotiConnectHelper.php';
 require_once __DIR__ . '/../../sdk/boot.php';
@@ -26,12 +28,11 @@ class YotiConnectStartController extends ControllerBase
     {
         /** @var YotiConnectHelper $helper */
         $helper = \Drupal::service('yoti_connect.helper');
+        $config = YotiConnectHelper::getConfig();
 
         // todo: remove on live
-        if (!array_key_exists('token', $_GET))
-        {
-            if (YotiConnectHelper::mockRequests())
-            {
+        if (!array_key_exists('token', $_GET)) {
+            if (YotiConnectHelper::mockRequests()) {
                 $token = file_get_contents(__DIR__ . '/../../sdk/sample-data/connect-token.txt');
                 return $this->redirect('yoti_connect.link', ['token' => $token]);
             }
@@ -41,8 +42,16 @@ class YotiConnectStartController extends ControllerBase
         $this->cache('dynamic_page_cache')->deleteAll();
         $this->cache('render')->deleteAll();
 
-        $helper->link();
-        return $this->redirect('user.login');
+//        return $this->redirect('user.login');
+
+        $result = $helper->link();
+        if (!$result) {
+            return new TrustedRedirectResponse($config['yoti_fail_url']);
+        }
+        elseif ($result instanceof RedirectResponse) {
+            return $result;
+        }
+        return new TrustedRedirectResponse($config['yoti_success_url']);
     }
 
     /**
@@ -65,29 +74,38 @@ class YotiConnectStartController extends ControllerBase
      */
     public function binFile($field)
     {
-        /** @var YotiConnectHelper $helper */
-        $helper = \Drupal::getContainer()->get('yoti_connect.helper');
-        $user = Drupal::currentUser();
-        if (!$user)
+        $current = Drupal::currentUser();
+        $isAdmin = in_array('administrator', $current->getRoles());
+        $userId = (!empty($_GET['user_id']) && $isAdmin) ? (int) $_GET['user_id'] : $current->id();
+        $tableName = YotiConnectHelper::tableName();
+        $dbProfile = \Drupal::database()->query("SELECT * from `{$tableName}` WHERE uid=$userId")->fetchAssoc();
+        if (!$dbProfile)
         {
             return;
         }
 
+        $dbProfile = unserialize($dbProfile['data']);
+
+//        $field = null;
+//        if (!empty($_GET['field']))
+//        {
+//            $field = $_GET['field'];
+//        }
+//
         $field = ($field == 'selfie') ? 'selfie_filename' : $field;
-        $dbProfile = Drupal::service('user.data')->get('yoti_connect', $user->id());
         if (!$dbProfile || !array_key_exists($field, $dbProfile))
         {
             return;
         }
 
-        $file = $helper::uploadDir() . "/{$dbProfile[$field]}";
+        $file = YotiConnectHelper::uploadDir() . "/{$dbProfile[$field]}";
         if (!file_exists($file))
         {
             return;
         }
 
         $type = 'image/png';
-        header('Content-Type:'.$type);
+        header('Content-Type:' . $type);
         header('Content-Length: ' . filesize($file));
         readfile($file);
     }

@@ -5,8 +5,9 @@
  * Install, update, and uninstall functions for the Yoti Connect module.
  */
 
-require_once __DIR__ . '/src/Controller/YotiConnectStartController.php';
+require_once __DIR__.'/src/YotiConnectHelper.php';
 
+require_once __DIR__ . '/src/Controller/YotiConnectStartController.php';
 
 /**
  * Implements hook_requirements().
@@ -29,4 +30,39 @@ function yoti_connect_requirements($phase)
     }
 
     return $requirements;
+}
+
+
+function yoti_connect_install()
+{
+    $table_name = \Drupal\yoti_connect\YotiConnectHelper::tableName();
+    \Drupal::database()->query("CREATE TABLE IF NOT EXISTS `{$table_name}` (
+        `id` INT(10) UNSIGNED AUTO_INCREMENT,
+        `uid` int(10) UNSIGNED NOT NULL,
+        `identifier` VARCHAR(255) NOT NULL,
+        `selfie_filename` VARCHAR(255) NOT NULL,
+        `phone_number` VARCHAR(255) NULL,
+        `date_of_birth` VARCHAR(255) NULL,
+        `given_names` VARCHAR(255) NULL,
+        `family_name` VARCHAR(255) NULL,
+        `nationality` VARCHAR(255) NULL,
+        `gender` VARCHAR(255) NULL,
+        `email_address` VARCHAR(255) NULL,
+        `data` TEXT NULL,
+        PRIMARY KEY `id` (`id`),
+        UNIQUE KEY `uid` (`uid`)
+    )")->execute();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function yoti_connect_uninstall()
+{
+//    \Drupal::config('yoti_app_id')->delete();
+//    \Drupal::config('yoti_scenario_id')->delete();
+//    \Drupal::config('yoti_sdk_id')->delete();
+//    \Drupal::config('yoti_pem')->delete();
+//    //    $table_name = YotiConnectHelper::tableName();
+//    \Drupal::database()->query("DROP TABLE IF EXISTS `users_yoti`")->execute();
 }

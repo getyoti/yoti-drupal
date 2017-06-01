@@ -1,4 +1,5 @@
 <?php
+
 use Drupal\user\UserInterface;
 use Drupal\yoti_connect\YotiConnectHelper;
 use Yoti\ActivityDetails;
@@ -24,8 +25,7 @@ function yoti_connect_entity_extra_field_info()
     $map = yoti_map_params();
 
     $fields = [];
-    foreach ($map as $param => $label)
-    {
+    foreach ($map as $param => $label) {
         $fields['user']['yoti_connect']['display'][$param] = array(
             'label' => t($label),
             'description' => t($label),
@@ -52,10 +52,15 @@ function yoti_connect_user_view(array &$build, UserInterface $account)
 {
     $map = yoti_map_params();
 
-    $current = \Drupal::currentUser();
-    $dbProfile = Drupal::service('user.data')->get('yoti_connect', $account->id());
-    if (!$dbProfile)
-    {
+    $user = \Drupal::currentUser();
+    $isAdmin = in_array('administrator', $user->getRoles());
+    $tableName = YotiConnectHelper::tableName();
+    $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=" . $user->id())->fetchAssoc();
+    if (!$dbProfile) {
+        //    $account->content['summary']['yoti_connect_link'] = array(
+        //      '#type' => 'item',
+        //      '#markup' => '<a href="' . url('/user/yoti-connect/link') . '">' . t('Link Yoti Account') . '</a>',
+        //    );
         return;
     }
 
@@ -64,26 +69,28 @@ function yoti_connect_user_view(array &$build, UserInterface $account)
     unset($dbProfile['identifier']);
     $profile = new ActivityDetails($dbProfile, $userId);
 
-    foreach ($map as $param => $label)
-    {
+    foreach ($map as $param => $label) {
         $value = $profile->getProfileAttribute($param);
-        if ($param == ActivityDetails::ATTR_SELFIE)
-        {
+        if ($param == ActivityDetails::ATTR_SELFIE) {
             $selfieFullPath = YotiConnectHelper::uploadDir() . "/{$dbProfile['selfie_filename']}";
-            if ($dbProfile['selfie_filename'] && file_exists($selfieFullPath))
-            {
-                $selfieUrl = \Drupal\Core\Url::fromRoute('yoti_connect.bin-file', ['field' => 'selfie'])->toString();
-//                $selfieUrl = YotiConnectHelper::uploadUrl() . "/{$dbProfile['selfie_filename']}";
+            if ($dbProfile['selfie_filename'] && file_exists($selfieFullPath)) {
+
+                $params = ['field' => 'selfie'];
+                if ($isAdmin)
+                {
+                    $params['user_id'] = $account->uid;
+                }
+                $selfieUrl = \Drupal\Core\Url::fromRoute('yoti_connect.bin-file', $params)->toString();
+                //                $selfieUrl = \Drupal\Core\Url::fromRoute('yoti_connect.bin-file', ['field' => 'selfie'])->toString();
+                //                $selfieUrl = YotiConnectHelper::uploadUrl() . "/{$dbProfile['selfie_filename']}";
                 $value = '<img src="' . $selfieUrl . '" width="100" />';
             }
-            else
-            {
+            else {
                 $value = '';
             }
         }
 
-        if (!$value)
-        {
+        if (!$value) {
             $value = '<i>(empty)</i>';
         }
 
@@ -93,8 +100,7 @@ function yoti_connect_user_view(array &$build, UserInterface $account)
         );
     }
 
-    if ($current->id() == $account->id())
-    {
+    if ($user->id() == $account->id()) {
         $build['yoti_connect_unlink'] = array(
             '#type' => 'item',
             '#markup' => \Drupal::l(t('Unlink Yoti'), \Drupal\Core\Url::fromRoute('yoti_connect.unlink')),
