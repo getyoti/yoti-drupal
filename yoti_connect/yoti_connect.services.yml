@@ -4,5 +4,4 @@ services:
     arguments:
       - '@database'
       - '@entity.manager'
-      - '@user.data'
 

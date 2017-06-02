@@ -30,11 +30,6 @@ class YotiConnectHelper
     protected $database;
 
     /**
-     * @var UserDataInterface
-     */
-    protected $userData;
-
-    /**
      * @var Drupal\Core\Entity\EntityStorageInterface
      */
     protected $userStorage;
@@ -58,13 +53,11 @@ class YotiConnectHelper
      * YotiConnectHelper constructor.
      * @param Connection $database
      * @param Drupal\Core\Entity\EntityManager $entity_manager
-     * @param UserDataInterface $user_data
      */
-    public function __construct(Connection $database, Drupal\Core\Entity\EntityManager $entity_manager, UserDataInterface $user_data)
+    public function __construct(Connection $database, Drupal\Core\Entity\EntityManager $entity_manager)
     {
         $this->database = $database;
         $this->userStorage = $entity_manager->getStorage('user');
-        $this->userData = $user_data;
     }
 
     /**
@@ -155,7 +148,7 @@ class YotiConnectHelper
                     }
                     else {
                         self::storeYotiUser($activityDetails);
-                        return new TrustedRedirectResponse('/yoti-connect/register');
+                        return new TrustedRedirectResponse(\Drupal\Core\Url::fromRoute('yoti_connect.register')->toString());
                     }
                 }
 
@@ -334,18 +327,14 @@ class YotiConnectHelper
 
     /**
      * @param $yotiId
+     * @param string $field
      * @return int
      */
-    private function getDrupalUid($yotiId)
+    private function getDrupalUid($yotiId, $field = "identifier")
     {
-        $qry = $this->database->select('users', 'u');
-        $qry->innerJoin('users_data', 'ud', 'ud.uid = u.uid');
-
-        return $qry->fields('u', array('uid'))
-            ->condition('module', 'yoti_connect')
-            ->condition('ud.name', 'identifier')
-            ->condition('ud.value', $yotiId)
-            ->execute()->fetchField();
+        $tableName = self::tableName();
+        $col = $this->database->query("SELECT uid FROM `{$tableName}` WHERE `{$field}` = '$yotiId'")->fetchCol();
+        return ($col) ? reset($col) : null;
     }
 
     /**
@@ -392,8 +381,6 @@ class YotiConnectHelper
      */
     private function deleteYotiUser($userId)
     {
-        $this->userData->delete('yoti_connect', $userId);
-
         $this->database->delete(self::tableName())->condition("uid", $userId)->execute();
     }
 
@@ -437,21 +424,23 @@ class YotiConnectHelper
      */
     public static function getConfig()
     {
-        $pem = Drupal::config('yoti_pem')->get();
+        $settings = Drupal::config('yoti_connect.settings');
+        
+        $pem = $settings->get('yoti_pem');
         $name = $contents = null;
         if ($pem) {
-            $file = file_load($pem);
-            $name = $file->uri;
+            $file = \Drupal\file\Entity\File::load($pem[0]);
+            $name = $file->getFileUri();
             $contents = file_get_contents(drupal_realpath($name));
         }
         $config = array(
-            'yoti_app_id' => Drupal::config('yoti_app_id')->get(),
-            'yoti_scenario_id' => Drupal::config('yoti_scenario_id')->get(),
-            'yoti_sdk_id' => Drupal::config('yoti_sdk_id')->get(),
-            'yoti_only_existing' => Drupal::config('yoti_only_existing')->get(),
-            'yoti_success_url' => Drupal::config('yoti_success_url')->get() ?: '/user',
-            'yoti_fail_url' => Drupal::config('yoti_fail_url')->get() ?: '/',
-            'yoti_connect_email' => Drupal::config('yoti_connect_email')->get(),
+            'yoti_app_id' => $settings->get('yoti_app_id'),
+            'yoti_scenario_id' => $settings->get('yoti_scenario_id'),
+            'yoti_sdk_id' => $settings->get('yoti_sdk_id'),
+            'yoti_only_existing' => $settings->get('yoti_only_existing'),
+            'yoti_success_url' => $settings->get('yoti_success_url') ?: '/user',
+            'yoti_fail_url' => $settings->get('yoti_fail_url') ?: '/',
+            'yoti_connect_email' => $settings->get('yoti_connect_email'),
             'yoti_pem' => array(
                 'name' => $name,
                 'contents' => $contents,

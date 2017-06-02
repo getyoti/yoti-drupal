@@ -86,7 +86,7 @@ class YotiBlock extends BlockBase
                 $button = sprintf($linkButton, 'Link Yoti account');
             }
             else {
-                $url = \Drupal\Core\Url::fromRoute('yoti_connect.unlink');
+                $url = \Drupal\Core\Url::fromRoute('yoti_connect.unlink')->toString();
                 $label = 'Unlink Yoti account';
                 $button = '<a class="yoti-connect-button" href="' . $url . '">' . $label . '</a>';
             }

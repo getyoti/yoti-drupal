@@ -2,7 +2,16 @@ yoti_connect.link:
   path: '/yoti-connect/link'
   defaults:
     _controller: '\Drupal\yoti_connect\Controller\YotiConnectStartController::link'
-    _title: 'Yoti login'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+yoti_connect.register:
+  path: '/yoti-connect/register'
+  defaults:
+    _form: '\Drupal\yoti_connect\Form\YotiConnectUserLoginForm'
+    _title: 'User Login'
   requirements:
     _permission: 'access content'
   options:

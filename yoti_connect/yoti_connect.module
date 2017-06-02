@@ -13,10 +13,13 @@ function yoti_map_params()
     return array(
         ActivityDetails::ATTR_SELFIE => 'Selfie',
         ActivityDetails::ATTR_PHONE_NUMBER => 'Phone number',
+        ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
         ActivityDetails::ATTR_GIVEN_NAMES => 'Given names',
         ActivityDetails::ATTR_FAMILY_NAME => 'Family name',
-        ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
         ActivityDetails::ATTR_NATIONALITY => 'Nationality',
+        ActivityDetails::ATTR_GENDER => 'Gender',
+        ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
+        ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
     );
 }
 
@@ -106,4 +109,23 @@ function yoti_connect_user_view(array &$build, UserInterface $account)
             '#markup' => \Drupal::l(t('Unlink Yoti'), \Drupal\Core\Url::fromRoute('yoti_connect.unlink')),
         );
     }
+}
+
+/**
+ * Implements hook_user_insert().
+ */
+function yoti_connect_user_login($account)
+{
+    exit;
+    $activityDetails = YotiConnectHelper::getYotiUserFromStore();
+    if ($activityDetails && empty($_SESSION['yoti_nolink']))
+    {
+        // link account
+        $helper = new YotiConnectHelper(\Drupal::database(), \Drupal::entityManager());
+        $helper->createYotiUser($account->uid, $activityDetails);
+    }
+
+    // remove session
+    unset($_SESSION['yoti_nolink']);
+    YotiConnectHelper::clearYotiUserStore();
 }

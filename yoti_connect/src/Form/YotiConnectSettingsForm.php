@@ -53,7 +53,7 @@ class YotiConnectSettingsForm extends ConfigFormBase
             drupal_mkdir($path, 0777);
         }
 
-        $yoti_connect = $this->config('yoti_connect.settings');
+        $config = $this->config('yoti_connect.settings');
 
         //    print_r($yoti_connect->get());exit;
 
@@ -81,7 +81,7 @@ class YotiConnectSettingsForm extends ConfigFormBase
             '#type' => 'textfield',
             '#required' => true,
             '#title' => $this->t('App ID'),
-            '#default_value' => $yoti_connect->get('yoti_app_id'),
+            '#default_value' => $config->get('yoti_app_id'),
             '#description' => $this->t('Copy the App ID of your Yoti App here'),
         );
 
@@ -89,7 +89,7 @@ class YotiConnectSettingsForm extends ConfigFormBase
             '#type' => 'textfield',
             '#required' => TRUE,
             '#title' => t('Scenario ID'),
-            '#default_value' => $yoti_connect->get('yoti_scenario_id'),
+            '#default_value' => $config->get('yoti_scenario_id'),
             '#description' => t('Scenario ID is used to render the inline QR code.'),
         );
 
@@ -97,7 +97,7 @@ class YotiConnectSettingsForm extends ConfigFormBase
             '#type' => 'textfield',
             '#required' => true,
             '#title' => $this->t('SDK ID'),
-            '#default_value' => $yoti_connect->get('yoti_sdk_id'),
+            '#default_value' => $config->get('yoti_sdk_id'),
             '#description' => $this->t('Copy the SDK ID of your Yoti App here'),
         );
 
@@ -105,7 +105,7 @@ class YotiConnectSettingsForm extends ConfigFormBase
             '#type' => 'textfield',
             '#required' => TRUE,
             '#title' => t('Success URL'),
-            '#default_value' => $yoti_connect->get('yoti_success_url', '/user'),
+            '#default_value' => $config->get('yoti_success_url', '/user'),
             '#description' => t('Redirect users here if they successfully login with Yoti'),
         );
 
@@ -113,7 +113,7 @@ class YotiConnectSettingsForm extends ConfigFormBase
             '#type' => 'textfield',
             '#required' => TRUE,
             '#title' => t('Fail URL'),
-            '#default_value' => $yoti_connect->get('yoti_fail_url', '/'),
+            '#default_value' => $config->get('yoti_fail_url', '/'),
             '#description' => t('Redirect users here if they were unable to login with Yoti'),
         );
 
@@ -121,7 +121,7 @@ class YotiConnectSettingsForm extends ConfigFormBase
             '#type' => 'managed_file',
             '#required' => true,
             '#title' => $this->t('PEM File'),
-            '#default_value' => $yoti_connect->get('yoti_pem'),
+            '#default_value' => $config->get('yoti_pem'),
             '#upload_location' => 'private://yoti',
             '#description' => $this->t('Upload the PEM file of your Yoti App here'),
             '#upload_validators' => array(
@@ -133,19 +133,19 @@ class YotiConnectSettingsForm extends ConfigFormBase
         $form['yoti_connect_settings']['yoti_only_existing'] = array(
             '#type' => 'checkbox',
             '#title' => t('Only allow existing Drupal users to link their Yoti account'),
-            '#default_value' => $yoti_connect->get('yoti_only_existing'),
+            '#default_value' => $config->get('yoti_only_existing'),
 //    '#description' => t('Copy the SDK ID of your Yoti App here'),
         );
 
         $form['yoti_connect_settings']['yoti_connect_email'] = array(
             '#type' => 'checkbox',
             '#title' => t('Attempt to link Yoti email address with Drupal account for first time users'),
-            '#default_value' => $yoti_connect->get('yoti_connect_email'),
+            '#default_value' => $config->get('yoti_connect_email'),
 //    '#description' => t('Copy the SDK ID of your Yoti App here'),
         );
 
         // Load the file.
-        $pemFile = $yoti_connect->get('yoti_pem');
+        $pemFile = $config->get('yoti_pem');
         $file = \Drupal\file\Entity\File::load($pemFile[0]);
         // Change status to permanent.
         if (gettype($file) == 'object')
