@@ -126,9 +126,9 @@ function yoti_connect_register($form, &$form_state)
 //        '#title' => t('Check this box to skip linking Yoti account to Drupal and simply login'),
         '#default_value' => variable_get('yoti_nolink'),
         '#markup' => '<div class="form-item form-type-checkbox form-item-yoti-link messages warning" style="margin: 0 0 15px 0">
-                <div><b>Warning: You are about to link your Drupal account to your Yoti account</b></div>
+                <div><b>Warning: You are about to link Drupal to your Yoti account. Click the box below to keep them separate.</b></div>
                 <input type="checkbox" id="edit-yoti-link" name="yoti_nolink" value="1" class="form-checkbox"'.(!empty($form_state['input']['yoti_nolink']) ? ' checked="checked"' : '').'>
-                <label class="option" for="edit-yoti-link">Check this box to stop this from happening and instead login regularly.</label>
+                <label class="option" for="edit-yoti-link">Don\'t link my Yoti account</label>
             </div>'
         //    '#description' => t('Copy the SDK ID of your Yoti App here'),
     );

@@ -14,12 +14,13 @@ function yoti_map_params()
     return array(
         ActivityDetails::ATTR_SELFIE => 'Selfie',
         ActivityDetails::ATTR_PHONE_NUMBER => 'Phone number',
+        ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
         ActivityDetails::ATTR_GIVEN_NAMES => 'Given names',
         ActivityDetails::ATTR_FAMILY_NAME => 'Family name',
-        ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
         ActivityDetails::ATTR_NATIONALITY => 'Nationality',
         ActivityDetails::ATTR_GENDER => 'Gender',
-        ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email',
+        ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
+        ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
     );
 }
 
