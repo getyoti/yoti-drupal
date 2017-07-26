@@ -1,12 +1,22 @@
 <?php
 
 /**
- * @param $form
- * @param $form_state
+ * @file
+ * Admin page callback file for the yoti_connect module.
+ */
+
+use Yoti\YotiClient;
+
+/**
+ * Page callback: Generates the appropriate yoti_connect administration form.
+ *
+ * This function generates yoti_connect settings form.
+ *
  * @return mixed
+ *   A renderable form array for yoti_connect settings.
  */
 function yoti_connect_api_keys_settings($form, &$form_state) {
-  // make sure private path exists, if not, create it
+  // Make sure private path exists, if not, create it.
   $uploadDir = YotiConnectHelper::uploadDir(TRUE);
   if ($uploadDir && !is_dir($uploadDir)) {
     mkdir($uploadDir, 0777, TRUE);
@@ -14,9 +24,9 @@ function yoti_connect_api_keys_settings($form, &$form_state) {
 
   $form['some_text'] = array(
     '#markup' => '<div>' .
-      t('You need to first create a Yoti App at <a href="@yoti-dev" target="_blank">@yoti-dev</a>.', array('@yoti-dev' => \Yoti\YotiClient::DASHBOARD_URL)) . '</br >' .
-      t('Note: On the Yoti Dashboard the callback URL should be set to:') . ' <strong>' . url('/yoti-connect/link', array('absolute' => TRUE)) . '</strong>' .
-      '</div>',
+    t('You need to first create a Yoti App at <a href="@yoti-dev" target="_blank">@yoti-dev</a>.', array('@yoti-dev' => YotiClient::DASHBOARD_URL)) . '</br >' .
+    t('Note: On the Yoti Dashboard the callback URL should be set to:') . ' <strong>' . url('/yoti-connect/link', array('absolute' => TRUE)) . '</strong>' .
+    '</div>',
   );
 
   $form['#attributes'] = array(
@@ -48,19 +58,19 @@ function yoti_connect_api_keys_settings($form, &$form_state) {
   );
 
   $form['yoti_connect_settings']['yoti_success_url'] = array(
-        '#type' => 'textfield',
-        '#required' => TRUE,
-        '#title' => t('Success URL'),
-        '#default_value' => variable_get('yoti_success_url', '/user'),
-        '#description' => t('Redirect users here if they successfully login with Yoti'),
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Success URL'),
+    '#default_value' => variable_get('yoti_success_url', '/user'),
+    '#description' => t('Redirect users here if they successfully login with Yoti'),
   );
 
   $form['yoti_connect_settings']['yoti_fail_url'] = array(
-        '#type' => 'textfield',
-        '#required' => TRUE,
-        '#title' => t('Fail URL'),
-        '#default_value' => variable_get('yoti_fail_url', '/'),
-        '#description' => t('Redirect users here if they were unable to login with Yoti'),
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Fail URL'),
+    '#default_value' => variable_get('yoti_fail_url', '/'),
+    '#description' => t('Redirect users here if they were unable to login with Yoti'),
   );
 
   $form['yoti_connect_settings']['yoti_pem'] = array(
@@ -72,7 +82,7 @@ function yoti_connect_api_keys_settings($form, &$form_state) {
     '#upload_location' => YotiConnectHelper::uploadDir(FALSE),
     '#description' => t('PEM File is the application pem file. It can be downloaded only once from the Keys tab in your Yoti Dashboard.'),
     '#upload_validators' => array(
-      'file_validate_extensions' => array('pem')
+      'file_validate_extensions' => array('pem'),
     ),
   );
 

@@ -2,6 +2,7 @@
 
 /**
  * @file
+ * Install, update and uninstall functions for the yoti_connect module.
  */
 
 /**
@@ -29,7 +30,7 @@ function yoti_connect_requirements($phase) {
       $requirements['php_version']['description'] = $t('Yoti Connect could not be installed. Facebook PHP SDK v4 requires PHP 5.4 or higher.');
     }
 
-    if (!is_writeable(DRUPAL_ROOT . '/sites/all')) {
+    if (!is_writable(DRUPAL_ROOT . '/sites/all')) {
       $requirements['php_version']['title'] = $t('Private folder');
       $requirements['php_version']['value'] = DRUPAL_ROOT . '/sites/all';
       $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
@@ -40,6 +41,9 @@ function yoti_connect_requirements($phase) {
   return $requirements;
 }
 
+/**
+ * Implements hook_install().
+ */
 function yoti_connect_install() {
   $table_name = YotiConnectHelper::tableName();
   db_query("CREATE TABLE IF NOT EXISTS `{$table_name}` (
