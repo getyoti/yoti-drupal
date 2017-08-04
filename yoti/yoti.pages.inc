@@ -5,32 +5,32 @@
  * User page callback file for the yoti module.
  */
 
-require_once __DIR__ . '/YotiConnectHelper.php';
+require_once __DIR__ . '/YotiHelper.php';
 
 /**
  * Authenticate Yoti user or unlink if user is already linked to Yoti user.
  */
-function yoti_connect_link() {
+function yoti_link() {
   global $user;
 
   // Check if user already has account.
   if ($user) {
-    $tableName = YotiConnectHelper::tableName();
+    $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
     $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
     if ($dbProfile) {
-      return yoti_connect_unlink();
+      return yoti_unlink();
     }
   }
 
   // Resume as normal.
-  $helper = new YotiConnectHelper();
+  $helper = new YotiHelper();
   // todo: remove on live.
   if (!array_key_exists('token', $_GET)) {
-    if (YotiConnectHelper::mockRequests()) {
+    if (YotiHelper::mockRequests()) {
       $token = file_get_contents(__DIR__ . '/sdk/sample-data/connect-token.txt');
-      return drupal_goto("/yoti-connect/link", array('query' => ["token" => $token]));
+      return drupal_goto("/yoti/link", array('query' => ["token" => $token]));
     }
-    return drupal_goto(YotiConnectHelper::getLoginUrl());
+    return drupal_goto(YotiHelper::getLoginUrl());
   }
 
   if (!$helper->link()) {
@@ -42,8 +42,8 @@ function yoti_connect_link() {
 /**
  * Unlink drupal user from Yoti user.
  */
-function yoti_connect_unlink() {
-  $helper = new YotiConnectHelper();
+function yoti_unlink() {
+  $helper = new YotiHelper();
   $helper->unlink();
   return drupal_goto('/');
 }
@@ -51,13 +51,13 @@ function yoti_connect_unlink() {
 /**
  * Display file as an image.
  */
-function yoti_connect_bin_file() {
+function yoti_bin_file() {
   global $user;
 
   $current = $user;
   $isAdmin = in_array('administrator', $current->roles);
   $userId = (!empty($_GET['user_id']) && $isAdmin) ? (int) $_GET['user_id'] : $current->uid;
-  $tableName = YotiConnectHelper::tableName();
+  $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
   $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$userId")->fetchAssoc();
   if (!$dbProfile) {
     return;
@@ -75,7 +75,7 @@ function yoti_connect_bin_file() {
     return;
   }
 
-  $file = YotiConnectHelper::uploadDir() . "/{$dbProfile[$field]}";
+  $file = YotiHelper::uploadDir() . "/{$dbProfile[$field]}";
   if (!file_exists($file)) {
     return;
   }
@@ -89,25 +89,25 @@ function yoti_connect_bin_file() {
 /**
  * Implements hook_user_insert().
  */
-function yoti_connect_user_login(&$edit, $account) {
-  $activityDetails = YotiConnectHelper::getYotiUserFromStore();
+function yoti_user_login(&$edit, $account) {
+  $activityDetails = YotiHelper::getYotiUserFromStore();
   if ($activityDetails && empty($_SESSION['yoti_nolink'])) {
     // Link account.
-    $helper = new YotiConnectHelper();
+    $helper = new YotiHelper();
     $helper->createYotiUser($account->uid, $activityDetails);
   }
 
   // Remove session.
   unset($_SESSION['yoti_nolink']);
-  YotiConnectHelper::clearYotiUserStore();
+  YotiHelper::clearYotiUserStore();
 }
 
 /**
  * Display the option to Yoti users not to link their account on the login page.
  */
-function yoti_connect_register($form, &$form_state) {
-  // don't allow unless session.
-  if (!YotiConnectHelper::getYotiUserFromStore()) {
+function yoti_register($form, &$form_state) {
+  // Don't allow unless session.
+  if (!YotiHelper::getYotiUserFromStore()) {
     drupal_goto();
   }
 
@@ -132,7 +132,7 @@ function yoti_connect_register($form, &$form_state) {
 /**
  * Process user registration form.
  */
-function yoti_connect_register_submit($form, &$form_state) {
+function yoti_register_submit($form, &$form_state) {
   $_SESSION['yoti_nolink'] = !empty($form_state['input']['yoti_nolink']);
   user_login_submit($form, $form_state);
 }
