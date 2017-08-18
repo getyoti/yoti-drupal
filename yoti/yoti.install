@@ -71,10 +71,12 @@ function yoti_install() {
  */
 function yoti_uninstall() {
   $table_name = YotiHelper::YOTI_USER_TABLE_NAME;
-  variable_del('yoti_app_id');
-  variable_del('yoti_scenario_id');
-  variable_del('yoti_sdk_id');
-  variable_del('yoti_pem');
+  $yotiConfigArr = array_keys(YotiHelper::getConfig());
+  foreach ($yotiConfigArr as $configKey) {
+    if (!empty($configKey)) {
+      variable_del($configKey);
+    }
+  }
   db_query("DROP TABLE IF EXISTS `{$table_name}`")->execute();
 }
 

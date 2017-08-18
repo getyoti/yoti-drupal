@@ -206,7 +206,7 @@ function yoti_menu() {
 function has_yoti_login() {
   global $user;
 
-  // Check if user already has account.
+  // Check if user already has an account.
   if ($user) {
     $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
     $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
@@ -224,7 +224,7 @@ function has_yoti_login() {
 function no_yoti_login() {
   global $user;
 
-  // Check if user already has account.
+  // Check if user already has an account.
   if (!$user) {
     return TRUE;
   }
@@ -247,40 +247,6 @@ function yoti_permission() {
     'title' => "Administer Yoti Module settings",
   );
   return $items;
-}
-
-/**
- * Implements hook_rules_event_info().
- *
- * Defines a rules event to react on Facebook login and user creation.
- *
- * @ingroup rules
- */
-function yoti_rules_event_info() {
-  return array(
-    'yoti_login' => array(
-      'label' => t('User logs in to their existing Drupal account with Yoti'),
-      'module' => 'yoti',
-      'group' => t('Social Media'),
-      'variables' => array(
-        'user' => array(
-          'type' => 'user',
-          'label' => t('The user logging in with Yoti'),
-        ),
-      ),
-    ),
-    'yoti_registration' => array(
-      'label' => t('User registers a new account connected to Yoti'),
-      'module' => 'yoti',
-      'group' => t('Social Media'),
-      'variables' => array(
-        'user' => array(
-          'type' => 'user',
-          'label' => t('The user registering the account'),
-        ),
-      ),
-    ),
-  );
 }
 
 /**

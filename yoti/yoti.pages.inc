@@ -13,7 +13,7 @@ require_once __DIR__ . '/YotiHelper.php';
 function yoti_link() {
   global $user;
 
-  // Check if user already has account.
+  // Check if user already has an account.
   if ($user) {
     $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
     $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
@@ -24,7 +24,7 @@ function yoti_link() {
 
   // Resume as normal.
   $helper = new YotiHelper();
-  // todo: remove on live.
+  // If there is no token, check if we are mocking the request.
   if (!array_key_exists('token', $_GET)) {
     if (YotiHelper::mockRequests()) {
       $token = file_get_contents(__DIR__ . '/sdk/sample-data/connect-token.txt');
@@ -111,20 +111,23 @@ function yoti_register($form, &$form_state) {
     drupal_goto();
   }
 
+  $companyName = (!empty(variable_get('yoti_company_name'))) ? variable_get('yoti_company_name') : 'Drupal';
+
   $form['yoti_nolink'] = array(
     '#weight' => -1000,
     '#default_value' => variable_get('yoti_nolink'),
     '#markup' => '<div class="form-item form-type-checkbox form-item-yoti-link messages warning" style="margin: 0 0 15px 0">
-                <div><b>Warning: You are about to link Drupal to your Yoti account. Click the box below to keep them separate.</b></div>
+                <div><b>Warning: You are about to link your ' . $companyName . ' account to your Yoti account. Click the box below to keep them separate.</b></div>
                 <input type="checkbox" id="edit-yoti-link" name="yoti_nolink" value="1" class="form-checkbox"' . (!empty($form_state['input']['yoti_nolink']) ? ' checked="checked"' : '') . '>
                 <label class="option" for="edit-yoti-link">Don\'t link my Yoti account</label>
             </div>',
   );
 
   $form = user_login($form, $form_state);
-
-  $form['name']['#title'] = t('Your Drupal Username');
-  $form['pass']['#title'] = t('Your Drupal Password');
+  $loginFieldLabel = 'Your ' . $companyName . ' Username';
+  $passwordFieldLabel = 'Your ' . $companyName . ' Password';
+  $form['name']['#title'] = $loginFieldLabel;
+  $form['pass']['#title'] = $passwordFieldLabel;
 
   return $form;
 }

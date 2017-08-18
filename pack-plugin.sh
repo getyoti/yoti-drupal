@@ -1,5 +1,5 @@
 #!/bin/bash
-NAME="yoti-for-drupal-7-v1.0.4-edge.zip"
+NAME="yoti-for-drupal-7-v1.0.5-edge.zip"
 SDK_RELATIVE_PATH="sdk"
 curl https://github.com/getyoti/php/archive/master.zip -O -L
 unzip master.zip -d sdk

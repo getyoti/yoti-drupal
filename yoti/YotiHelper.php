@@ -227,27 +227,70 @@ class YotiHelper {
   }
 
   /**
+   * Check a username has valid characters.
+   *
+   * @param string $username
+   *   Username to be validated.
+   *
+   * @return bool|int
+   *   Return TRUE or FALSE
+   */
+  protected function isValidUsername($username) {
+    return (empty(user_validate_name($username)));
+  }
+
+  /**
    * Generate new Yoti username or nickname.
    *
+   * @param \Yoti\ActivityDetails $activityDetails
+   *   Yoti user details Object.
    * @param string $prefix
    *   Yoti user nickname prefix.
    *
    * @return string
-   *   Full generated Yoti generated user nickname.
+   *   Yoti generic username.
    */
-  private function generateUsername($prefix = 'YotiUser-') {
-    // Get the number of user name that starts with YotiUser- prefix.
+  private function generateUsername(ActivityDetails $activityDetails, $prefix = 'yoti.user') {
+    $givenName = $this->getUserGivenNames($activityDetails);
+    $familyName = $activityDetails->getFamilyName();
+
+    // If GivenName and FamilyName are provided use them as user nickname/login.
+    if (!empty($givenName) && !empty($familyName)) {
+      $userFullName = $givenName . " " . $familyName;
+      $userProvidedPrefix = strtolower(str_replace(" ", ".", $userFullName));
+      $prefix = ($this->isValidUsername($userProvidedPrefix)) ? $userProvidedPrefix : $prefix;
+    }
+
+    // Get the number of user name that starts with prefix.
     $userQuery = db_select('users', 'u');
     $userQuery->condition('u.name', db_like($prefix) . '%', 'LIKE');
     $userQuery->fields('u', array('name'));
     $userCount = (int) $userQuery->execute()->rowCount();
 
     // Generate Yoti unique username.
-    do {
-      $username = $prefix . ++$userCount;
-    } while (user_load_by_name($username));
+    $username = $prefix;
+    if ($userCount > 0) {
+      do {
+        $username = $prefix . ++$userCount;
+      } while (user_load_by_name($username));
+    }
 
     return $username;
+  }
+
+  /**
+   * If user has more than one given name return the first one.
+   *
+   * @param \Yoti\ActivityDetails $activityDetails
+   *   Yoti user details.
+   *
+   * @return null|string
+   *   Return single user given name
+   */
+  private function getUserGivenNames(ActivityDetails $activityDetails) {
+    $givenNames = $activityDetails->getGivenNames();
+    $givenNamesArr = explode(" ", $activityDetails->getGivenNames());
+    return (count($givenNamesArr) > 1) ? $givenNamesArr[0] : $givenNames;
   }
 
   /**
@@ -261,17 +304,20 @@ class YotiHelper {
    * @return string
    *   Full generated Yoti user email
    */
-  private function generateEmail($prefix = 'yotiuser-', $domain = 'example.com') {
-    // Get the number of user name that starts with YotiUser- prefix.
+  private function generateEmail($prefix = 'yoti.user', $domain = 'example.com') {
+    // Get the number of user name that starts with yoti.user prefix.
     $userQuery = db_select('users', 'u');
     $userQuery->condition('u.mail', db_like($prefix) . '%', 'LIKE');
     $userQuery->fields('u', array('mail'));
     $userCount = (int) $userQuery->execute()->rowCount();
 
     // Generate Yoti unique user email.
-    do {
-      $email = $prefix . ++$userCount . "@$domain";
-    } while (user_load_by_mail($email));
+    $email = $prefix . "@$domain";
+    if ($userCount > 0) {
+      do {
+        $email = $prefix . ++$userCount . "@$domain";
+      } while (user_load_by_mail($email));
+    }
 
     return $email;
   }
@@ -316,11 +362,17 @@ class YotiHelper {
       'status' => 1,
     );
 
+    $userProvidedEmail = $activityDetails->getEmailAddress();
+    // If user has provided an email address and it's not in use then use it,
+    // otherwise use Yoti generic email.
+    $userProvidedEmailCanBeUsed = valid_email_address($userProvidedEmail) && !user_load_by_mail($userProvidedEmail);
+    $userEmail = ($userProvidedEmailCanBeUsed) ? $userProvidedEmail : $this->generateEmail();
+
     // Mandatory settings.
     $user['pass'] = $this->generatePassword();
-    $user['mail'] = $user['init'] = $this->generateEmail();
+    $user['mail'] = $user['init'] = $userEmail;
     // This username must be unique and accept only a-Z,0-9, - _ @ .
-    $user['name'] = $this->generateUsername();
+    $user['name'] = $this->generateUsername($activityDetails);
 
     // The first parameter is sent blank so a new user is created.
     $user = user_save('', $user);
@@ -442,15 +494,17 @@ class YotiHelper {
   public static function getConfig() {
     $pem = variable_get('yoti_pem');
     $name = $contents = NULL;
-    if ($pem) {
+    if (!empty($pem)) {
       $file = file_load($pem);
       $name = $file->uri;
-      $contents = file_get_contents(drupal_realpath($name));
+      $fileFullPath = drupal_realpath($name);
+      $contents = (!empty($fileFullPath)) ? file_get_contents($fileFullPath) : NULL;
     }
     $config = array(
       'yoti_app_id' => variable_get('yoti_app_id'),
       'yoti_scenario_id' => variable_get('yoti_scenario_id'),
       'yoti_sdk_id' => variable_get('yoti_sdk_id'),
+      'yoti_company_name' => variable_get('yoti_company_name'),
       'yoti_only_existing' => variable_get('yoti_only_existing'),
       'yoti_success_url' => variable_get('yoti_success_url', '/user'),
       'yoti_fail_url' => variable_get('yoti_fail_url', '/'),
