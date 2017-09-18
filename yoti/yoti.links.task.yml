@@ -1,0 +1,4 @@
+yoti.link:
+  route_name: yoti.link
+  base_route: user.page
+  title: 'Login with Yoti'

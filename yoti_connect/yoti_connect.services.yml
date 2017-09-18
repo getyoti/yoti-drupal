@@ -1,7 +1,0 @@
-services:
-  yoti_connect.helper:
-    class: Drupal\yoti_connect\YotiConnectHelper
-    arguments:
-      - '@database'
-      - '@entity.manager'
-

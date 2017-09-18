@@ -1,11 +1,11 @@
-yoti_connect.user_login:
+yoti.user_login:
   label: 'User has logged in via Yoti login'
   category: 'User'
   context:
     account:
       type: 'entity:user'
       label: 'Logged in user'
-yoti_connect.user_created:
+yoti.user_created:
   label: 'User has been created via Yoti login'
   category: 'User'
   context:

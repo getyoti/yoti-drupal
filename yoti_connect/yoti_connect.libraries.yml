@@ -1,5 +1,0 @@
-yoti_connect:
-  header: true
-  version: 1.x
-  js:
-    https://sdk.yoti.com/clients/browser.js: { type: external }

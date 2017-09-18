@@ -1,0 +1,54 @@
+yoti.link:
+  path: '/yoti/link'
+  defaults:
+    _controller: '\Drupal\yoti\Controller\YotiStartController::link'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+yoti.register:
+  path: '/yoti/register'
+  defaults:
+    _form: '\Drupal\yoti\Form\YotiUserLoginForm'
+    _title: 'User Login'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+yoti.unlink:
+  path: '/yoti/unlink'
+  defaults:
+    _controller: '\Drupal\yoti\Controller\YotiStartController::unlink'
+    _title: 'Unlink yoti'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+yoti.bin-file:
+  path: '/yoti/bin-file/{field}'
+  defaults:
+    _controller: '\Drupal\yoti\Controller\YotiStartController::binFile'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: TRUE
+
+yoti.settings_form:
+  path: 'admin/config/people/yoti'
+  defaults:
+    _title: 'Yoti settings'
+    _form: '\Drupal\yoti\Form\YotiSettingsForm'
+  requirements:
+    _permission: 'administer yoti'
+
+yoti.account:
+  path: '/user/{user}/custom'
+  defaults:
+    _form: '\Drupal\yoti\Form\YotiProfileForm'
+    _title: 'Yoti Profile'
+    user: \d+
+  requirements:
+    _permission: 'access content'

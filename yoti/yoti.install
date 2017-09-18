@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the Yoti module.
+ */
+
+use Drupal\Core\Site\Settings;
+use Drupal\yoti\Models\YotiUserModel;
+
+/**
+ * Implements hook_requirements().
+ */
+function yoti_requirements($phase) {
+  $requirements = [];
+
+  if ($phase == 'install') {
+    $privatePath = Settings::get('file_private_path');
+    if (!$privatePath) {
+      $requirements['yoti'] = [
+        'description' => t("Yoti requires that you have the file_private_path setting enabled for your website. Don't forget to clear the cache after you enable this setting."),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+    else {
+      \Drupal::service('file_system')->mkdir($privatePath . '/yoti', 0777, TRUE);
+    }
+  }
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_install().
+ */
+function yoti_install() {
+  YotiUserModel::createYotiUserTable();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function yoti_uninstall() {
+  // Delete Yoti config data.
+  \Drupal::configFactory()->getEditable('yoti.settings')->delete();
+  // Delete Yoti user table.
+  YotiUserModel::deleteYotiUserTable();
+}

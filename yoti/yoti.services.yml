@@ -1,0 +1,5 @@
+services:
+  yoti.helper:
+    class: Drupal\yoti\YotiHelper
+    arguments:
+      - '@entity_type.manager'

@@ -10,8 +10,8 @@ if [ ! -d "$BASE" ]; then
     exit
 fi
 
-target="$PWD/yoti_connect"
-link="$BASE/modules/yoti_connect"
+target="$PWD/yoti"
+link="$BASE/modules/yoti"
 
 # if link already exists then don't create
 if [ ! -L "$link" ]; then

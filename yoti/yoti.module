@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * @file
+ * Enables yoti login system capability.
+ */
+
+use Drupal\Core\Url;
+use Drupal\user\UserInterface;
+use Drupal\yoti\YotiHelper;
+use Yoti\ActivityDetails;
+use Drupal\yoti\Models\YotiUserModel;
+
+require_once __DIR__ . '/sdk/boot.php';
+
+/**
+ * Display these fields.
+ */
+function yoti_map_params() {
+  return [
+    ActivityDetails::ATTR_SELFIE => 'Selfie',
+    ActivityDetails::ATTR_PHONE_NUMBER => 'Phone number',
+    ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
+    ActivityDetails::ATTR_GIVEN_NAMES => 'Given names',
+    ActivityDetails::ATTR_FAMILY_NAME => 'Family name',
+    ActivityDetails::ATTR_NATIONALITY => 'Nationality',
+    ActivityDetails::ATTR_GENDER => 'Gender',
+    ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
+    ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
+  ];
+}
+
+/**
+ * Implements hook_entity_extra_field_info().
+ */
+function yoti_entity_extra_field_info() {
+  $map = yoti_map_params();
+
+  $fields = [];
+  foreach ($map as $param => $label) {
+    $fields['user']['yoti']['display'][$param] = [
+      'label' => $label,
+      'description' => $label,
+      'weight' => 10,
+    ];
+  }
+
+  $fields['user']['yoti']['display']['yoti_unlink'] = [
+    'label' => t('Unlink'),
+    'description' => t('Unlink Yoti account'),
+    'weight' => 5,
+  ];
+
+  return $fields;
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view() for user entities.
+ */
+function yoti_user_view(array &$build, UserInterface $account) {
+  $map = yoti_map_params();
+
+  $user = \Drupal::currentUser();
+  $isAdmin = in_array('administrator', $user->getRoles());
+  $dbProfile = YotiUserModel::getYotiUserById($user->id());
+  if (!$dbProfile) {
+    return;
+  }
+
+  // Set up profile.
+  $userId = $dbProfile['identifier'];
+  unset($dbProfile['identifier']);
+  $profile = new ActivityDetails($dbProfile, $userId);
+
+  foreach ($map as $param => $label) {
+    $value = $profile->getProfileAttribute($param);
+    if ($param == ActivityDetails::ATTR_SELFIE) {
+      $selfieFullPath = YotiHelper::uploadDir() . "/{$dbProfile['selfie_filename']}";
+      if ($dbProfile['selfie_filename'] && file_exists($selfieFullPath)) {
+        $params = ['field' => 'selfie'];
+        if ($isAdmin) {
+          $params['user_id'] = $account->uid;
+        }
+        $selfieUrl = Url::fromRoute('yoti.bin-file', $params)->toString();
+        $value = '<img src="' . $selfieUrl . '" width="100" />';
+      }
+      else {
+        $value = '';
+      }
+    }
+
+    // Extract user postal_address value.
+    if ($param == ActivityDetails::ATTR_POSTAL_ADDRESS) {
+      $value = YotiHelper::getUserPostalAddress($profile);
+    }
+
+    if (!$value) {
+      $value = '<i>(empty)</i>';
+    }
+
+    $build[$param] = [
+      '#type' => 'item',
+      '#markup' => '<h4 class="label">' . $label . '</h4> ' . $value,
+    ];
+  }
+
+  if ($user->id() == $account->id()) {
+    $build['yoti_unlink'] = [
+      '#type' => 'item',
+      '#markup' => \Drupal::l(t('Unlink Yoti'), Url::fromRoute('yoti.unlink')),
+    ];
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function yoti_user_login($account) {
+  $activityDetails = YotiHelper::getYotiUserFromStore();
+  if ($activityDetails && empty($_SESSION['yoti_nolink']) && !isset($_REQUEST['yoti_nolink'])) {
+    // Link user account.
+    $helper = new YotiHelper(\Drupal::entityTypeManager());
+    $helper->createYotiUser($account->id(), $activityDetails);
+  }
+
+  // Remove session.
+  unset($_SESSION['yoti_nolink']);
+  YotiHelper::clearYotiUserStore();
+}
