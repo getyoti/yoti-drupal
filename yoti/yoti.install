@@ -38,6 +38,15 @@ function yoti_install() {
 }
 
 /**
+ * Update Table users_yoti to remove unnecessary fields.
+ *
+ * Implements  hook_update_N().
+ */
+function yoti_update_8101(&$sandbox) {
+  YotiUserModel::removeDuplicatedFieldsFromYotiUserTable();
+}
+
+/**
  * Implements hook_uninstall().
  */
 function yoti_uninstall() {

@@ -53,34 +53,6 @@ class YotiStartController extends ControllerBase {
   }
 
   /**
-   * Create Yoti user.
-   */
-  public function register() {
-    // Don't allow unless session.
-    if (!YotiHelper::getYotiUserFromStore()) {
-      drupal_goto();
-    }
-
-    $config = YotiHelper::getConfig();
-
-    $companyName = (!empty($config['yoti_company_name'])) ? $config['yoti_company_name'] : 'Drupal';
-
-    $form['yoti_nolink'] = [
-      '#weight' => -1000,
-      '#markup' => '<div class="form-item form-type-checkbox form-item-yoti-link messages warning" style="margin: 0 0 15px 0">
-                    <div><b>Warning: You are about to link your ' . $companyName . ' account to your Yoti account</b></div>
-                    <input type="checkbox" id="edit-yoti-link" name="yoti_nolink" value="1" class="form-checkbox"' . (!empty($form_state['input']['yoti_nolink']) ? ' checked="checked"' : '') . '>
-                    <label class="option" for="edit-yoti-link">Check this box to stop this from happening and instead login regularly.</label>
-                </div>',
-    ];
-
-    $form['name']['#title'] = "Your {$companyName} Username";
-    $form['pass']['#title'] = "Your {$companyName} Password";
-
-    return $form;
-  }
-
-  /**
    * Unlink user account from Yoti.
    */
   public function unlink() {
@@ -106,14 +78,16 @@ class YotiStartController extends ControllerBase {
       return;
     }
 
-    $dbProfile = unserialize($dbProfile['data']);
+    // Unserialize Yoti user data.
+    $userProfileArr = unserialize($dbProfile['data']);
 
     $field = ($field == 'selfie') ? 'selfie_filename' : $field;
-    if (!$dbProfile || !array_key_exists($field, $dbProfile)) {
+    if (!is_array($userProfileArr) || !array_key_exists($field, $userProfileArr)) {
       return;
     }
 
-    $file = YotiHelper::uploadDir() . "/{$dbProfile[$field]}";
+    // Get user selfie file path.
+    $file = YotiHelper::uploadDir() . "/{$userProfileArr[$field]}";
     if (!file_exists($file)) {
       return;
     }
@@ -122,6 +96,8 @@ class YotiStartController extends ControllerBase {
     header('Content-Type:' . $type);
     header('Content-Length: ' . filesize($file));
     readfile($file);
+    // Returning response here as required by Drupal controller action.
+    return new TrustedRedirectResponse('yoti.bin-file');
   }
 
 }

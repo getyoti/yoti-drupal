@@ -41,18 +41,32 @@ class YotiUserModel {
             `id` INT(10) UNSIGNED AUTO_INCREMENT,
             `uid` int(10) UNSIGNED NOT NULL,
             `identifier` VARCHAR(255) NOT NULL,
-            `selfie_filename` VARCHAR(255) NOT NULL,
-            `phone_number` VARCHAR(255) NULL,
-            `date_of_birth` VARCHAR(255) NULL,
-            `given_names` VARCHAR(255) NULL,
-            `family_name` VARCHAR(255) NULL,
-            `nationality` VARCHAR(255) NULL,
-            `gender` VARCHAR(255) NULL,
-            `email_address` VARCHAR(255) NULL,
             `data` TEXT NULL,
             PRIMARY KEY `id` (`id`),
             UNIQUE KEY `uid` (`uid`)
         )")->execute();
+  }
+
+  /**
+   * Return fields to be removed from Yoti users table.
+   *
+   * @return array
+   *   Fields to remove.
+   */
+  public static function removeDuplicatedFieldsFromYotiUserTable() {
+    $table_name = YotiHelper::YOTI_USER_TABLE_NAME;
+    $ret = [];
+    $dbConn = Drupal::database();
+    $ret[] = $dbConn->schema()->dropField($table_name, 'selfie_filename');
+    $ret[] = $dbConn->schema()->dropField($table_name, 'phone_number');
+    $ret[] = $dbConn->schema()->dropField($table_name, 'date_of_birth');
+    $ret[] = $dbConn->schema()->dropField($table_name, 'given_names');
+    $ret[] = $dbConn->schema()->dropField($table_name, 'family_name');
+    $ret[] = $dbConn->schema()->dropField($table_name, 'nationality');
+    $ret[] = $dbConn->schema()->dropField($table_name, 'gender');
+    $ret[] = $dbConn->schema()->dropField($table_name, 'email_address');
+
+    return $ret;
   }
 
   /**
@@ -92,21 +106,11 @@ class YotiUserModel {
    *   Yoti user data.
    * @param array $meta
    *   User meta data.
-   * @param string $selfieFilename
-   *   User selfie file name.
    */
-  public static function createYotiUser($userId, ActivityDetails $activityDetails, array $meta, $selfieFilename) {
+  public static function createYotiUser($userId, ActivityDetails $activityDetails, array $meta) {
     Drupal::database()->insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
       'uid' => $userId,
       'identifier' => $activityDetails->getUserId(),
-      'phone_number' => $activityDetails->getPhoneNumber(),
-      'date_of_birth' => $activityDetails->getDateOfBirth(),
-      'given_names' => $activityDetails->getGivenNames(),
-      'family_name' => $activityDetails->getFamilyName(),
-      'nationality' => $activityDetails->getNationality(),
-      'gender' => $activityDetails->getGender(),
-      'email_address' => $activityDetails->getEmailAddress(),
-      'selfie_filename' => $selfieFilename,
       'data' => serialize($meta),
     ])->execute();
   }

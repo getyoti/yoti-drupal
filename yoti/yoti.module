@@ -67,16 +67,23 @@ function yoti_user_view(array &$build, UserInterface $account) {
     return;
   }
 
+  $userProfileArr = unserialize($dbProfile['data']);
+
   // Set up profile.
   $userId = $dbProfile['identifier'];
   unset($dbProfile['identifier']);
-  $profile = new ActivityDetails($dbProfile, $userId);
+  $userProfileObj = YotiHelper::makeYotiUserProfile($userProfileArr, $userId);
 
   foreach ($map as $param => $label) {
-    $value = $profile->getProfileAttribute($param);
+    $value = $userProfileObj->getProfileAttribute($param);
     if ($param == ActivityDetails::ATTR_SELFIE) {
-      $selfieFullPath = YotiHelper::uploadDir() . "/{$dbProfile['selfie_filename']}";
-      if ($dbProfile['selfie_filename'] && file_exists($selfieFullPath)) {
+      // Yoti user selfie file name.
+      $selfieFileName = NULL;
+      if (isset($userProfileArr[YotiHelper::ATTR_SELFIE_FILE_NAME])) {
+        $selfieFileName = $userProfileArr[YotiHelper::ATTR_SELFIE_FILE_NAME];
+      }
+      $selfieFullPath = YotiHelper::uploadDir() . "/{$selfieFileName}";
+      if (!empty($selfieFileName) && file_exists($selfieFullPath)) {
         $params = ['field' => 'selfie'];
         if ($isAdmin) {
           $params['user_id'] = $account->uid;
@@ -87,11 +94,6 @@ function yoti_user_view(array &$build, UserInterface $account) {
       else {
         $value = '';
       }
-    }
-
-    // Extract user postal_address value.
-    if ($param == ActivityDetails::ATTR_POSTAL_ADDRESS) {
-      $value = YotiHelper::getUserPostalAddress($profile);
     }
 
     if (!$value) {

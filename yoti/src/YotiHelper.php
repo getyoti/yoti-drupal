@@ -37,6 +37,11 @@ class YotiHelper {
   const YOTI_PEM_FILE_UPLOAD_LOCATION = 'private://yoti';
 
   /**
+     * Yoti selfie filename attribute.
+     */
+  const ATTR_SELFIE_FILE_NAME = 'selfie_filename';
+
+  /**
    * MySQL Database connection.
    *
    * @var \Drupal\Core\Database\Driver\mysql\Connection
@@ -494,10 +499,10 @@ class YotiHelper {
       $selfieFilename = md5("selfie_$userId" . time()) . ".png";
       file_put_contents(self::uploadDir() . "/$selfieFilename", $content);
 
-      $meta['selfie_filename'] = $selfieFilename;
+      $meta[self::ATTR_SELFIE_FILE_NAME] = $selfieFilename;
     }
 
-    YotiUserModel::createYotiUser($userId, $activityDetails, $meta, $selfieFilename);
+    YotiUserModel::createYotiUser($userId, $activityDetails, $meta);
   }
 
   /**
@@ -590,26 +595,25 @@ class YotiHelper {
   }
 
   /**
-   * Get user postal address.
+   * Make Yoti user prfoile object.
    *
-   * @param \Yoti\ActivityDetails $activityDetails
+   * @param array $userProfile
+   *   Yoti user profile array.
+   * @param int $userId
+   *   Yoti user ID.
+   *
+   * @return \Yoti\ActivityDetails
    *   Yoti user profile data.
-   *
-   * @return mixed
-   *   User postal address.
    */
-  public static function getUserPostalAddress(ActivityDetails $activityDetails) {
-    $userProfile = $activityDetails->getProfileAttribute();
-    // Check first if postal address is not empty.
-    $postalAddress = $activityDetails->getPostalAddress();
-    $value = (!empty($postalAddress)) ? $postalAddress : NULL;
-    if (empty($value) && array_key_exists('data', $userProfile)) {
-      $dataArr = unserialize($userProfile['data']);
-      if (array_key_exists(ActivityDetails::ATTR_POSTAL_ADDRESS, $dataArr)) {
-        $value = $dataArr[ActivityDetails::ATTR_POSTAL_ADDRESS];
+  public static function makeYotiUserProfile(array $userProfile, $userId) {
+    $userProfile[ActivityDetails::ATTR_SELFIE] = NULL;
+    if (isset($userProfile[self::ATTR_SELFIE_FILE_NAME])) {
+      // Set Yoti user selfie image in the profile array.
+      if (file_exists(self::uploadDir() . $userProfile[self::ATTR_SELFIE_FILE_NAME])) {
+        $userProfile[ActivityDetails::ATTR_SELFIE] = file_get_contents(self::uploadDir() . $userProfile[self::ATTR_SELFIE_FILE_NAME]);
       }
     }
-    return $value;
+    return new ActivityDetails($userProfile, (int) $userId);
   }
 
 }
