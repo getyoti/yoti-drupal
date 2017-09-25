@@ -106,10 +106,21 @@ function yoti_user_view(array &$build, UserInterface $account) {
     ];
   }
 
+  // Build Yoti unlink button.
+  $unlinkUrl = Url::fromRoute('yoti.unlink');
+  $link_options = [
+    'attributes' => [
+      'class' => [
+        'button',
+      ],
+    ],
+  ];
+  $unlinkUrl->setOptions($link_options);
+
   if ($user->id() == $account->id()) {
     $build['yoti_unlink'] = [
       '#type' => 'item',
-      '#markup' => \Drupal::l(t('Unlink Yoti'), Url::fromRoute('yoti.unlink')),
+      '#markup' => \Drupal::l(t('Unlink Yoti'), $unlinkUrl),
     ];
   }
 }
