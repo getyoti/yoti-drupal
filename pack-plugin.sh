@@ -1,10 +1,10 @@
 #!/bin/bash
 NAME="yoti-for-drupal-8.x-1.x-edge.zip"
 SDK_RELATIVE_PATH="sdk"
-curl https://github.com/getyoti/php/archive/master.zip -O -L
+curl https://github.com/getyoti/yoti-php-sdk/archive/master.zip -O -L
 unzip master.zip -d sdk
-mv sdk/php-master/src/* sdk
-rm -rf sdk/php-master
+mv sdk/yoti-php-sdk-master/src/* sdk
+rm -rf sdk/yoti-php-sdk-master
 
 if [ ! -d "./yoti" ]; then
     echo "ERROR: Must be in directory containing ./yoti folder"

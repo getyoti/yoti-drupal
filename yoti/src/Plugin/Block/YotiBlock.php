@@ -77,12 +77,12 @@ class YotiBlock extends BlockBase {
     else {
       $dbProfile = YotiUserModel::getYotiUserById($userId);
       if (!$dbProfile) {
-        $button = sprintf($linkButton, 'Link Yoti account');
+        $button = sprintf($linkButton, 'Link to Yoti');
       }
       else {
         $url = Url::fromRoute('yoti.unlink')->toString();
         $label = 'Unlink Yoti account';
-        $button = '<a class="yoti-connect-button" href="' . $url . '">' . $label . '</a>';
+        $button = '<a class="yoti-connect-button button" href="' . $url . '">' . $label . '</a>';
       }
     }
 
