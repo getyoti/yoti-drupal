@@ -138,12 +138,12 @@ function yoti_block_view($delta = '') {
     $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
     $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
     if (!$dbProfile) {
-      $button = sprintf($linkButton, 'Link Yoti account');
+      $button = sprintf($linkButton, 'Link to Yoti');
     }
     else {
       $url = url('yoti/unlink');
       $label = 'Unlink Yoti account';
-      $button = '<a class="yoti-connect-button" href="' . $url . '">' . $label . '</a>';
+      $button = '<a class="yoti-connect-button button" href="' . $url . '">' . $label . '</a>';
     }
   }
 
@@ -333,14 +333,14 @@ function yoti_user_view($account, $view_mode, $langcode) {
 
     $account->content['summary'][$param] = array(
       '#type' => 'item',
-      '#markup' => '<h4 class="label">' . $label . '</h4> ' . $value,
+      '#markup' => '<label>' . $label . '</label>' . $value,
     );
   }
 
   if ($current->uid == $account->uid) {
     $account->content['summary']['yoti_unlink'] = array(
       '#type' => 'item',
-      '#markup' => '<a href="' . url('/yoti/unlink') . '">' . t('Unlink Yoti') . '</a>',
+      '#markup' => '<a  class="button" href="' . url('/yoti/unlink') . '">' . t('Unlink Yoti') . '</a>',
     );
   }
 }
