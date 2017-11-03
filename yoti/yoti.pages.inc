@@ -15,8 +15,7 @@ function yoti_link() {
 
   // Check if user already has an account.
   if ($user) {
-    $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
-    $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$user->uid")->fetchAssoc();
+    $dbProfile = YotiHelper::getYotiUserProfile($user->uid);
     if ($dbProfile) {
       return yoti_unlink();
     }
@@ -28,7 +27,7 @@ function yoti_link() {
   if (!array_key_exists('token', $_GET)) {
     if (YotiHelper::mockRequests()) {
       $token = file_get_contents(__DIR__ . '/sdk/sample-data/connect-token.txt');
-      return drupal_goto("/yoti/link", array('query' => ["token" => $token]));
+      return drupal_goto("/yoti/link", ['query' => ["token" => $token]]);
     }
     return drupal_goto(YotiHelper::getLoginUrl());
   }
@@ -55,10 +54,9 @@ function yoti_bin_file() {
   global $user;
 
   $current = $user;
-  $isAdmin = in_array('administrator', $current->roles);
+  $isAdmin = in_array('administrator', $current->roles, TRUE);
   $userId = (!empty($_GET['user_id']) && $isAdmin) ? (int) $_GET['user_id'] : $current->uid;
-  $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
-  $dbProfile = db_query("SELECT * from `{$tableName}` WHERE uid=$userId")->fetchAssoc();
+  $dbProfile = YotiHelper::getYotiUserProfile($userId);
   if (!$dbProfile) {
     return;
   }
@@ -70,7 +68,7 @@ function yoti_bin_file() {
     $field = $_GET['field'];
   }
 
-  $field = ($field == 'selfie') ? 'selfie_filename' : $field;
+  $field = ($field === 'selfie') ? 'selfie_filename' : $field;
   if (!$dbProfile || !array_key_exists($field, $dbProfile)) {
     return;
   }
@@ -113,7 +111,7 @@ function yoti_register($form, &$form_state) {
 
   $companyName = (!empty(variable_get('yoti_company_name'))) ? variable_get('yoti_company_name') : 'Drupal';
 
-  $form['yoti_nolink'] = array(
+  $form['yoti_nolink'] = [
     '#weight' => -1000,
     '#default_value' => variable_get('yoti_nolink'),
     '#markup' => '<div class="form-item form-type-checkbox form-item-yoti-link messages warning" style="margin: 0 0 15px 0">
@@ -121,7 +119,7 @@ function yoti_register($form, &$form_state) {
                 <input type="checkbox" id="edit-yoti-link" name="yoti_nolink" value="1" class="form-checkbox"' . (!empty($form_state['input']['yoti_nolink']) ? ' checked="checked"' : '') . '>
                 <label class="option" for="edit-yoti-link">Don\'t link my Yoti account</label>
             </div>',
-  );
+  ];
 
   $form = user_login($form, $form_state);
   $loginFieldLabel = 'Your ' . $companyName . ' Username';

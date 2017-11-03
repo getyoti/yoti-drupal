@@ -11,13 +11,13 @@ require_once __DIR__ . '/YotiHelper.php';
  * Implements hook_requirements().
  */
 function yoti_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
   $t = get_t();
 
   if ($phase == 'install') {
     if (!function_exists('curl_init')) {
       $requirements['curl']['severity'] = REQUIREMENT_ERROR;
-      $requirements['curl']['description'] = $t('Yoti could not be installed. The cURL library is not installed. Please check the <a href="@url">PHP cURL documentation</a> for information on how to correct this.', array('@url' => 'http://www.php.net/manual/en/curl.setup.php'));
+      $requirements['curl']['description'] = $t('Yoti could not be installed. The cURL library is not installed. Please check the <a href="@url">PHP cURL documentation</a> for information on how to correct this.', ['@url' => 'http://www.php.net/manual/en/curl.setup.php']);
     }
 
     if (!function_exists('json_decode')) {
@@ -52,14 +52,6 @@ function yoti_install() {
     `id` INT(10) UNSIGNED AUTO_INCREMENT,
     `uid` int(10) UNSIGNED NOT NULL,
     `identifier` VARCHAR(255) NOT NULL,
-    `selfie_filename` VARCHAR(255) NOT NULL,
-    `phone_number` VARCHAR(255) NULL,
-    `date_of_birth` VARCHAR(255) NULL,
-    `given_names` VARCHAR(255) NULL,
-    `family_name` VARCHAR(255) NULL,
-    `nationality` VARCHAR(255) NULL,
-    `gender` VARCHAR(255) NULL,
-    `email_address` VARCHAR(255) NULL,
     `data` TEXT NULL,
     PRIMARY KEY `id` (`id`),
     UNIQUE KEY `uid` (`uid`)
@@ -84,5 +76,5 @@ function yoti_uninstall() {
  * Implements hook_enable().
  */
 function yoti_enable() {
-  drupal_set_message(t('Yoti enabled. <a href="@path">Check module settings</a>.', array('@path' => url('admin/config/people/yoti'))));
+  drupal_set_message(t('Yoti enabled. <a href="@path">Check module settings</a>.', ['@path' => url('admin/config/people/yoti')]));
 }
