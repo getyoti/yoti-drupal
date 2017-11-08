@@ -3,3 +3,6 @@ yoti:
   version: 1.x
   js:
     https://sdk.yoti.com/clients/browser.js: { type: external }
+  css:
+    theme:
+      css/yoti.css: {}

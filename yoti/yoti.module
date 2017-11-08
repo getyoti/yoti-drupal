@@ -59,9 +59,10 @@ function yoti_entity_extra_field_info() {
  */
 function yoti_user_view(array &$build, UserInterface $account) {
   $map = yoti_map_params();
+  $promptMessage = 'This will unlink your account from Yoti.';
 
   $user = \Drupal::currentUser();
-  $isAdmin = in_array('administrator', $user->getRoles());
+  $isAdmin = in_array('administrator', $user->getRoles(), TRUE);
   $dbProfile = YotiUserModel::getYotiUserById($user->id());
   if (!$dbProfile) {
     return;
@@ -76,7 +77,7 @@ function yoti_user_view(array &$build, UserInterface $account) {
 
   foreach ($map as $param => $label) {
     $value = $userProfileObj->getProfileAttribute($param);
-    if ($param == ActivityDetails::ATTR_SELFIE) {
+    if ($param === ActivityDetails::ATTR_SELFIE) {
       // Yoti user selfie file name.
       $selfieFileName = NULL;
       if (isset($userProfileArr[YotiHelper::ATTR_SELFIE_FILE_NAME])) {
@@ -106,21 +107,24 @@ function yoti_user_view(array &$build, UserInterface $account) {
     ];
   }
 
+  $onClickEvent = "return confirm('{$promptMessage}')";
+
   // Build Yoti unlink button.
   $unlinkUrl = Url::fromRoute('yoti.unlink');
   $link_options = [
     'attributes' => [
-      'class' => [
-        'button',
+      'id' => [
+        'yoti-unlink-button',
       ],
+      'onclick' => $onClickEvent,
     ],
   ];
   $unlinkUrl->setOptions($link_options);
 
-  if ($user->id() == $account->id()) {
+  if ($user->id() === $account->id()) {
     $build['yoti_unlink'] = [
       '#type' => 'item',
-      '#markup' => \Drupal::l(t('Unlink Yoti'), $unlinkUrl),
+      '#markup' => \Drupal::l(t('Unlink Yoti account'), $unlinkUrl),
     ];
   }
 }

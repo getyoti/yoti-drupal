@@ -15,7 +15,7 @@ require_once __DIR__ . '/../../sdk/boot.php';
  * Class YotiStartController.
  *
  * @package Drupal\yoti\Controller
- * @author Moussa Sidibe <moussa.sidibe@yoti.com>
+ * @author Moussa Sidibe <websdk@yoti.com>
  */
 class YotiStartController extends ControllerBase {
 
@@ -71,7 +71,7 @@ class YotiStartController extends ControllerBase {
    */
   public function binFile($field) {
     $current = Drupal::currentUser();
-    $isAdmin = in_array('administrator', $current->getRoles());
+    $isAdmin = in_array('administrator', $current->getRoles(), TRUE);
     $userId = (!empty($_GET['user_id']) && $isAdmin) ? (int) $_GET['user_id'] : $current->id();
     $dbProfile = YotiUserModel::getYotiUserById($userId);
     if (!$dbProfile) {
@@ -81,7 +81,7 @@ class YotiStartController extends ControllerBase {
     // Unserialize Yoti user data.
     $userProfileArr = unserialize($dbProfile['data']);
 
-    $field = ($field == 'selfie') ? 'selfie_filename' : $field;
+    $field = ($field === 'selfie') ? 'selfie_filename' : $field;
     if (!is_array($userProfileArr) || !array_key_exists($field, $userProfileArr)) {
       return;
     }

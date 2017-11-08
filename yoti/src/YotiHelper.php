@@ -4,7 +4,7 @@ namespace Drupal\yoti;
 
 use Drupal\Core\Url;
 use Drupal;
-use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\file\Entity\File;
 use Drupal\user\Entity\User;
@@ -56,6 +56,11 @@ class YotiHelper {
   protected $userStorage;
 
   /**
+   * Yoti Drupal SDK identifier.
+   */
+  const SDK_IDENTIFIER = 'Drupal';
+
+  /**
    * Yoti user profile attributes.
    *
    * @var array
@@ -75,11 +80,16 @@ class YotiHelper {
   /**
    * YotiHelper constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManager $entityManager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityManager
    *   Entity Type Manager.
    */
-  public function __construct(EntityTypeManager $entityManager) {
-    $this->userStorage = $entityManager->getStorage('user');
+  public function __construct(EntityTypeManagerInterface $entityManager) {
+    try {
+      $this->userStorage = $entityManager->getStorage('user');
+    }
+    catch (\Exception $e) {
+      YotiHelper::setFlash('Could not retrieve user data', 'error');
+    }
   }
 
   /**
@@ -98,8 +108,8 @@ class YotiHelper {
    * @param mixed $currentUser
    *   Drupal user object.
    *
-   * @return bool
-   *   TRUE or FALSE.
+   * @return mixed
+   *   TRUE|FALSE|redirect.
    */
   public function link($currentUser = NULL) {
     if (!$currentUser) {
@@ -119,7 +129,12 @@ class YotiHelper {
 
     // Init yoti client and attempt to request user details.
     try {
-      $yotiClient = new YotiClient($config['yoti_sdk_id'], $config['yoti_pem']['contents']);
+      $yotiClient = new YotiClient(
+          $config['yoti_sdk_id'],
+          $config['yoti_pem']['contents'],
+          YotiClient::DEFAULT_CONNECT_API,
+          self::SDK_IDENTIFIER
+      );
       $yotiClient->setMockRequests(self::mockRequests());
       $activityDetails = $yotiClient->getActivityDetails($token);
     }
@@ -130,7 +145,7 @@ class YotiHelper {
     }
 
     // If unsuccessful then bail.
-    if ($yotiClient->getOutcome() != YotiClient::OUTCOME_SUCCESS) {
+    if ($yotiClient->getOutcome() !== YotiClient::OUTCOME_SUCCESS) {
       YotiHelper::setFlash('Yoti could not successfully connect to your account.', 'error');
 
       return FALSE;
@@ -144,7 +159,7 @@ class YotiHelper {
     if (
         $drupalYotiUid
         && $currentUser
-        && $currentUser->id() != $drupalYotiUid
+        && $currentUser->id() !== $drupalYotiUid
         && !User::load($drupalYotiUid)
     ) {
       // Remove user account.
@@ -158,15 +173,7 @@ class YotiHelper {
         $errMsg = NULL;
 
         // Attempt to connect by email.
-        if (!empty($config['yoti_user_email'])) {
-          if (($email = $activityDetails->getEmailAddress())) {
-            $byMail = user_load_by_mail($email);
-            if ($byMail) {
-              $drupalYotiUid = $byMail->id();
-              $this->createYotiUser($drupalYotiUid, $activityDetails);
-            }
-          }
-        }
+        $drupalYotiUid = $this->shouldLoginByEmail($activityDetails, $config['yoti_user_email']);
 
         // If config 'only log in existing user' is enabled then check
         // if user exists, if not then redirect to login page.
@@ -201,7 +208,7 @@ class YotiHelper {
     }
     else {
       // If current logged in user doesn't match yoti user registered then bail.
-      if ($drupalYotiUid && $currentUser->id() != $drupalYotiUid) {
+      if ($drupalYotiUid && $currentUser->id() !== $drupalYotiUid) {
         self::setFlash('This Yoti account is already linked to another account.', 'error');
       }
       // If Drupal user not found in yoti table then create new yoti user.
@@ -315,10 +322,10 @@ class YotiHelper {
     $givenNames = $this->getUserGivenNames($activityDetails);
     $familyName = $activityDetails->getFamilyName();
 
-    if (!empty($givenNames) && !empty($familyName)) {
-      $userFullName = $givenNames . " " . $familyName;
-      $userProvidedPrefix = strtolower(str_replace(" ", ".", $userFullName));
-      $prefix = ($this->isValidUsername($userProvidedPrefix)) ? $userProvidedPrefix : $prefix;
+    if (NULL !== $givenNames && NULL !== $familyName) {
+      $userFullName = $givenNames . ' ' . $familyName;
+      $userProvidedPrefix = strtolower(str_replace(' ', '.', $userFullName));
+      $prefix = $this->isValidUsername($userProvidedPrefix) ? $userProvidedPrefix : $prefix;
     }
 
     // Get the number of user name that starts with prefix.
@@ -372,7 +379,7 @@ class YotiHelper {
    */
   private function getUserGivenNames(ActivityDetails $activityDetails) {
     $givenNames = $activityDetails->getGivenNames();
-    $givenNamesArr = explode(" ", $activityDetails->getGivenNames());
+    $givenNamesArr = explode(' ', $activityDetails->getGivenNames());
     return (count($givenNamesArr) > 1) ? $givenNamesArr[0] : $givenNames;
   }
 
@@ -386,7 +393,7 @@ class YotiHelper {
    *   Return TRUE or FALSE
    */
   protected function isValidUsername($username) {
-    return (empty(user_validate_name($username)));
+    return (NULL === user_validate_name($username));
   }
 
   /**
@@ -433,7 +440,7 @@ class YotiHelper {
     // otherwise use Yoti generic email.
     $isValidEmail = Drupal::service('email.validator')->isValid($userProvidedEmail);
     $userProvidedEmailCanBeUsed = $isValidEmail && !user_load_by_mail($userProvidedEmail);
-    $userEmail = ($userProvidedEmailCanBeUsed) ? $userProvidedEmail : $this->generateEmail();
+    $userEmail = $userProvidedEmailCanBeUsed ? $userProvidedEmail : $this->generateEmail();
 
     // Mandatory settings.
     $user->setPassword($this->generatePassword());
@@ -443,14 +450,13 @@ class YotiHelper {
     $user->setUsername($this->generateUsername($activityDetails));
 
     // Optional settings.
-    $user->set("init", 'email');
-    $user->set("langcode", $language);
-    $user->set("preferred_langcode", $language);
-    $user->set("preferred_admin_langcode", $language);
-    // $user->set("setting_name", 'setting_value');.
+    $user->set('init', 'email');
+    $user->set('langcode', $language);
+    $user->set('preferred_langcode', $language);
+    $user->set('preferred_admin_langcode', $language);
     $user->activate();
     if (!$user->save()) {
-      throw new Exception("Could not save Yoti user");
+      throw new \Exception('Could not save Yoti user');
     }
 
     // Set new user ID.
@@ -471,9 +477,9 @@ class YotiHelper {
    * @return int
    *   Returns user UID.
    */
-  private function getDrupalUid($yotiId, $field = "identifier") {
+  private function getDrupalUid($yotiId, $field = 'identifier') {
     $col = YotiUserModel::getUserUidByYotiId($yotiId, $field);
-    return ($col) ? reset($col) : NULL;
+    return $col ? reset($col) : NULL;
   }
 
   /**
@@ -488,15 +494,20 @@ class YotiHelper {
     $meta = $activityDetails->getProfileAttribute();
     // Don't save user selfie in the Database.
     unset($meta[ActivityDetails::ATTR_SELFIE]);
+    // Format date of birth to d-m-Y.
+    if(isset($meta[ActivityDetails::ATTR_DATE_OF_BIRTH])) {
+      $dateOfBirth = $meta[ActivityDetails::ATTR_DATE_OF_BIRTH];
+      $meta[ActivityDetails::ATTR_DATE_OF_BIRTH] = date('d-m-Y', strtotime($dateOfBirth));
+    }
 
     $selfieFilename = NULL;
-    if (($content = $activityDetails->getSelfie())) {
+    if ($content = $activityDetails->getSelfie()) {
       $uploadDir = self::uploadDir(FALSE);
       if (!is_dir($uploadDir)) {
         Drupal::service('file_system')->mkdir($uploadDir, 0777, TRUE);
       }
 
-      $selfieFilename = md5("selfie_$userId" . time()) . ".png";
+      $selfieFilename = md5("selfie_$userId" . time()) . '.png';
       file_put_contents(self::uploadDir() . "/$selfieFilename", $content);
 
       $meta[self::ATTR_SELFIE_FILE_NAME] = $selfieFilename;
@@ -528,7 +539,7 @@ class YotiHelper {
    */
   public static function uploadDir($realPath = TRUE) {
     $yotiPemUploadDir = YotiHelper::YOTI_PEM_FILE_UPLOAD_LOCATION;
-    return ($realPath) ? Drupal::service('file_system')->realpath($yotiPemUploadDir) : $yotiPemUploadDir;
+    return $realPath ? Drupal::service('file_system')->realpath($yotiPemUploadDir) : $yotiPemUploadDir;
   }
 
   /**
@@ -566,10 +577,7 @@ class YotiHelper {
       'yoti_fail_url' => $settings->get('yoti_fail_url') ?: '/',
       'yoti_user_email' => $settings->get('yoti_user_email'),
       'yoti_company_name' => $settings->get('yoti_company_name'),
-      'yoti_pem' => [
-        'name' => $name,
-        'contents' => $contents,
-      ],
+      'yoti_pem' => compact('name', 'contents'),
     ];
 
     if (self::mockRequests()) {
@@ -614,6 +622,31 @@ class YotiHelper {
       }
     }
     return new ActivityDetails($userProfile, (int) $userId);
+  }
+
+  /**
+   * Attempt to log user in by email.
+   *
+   * @param \Yoti\ActivityDetails $activityDetails
+   *   Yoti user details Object.
+   * @param string $emailConfig
+   *   Yoti setting to link user with email.
+   *
+   * @return null|int
+   *   Yoti user Id.
+   */
+  private function shouldLoginByEmail(ActivityDetails $activityDetails, $emailConfig) {
+    $drupalYotiUid = NULL;
+    $email = $activityDetails->getEmailAddress();
+    // Attempt to connect by email.
+    if ($email && !empty($emailConfig)) {
+      $byMail = user_load_by_mail($email);
+      if ($byMail) {
+        $drupalYotiUid = $byMail->id();
+        $this->createYotiUser($drupalYotiUid, $activityDetails);
+      }
+    }
+    return $drupalYotiUid;
   }
 
 }

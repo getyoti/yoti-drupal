@@ -15,7 +15,7 @@ use Yoti\YotiClient;
  * Class YotiSettingsForm.
  *
  * @package Drupal\yoti\Form
- * @author Moussa Sidibe <moussa.sidibe@yoti.com>
+ * @author Moussa Sidibe <websdk@yoti.com>
  */
 class YotiSettingsForm extends ConfigFormBase {
 
@@ -54,12 +54,12 @@ class YotiSettingsForm extends ConfigFormBase {
 
     $config = $this->config('yoti.settings');
     $successUrl = $config->get('yoti_success_url');
-    $successUrl = (empty($successUrl)) ? '/user' : $successUrl;
+    $successUrl = empty($successUrl) ? '/user' : $successUrl;
     $failedUrl = $config->get('yoti_fail_url');
-    $failedUrl = (empty($failedUrl)) ? '/' : $failedUrl;
+    $failedUrl = empty($failedUrl) ? '/' : $failedUrl;
 
     $form['#attributes'] = [
-      'enctype' => "multipart/form-data",
+      'enctype' => 'multipart/form-data',
     ];
     // Generate the callback URL.
     $callbackUrl = Url::fromRoute('yoti.link', [], ['absolute' => TRUE, 'https' => TRUE])
@@ -155,9 +155,9 @@ class YotiSettingsForm extends ConfigFormBase {
 
     // Load the file.
     $pemFile = $config->get('yoti_pem');
-    $file = File::load($pemFile[0]);
+    $file = (NULL !== $pemFile[0]) ? File::load($pemFile[0]) : NULL;
     // Change status to permanent.
-    if (gettype($file) == 'object') {
+    if ($file && is_object(gettype($file))) {
       $file->status = FILE_STATUS_PERMANENT;
       // Save.
       $file->save();

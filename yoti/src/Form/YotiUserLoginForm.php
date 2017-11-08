@@ -10,7 +10,7 @@ use Drupal\yoti\YotiHelper;
  * Class YotiUserLoginForm.
  *
  * @package Drupal\yoti\Form
- * @author Moussa Sidibe <moussa.sidibe@yoti.com>
+ * @author Moussa Sidibe <websdk@yoti.com>
  */
 class YotiUserLoginForm extends UserLoginForm {
 

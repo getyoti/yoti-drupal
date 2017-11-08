@@ -10,7 +10,7 @@ use Yoti\ActivityDetails;
  * Class YotiUserModel.
  *
  * @package Drupal\yoti\Models
- * @author Moussa Sidibe <moussa.sidibe@yoti.com>
+ * @author Moussa Sidibe <websdk@yoti.com>
  */
 class YotiUserModel {
 
@@ -27,7 +27,7 @@ class YotiUserModel {
     $userProfile = NULL;
     if ((int) $userId > 0) {
       $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
-      $userProfile = Drupal::database()->query("SELECT * from `{$tableName}` WHERE uid=" . $userId)->fetchAssoc();
+      $userProfile = Drupal::database()->query("SELECT * from `{$tableName}` WHERE uid=" . $userId . " Limit 1")->fetchAssoc();
     }
     return $userProfile;
   }
@@ -92,7 +92,7 @@ class YotiUserModel {
     $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
     $col = NULL;
     if (!empty($yotiId) && !empty($field)) {
-      $col = Drupal::database()->query("SELECT uid FROM `{$tableName}` WHERE `{$field}` = '$yotiId'")->fetchCol();
+      $col = Drupal::database()->query("SELECT uid FROM `{$tableName}` WHERE `{$field}` = '$yotiId' Limit 1")->fetchCol();
     }
     return $col;
   }

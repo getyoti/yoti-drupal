@@ -2,7 +2,6 @@
 
 namespace Drupal\yoti\Plugin\Block;
 
-use Drupal\Core\Url;
 use Yoti\YotiClient;
 use Drupal\Core\Block\BlockBase;
 use Drupal\yoti\YotiHelper;
@@ -76,13 +75,11 @@ class YotiBlock extends BlockBase {
     }
     else {
       $dbProfile = YotiUserModel::getYotiUserById($userId);
-      if (!$dbProfile) {
-        $button = sprintf($linkButton, 'Link to Yoti');
+      if ($dbProfile) {
+        $button = '<strong>Yoti</strong> Linked';
       }
       else {
-        $url = Url::fromRoute('yoti.unlink')->toString();
-        $label = 'Unlink Yoti account';
-        $button = '<a class="yoti-connect-button button" href="' . $url . '">' . $label . '</a>';
+        $button = sprintf($linkButton, 'Link to Yoti');
       }
     }
 

@@ -1,0 +1,14 @@
+a#yoti-unlink-button {
+  display: inline-block;
+  cursor: pointer;
+  background-color: #2d9fff;
+  background-image: none;
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Roboto','Helvetica', sans-serif;
+  font-size: 14px;
+  padding: 4px 6px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+}
