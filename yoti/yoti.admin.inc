@@ -17,7 +17,7 @@ use Yoti\YotiClient;
  */
 function yoti_api_keys_settings($form, &$form_state) {
   // Make sure private path exists, if not, create it.
-  $uploadDir = YotiHelper::uploadDir(TRUE);
+  $uploadDir = YotiHelper::secureUploadDir(TRUE);
   if ($uploadDir && !is_dir($uploadDir)) {
     mkdir($uploadDir, 0777, TRUE);
   }
@@ -30,7 +30,7 @@ function yoti_api_keys_settings($form, &$form_state) {
   ];
 
   $form['#attributes'] = [
-    'enctype' => "multipart/form-data",
+    'enctype' => 'multipart/form-data',
   ];
 
   $form['yoti_settings']['yoti_app_id'] = [
@@ -86,7 +86,7 @@ function yoti_api_keys_settings($form, &$form_state) {
     '#required' => TRUE,
     '#title' => t('PEM File'),
     '#default_value' => variable_get('yoti_pem'),
-    '#upload_location' => YotiHelper::uploadDir(FALSE),
+    '#upload_location' => YotiHelper::secureUploadDir(FALSE),
     '#description' => t('PEM File is the application pem file. It can be downloaded only once from the Keys tab in your Yoti Dashboard.'),
     '#upload_validators' => [
       'file_validate_extensions' => ['pem'],
@@ -110,7 +110,7 @@ function yoti_api_keys_settings($form, &$form_state) {
   if ($pemFile) {
     $file = file_load($pemFile);
     // Change status to permanent.
-    if (gettype($file) == 'object') {
+    if (is_object(gettype($file))) {
       $file->status = FILE_STATUS_PERMANENT;
       // Save.
       file_save($file);

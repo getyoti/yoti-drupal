@@ -11,6 +11,7 @@ require_once __DIR__ . '/YotiHelper.php';
  * Implements hook_requirements().
  */
 function yoti_requirements($phase) {
+  global $conf;
   $requirements = [];
   $t = get_t();
 
@@ -32,12 +33,28 @@ function yoti_requirements($phase) {
       $requirements['php_version']['description'] = $t('Yoti could not be installed. Yoti PHP SDK requires PHP 5.4 or higher.');
     }
 
-    if (!is_writable(DRUPAL_ROOT . '/sites/all')) {
-      $requirements['php_version']['title'] = $t('Private folder');
-      $requirements['php_version']['value'] = DRUPAL_ROOT . '/sites/all';
+    // Check Drupal private file path is set.
+    $privateDir = isset($conf['file_private_path']) ? $conf['file_private_path'] : NULL;
+    $yotiUploadDir = $privateDir . '/yoti';
+    if (!$privateDir) {
+      $requirements['php_version']['title'] = $t('Secure folder');
+      $requirements['php_version']['value'] = $privateDir;
       $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
-      $requirements['php_version']['description'] = $t('Yoti could not be installed. The following folder must be writable by the server: ' . DRUPAL_ROOT . '/sites/all');
+      $requirements['php_version']['description'] = $t('Yoti requires that you have the file_private_path setting enabled for your website. This should be set in Configuration -> File system -> Private file system path');
     }
+    elseif (!is_dir($yotiUploadDir)) {
+      // Create Yoti upload dir if it doesn't exists.
+      drupal_mkdir($yotiUploadDir);
+    }
+
+    // Check Yoti files upload folder exists and is writable.
+    if ($privateDir && !is_writable($yotiUploadDir)) {
+      $requirements['php_version']['title'] = $t('Yoti secure folder');
+      $requirements['php_version']['value'] = $yotiUploadDir;
+      $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
+      $requirements['php_version']['description'] = $t('Yoti could not be installed. The following folder must exist and be writable by the server: ' . $yotiUploadDir);
+    }
+
   }
 
   return $requirements;

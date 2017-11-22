@@ -27,7 +27,7 @@ function yoti_link() {
   if (!array_key_exists('token', $_GET)) {
     if (YotiHelper::mockRequests()) {
       $token = file_get_contents(__DIR__ . '/sdk/sample-data/connect-token.txt');
-      return drupal_goto("/yoti/link", ['query' => ["token" => $token]]);
+      return drupal_goto('/yoti/link', ['query' => ['token' => $token]]);
     }
     return drupal_goto(YotiHelper::getLoginUrl());
   }
@@ -73,9 +73,15 @@ function yoti_bin_file() {
     return;
   }
 
-  $file = YotiHelper::uploadDir() . "/{$dbProfile[$field]}";
+  $file = YotiHelper::secureUploadDir() . "/{$dbProfile[$field]}";
   if (!file_exists($file)) {
-    return;
+    $oldFile = YotiHelper::uploadDir() . "/{$dbProfile[$field]}";
+    // Check if the path exists in the old upload dir.
+    if (!file_exists($oldFile)) {
+      return;
+    }
+    // Use the old file path to display user profile image.
+    $file = $oldFile;
   }
 
   $type = 'image/png';

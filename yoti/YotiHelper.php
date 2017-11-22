@@ -28,6 +28,16 @@ class YotiHelper {
   const SDK_IDENTIFIER = 'Drupal';
 
   /**
+   * Yoti secure files upload location.
+   */
+  const YOTI_SECURE_FILES_UPLOAD_LOCATION = 'private://yoti';
+
+  /**
+     * Yoti SDK javascript library.
+     */
+  const YOTI_SDK_JAVASCRIPT_LIBRARY = 'https://sdk.yoti.com/clients/browser.2.0.0.js';
+
+  /**
    * Yoti user profile attributes.
    *
    * @var array
@@ -442,7 +452,7 @@ class YotiHelper {
 
     $selfieFilename = NULL;
     if ($content = $activityDetails->getSelfie()) {
-      $uploadDir = self::uploadDir();
+      $uploadDir = self::secureUploadDir();
       if (!is_dir($uploadDir)) {
         drupal_mkdir($uploadDir, 0777, TRUE);
       }
@@ -477,7 +487,7 @@ class YotiHelper {
    */
   private function loginUser($userId) {
     $form_state['uid'] = $userId;
-    user_login_submit(array(), $form_state);
+    user_login_submit([], $form_state);
   }
 
   /**
@@ -490,7 +500,7 @@ class YotiHelper {
    *   Yoti upload directory path
    */
   public static function uploadDir($realPath = TRUE) {
-    return ($realPath) ? drupal_realpath("yoti://") : 'yoti://';
+    return $realPath ? drupal_realpath('yoti://') : 'yoti://';
   }
 
   /**
@@ -501,6 +511,30 @@ class YotiHelper {
    */
   public static function uploadUrl() {
     return file_create_url(self::uploadDir());
+  }
+
+  /**
+   * Returns Yoti secure upload directory path.
+   *
+   * @param bool $realPath
+   *   If true returns directory real path, false otherwise.
+   *
+   * @return string
+   *   Yoti upload directory path
+   */
+  public static function secureUploadDir($realPath = TRUE) {
+    $yotiUploadDir = self::YOTI_SECURE_FILES_UPLOAD_LOCATION;
+    return $realPath ? drupal_realpath($yotiUploadDir) : $yotiUploadDir;
+  }
+
+  /**
+   * Returns Yoti secure upload directory URL.
+   *
+   * @return string
+   *   Yoti upload directory URL
+   */
+  public static function secureUploadUrl() {
+    return file_create_url(self::secureUploadDir());
   }
 
   /**
@@ -531,7 +565,7 @@ class YotiHelper {
     ];
 
     if (self::mockRequests()) {
-      $config = array_merge($config, require_once __DIR__ . '/sdk/sample-data/config.php');
+      $config = array_merge($config, require __DIR__ . '/sdk/sample-data/config.php');
     }
 
     return $config;
