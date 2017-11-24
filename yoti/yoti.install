@@ -22,7 +22,15 @@ function yoti_requirements($phase) {
         'severity' => REQUIREMENT_ERROR,
       ];
     }
-    else {
+
+    if ($privatePath && !is_writable($privatePath)) {
+      $requirements['yoti'] = [
+         'description' => t('Yoti could not be installed. The following folder must exist and be writable by the server: ' . $privatePath),
+         'severity' => REQUIREMENT_ERROR,
+      ];
+    }
+    else if ($privatePath) {
+      // The path is writable so create Yoti file directory
       \Drupal::service('file_system')->mkdir($privatePath . '/yoti', 0777, TRUE);
     }
   }

@@ -2,7 +2,7 @@ yoti:
   header: true
   version: 1.x
   js:
-    https://sdk.yoti.com/clients/browser.js: { type: external }
+    https://sdk.yoti.com/clients/browser.2.0.0.js: { type: external }
   css:
     theme:
       css/yoti.css: {}
