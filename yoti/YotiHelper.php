@@ -434,7 +434,7 @@ class YotiHelper {
   private function getDrupalUid($yotiId, $field = 'identifier') {
     $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
     $col = db_query("SELECT uid FROM `{$tableName}` WHERE `{$field}` = '$yotiId' Limit 1")->fetchCol();
-    return ($col) ? reset($col) : NULL;
+    return $col ? reset($col) : NULL;
   }
 
   /**
@@ -548,9 +548,11 @@ class YotiHelper {
     $name = $contents = NULL;
     if (!empty($pem)) {
       $file = file_load($pem);
-      $name = $file->uri;
-      $fileFullPath = drupal_realpath($name);
-      $contents = (!empty($fileFullPath)) ? file_get_contents($fileFullPath) : NULL;
+      if (is_object($file)) {
+        $name = $file->uri;
+        $fileFullPath = drupal_realpath($name);
+        $contents = (!empty($fileFullPath)) ? file_get_contents($fileFullPath) : NULL;
+      }
     }
     $config = [
       'yoti_app_id' => variable_get('yoti_app_id'),
