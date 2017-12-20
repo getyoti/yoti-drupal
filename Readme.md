@@ -1,6 +1,6 @@
 # Yoti Drupal 7 Module
 
-This repository contains the tools you need to quickly integrate your Drupal 7 backend with Yoti, so that your users can share their identity details with your application in a secure and trusted way. The module uses the Yoti PHP SDK. If you're interested in finding out more about the SDK, click [here](https://github.com/getyoti/yoti-php-sdk).
+This repository contains the tools you need to quickly integrate your Drupal 7 backend with Yoti so that your users can share their identity details with your application in a secure and trusted way. The module uses the Yoti PHP SDK. If you're interested in finding out more about the SDK, click [here](https://github.com/getyoti/yoti-php-sdk).
 
 ## Installing the module
 
@@ -67,12 +67,12 @@ After the command has finished running, go to [http://localhost:8007](http://loc
 
 ### Database Configuration
 
-When prompted, enter the following details for the database:
+When prompted, enter the following database details:
 
-* User Name `drupal`
+* Name `drupal`
+* Username `drupal`
 * Password `drupal`
-* Database Name `drupal`
-* Database host `drupal-7-db`
+* Host `drupal-7-db`
 
 The Yoti module will be installed alongside Drupal. Activate it and follow our [module setup process](#module-setup).
 
