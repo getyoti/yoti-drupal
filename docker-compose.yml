@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+  drupal-8:
+    build:
+      context: ./docker/
+      args:
+        BRANCH: "master"
+    ports:
+     - "8008:80"
+    volumes:
+      - /var/www/html/modules
+      - /var/www/html/profiles
+      - /var/www/html/themes
+      # this takes advantage of the feature in Docker that a new anonymous
+      # volume (which is what we're creating here) will be initialized with the
+      # existing content of the image at the same location
+      - /var/www/html/sites
+    restart: always
+  drupal-8-db:
+    image: mysql:latest
+    ports:
+    - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: drupal
+      MYSQL_DATABASE: drupal
+      MYSQL_PORT: 3306
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
+    restart: always
