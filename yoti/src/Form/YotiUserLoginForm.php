@@ -29,7 +29,7 @@ class YotiUserLoginForm extends UserLoginForm {
       '#default_value' => \Drupal::config('yoti_nolink')->get(),
       '#context' => [
         'somecontent' => '<div class="form-item form-type-checkbox form-item-yoti-link messages warning" style="margin: 0 0 15px 0">
-                    <div><b>Warning: You are about to link your ' . $companyName . ' account to your Yoti account. Click the box below to keep them separate.</b></div>
+                    <div><b>Warning: You are about to link your ' . $companyName . ' account to your Yoti account. If you don\'t want this to happen, tick the checkbox below.</b></div>
                     <input type="checkbox" id="edit-yoti-link" name="yoti_nolink" value="1" class="form-checkbox"' . (!empty($form_state->get('yoti_nolink')) ? ' checked="checked"' : '') . '>
                     <label class="option" for="edit-yoti-link">Don\'t link my Yoti account</label>
                 </div>',
