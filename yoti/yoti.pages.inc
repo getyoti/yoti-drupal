@@ -23,12 +23,7 @@ function yoti_link() {
 
   // Resume as normal.
   $helper = new YotiHelper();
-  // If there is no token, check if we are mocking the request.
   if (!array_key_exists('token', $_GET)) {
-    if (YotiHelper::mockRequests()) {
-      $token = file_get_contents(__DIR__ . '/sdk/sample-data/connect-token.txt');
-      return drupal_goto('/yoti/link', ['query' => ['token' => $token]]);
-    }
     return drupal_goto(YotiHelper::getLoginUrl());
   }
 

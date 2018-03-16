@@ -55,16 +55,6 @@ class YotiHelper {
   ];
 
   /**
-   * Running mock requests instead of going to yoti.
-   *
-   * @return bool
-   *   true if it's a mockRequests, false otherwise
-   */
-  public static function mockRequests() {
-    return defined('YOTI_MOCK_REQUEST') && YOTI_MOCK_REQUEST;
-  }
-
-  /**
    * Link drupal user to Yoti user.
    *
    * @param mixed $currentUser
@@ -97,7 +87,6 @@ class YotiHelper {
           YotiClient::DEFAULT_CONNECT_API,
           self::SDK_IDENTIFIER
       );
-      $yotiClient->setMockRequests(self::mockRequests());
       $activityDetails = $yotiClient->getActivityDetails($token);
     }
     catch (Exception $e) {
@@ -565,10 +554,6 @@ class YotiHelper {
       'yoti_user_email' => variable_get('yoti_user_email'),
       'yoti_pem' => compact('name', 'contents'),
     ];
-
-    if (self::mockRequests()) {
-      $config = array_merge($config, require __DIR__ . '/sdk/sample-data/config.php');
-    }
 
     return $config;
   }

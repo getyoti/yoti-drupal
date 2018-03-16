@@ -5,7 +5,7 @@ services:
     build:
       context: ./docker/
       args:
-        BRANCH: "master"
+        BRANCH: "7.x-1.x"
     ports:
      - "8007:80"
     volumes:

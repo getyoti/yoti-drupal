@@ -99,14 +99,9 @@ function yoti_block_view($delta = '') {
   // Add Yoti css file.
   drupal_add_css(drupal_get_path('module', 'yoti') . '/css/yoti.css', ['group' => CSS_DEFAULT, 'every_page' => TRUE]);
 
-  $testToken = NULL;
-  if (YotiHelper::mockRequests()) {
-    $testToken = file_get_contents(__DIR__ . '/sdk/sample-data/connect-token.txt');
-  }
-
   // No config? no button.
   $config = YotiHelper::getConfig();
-  if (!$config && !$testToken) {
+  if (!$config) {
     return $block;
   }
 
