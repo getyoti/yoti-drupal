@@ -17,17 +17,7 @@ require_once __DIR__ . '/YotiHelper.php';
  *   An array of Yoti user profile attributes
  */
 function yoti_map_params() {
-  return [
-    ActivityDetails::ATTR_SELFIE => 'Selfie',
-    ActivityDetails::ATTR_PHONE_NUMBER => 'Phone number',
-    ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
-    ActivityDetails::ATTR_GIVEN_NAMES => 'Given names',
-    ActivityDetails::ATTR_FAMILY_NAME => 'Family name',
-    ActivityDetails::ATTR_NATIONALITY => 'Nationality',
-    ActivityDetails::ATTR_GENDER => 'Gender',
-    ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
-    ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
-  ];
+  return YotiHelper::getUserProfileAttributes();
 }
 
 /**
@@ -296,15 +286,10 @@ function yoti_user_view($account, $view_mode, $langcode) {
     return;
   }
 
-  // Set up profile.
-  $userId = $dbProfile['identifier'];
-  unset($dbProfile['identifier']);
-
   $dbProfile = unserialize($dbProfile['data']);
-  $profile = new ActivityDetails($dbProfile, $userId);
 
   foreach ($map as $param => $label) {
-    $value = $profile->getProfileAttribute($param);
+    $value = isset($dbProfile[$param]) ? $dbProfile[$param] : '';
     if ($param === ActivityDetails::ATTR_SELFIE) {
       // Make it backward compatible by checking the old files directory.
       $oldSelfieFullPath = YotiHelper::uploadDir() . "/{$dbProfile['selfie_filename']}";

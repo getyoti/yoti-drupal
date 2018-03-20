@@ -16,6 +16,8 @@ class YotiHelper {
    * Yoti user database table name.
    */
   const YOTI_USER_TABLE_NAME = 'users_yoti';
+  
+  const AGE_VERIFICATION_ATTR = 'age_verified';
 
   /**
    * Yoti link button default text.
@@ -37,24 +39,19 @@ class YotiHelper {
      */
   const YOTI_SDK_JAVASCRIPT_LIBRARY = 'https://sdk.yoti.com/clients/browser.2.0.1.js';
 
-  /**
-   * Yoti user profile attributes.
-   *
-   * @var array
-   */
-  public static $profileFields = [
-    ActivityDetails::ATTR_SELFIE => 'Selfie',
-    ActivityDetails::ATTR_PHONE_NUMBER => 'Phone number',
-    ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
-    ActivityDetails::ATTR_GIVEN_NAMES => 'Given names',
-    ActivityDetails::ATTR_FAMILY_NAME => 'Family name',
-    ActivityDetails::ATTR_NATIONALITY => 'Nationality',
-    ActivityDetails::ATTR_GENDER => 'Gender',
-    ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
-    ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
-  ];
+    /**
+     * Yoti module config.
+     *
+     * @var array
+     */
+  private $config;
 
-  /**
+  public function __construct()
+  {
+      $this->config = self::getConfig();
+  }
+
+    /**
    * Link drupal user to Yoti user.
    *
    * @param mixed $currentUser
@@ -62,6 +59,8 @@ class YotiHelper {
    *
    * @return bool
    *   true if successful, false otherwise.
+   *
+   * @throws Exception
    */
   public function link($currentUser = NULL) {
     if (!$currentUser) {
@@ -69,7 +68,6 @@ class YotiHelper {
       $currentUser = $user;
     }
 
-    $config = self::getConfig();
     $token = (!empty($_GET['token'])) ? $_GET['token'] : NULL;
 
     // If no token then ignore.
@@ -82,8 +80,8 @@ class YotiHelper {
     // Init Yoti client and attempt to request user details.
     try {
       $yotiClient = new YotiClient(
-          $config['yoti_sdk_id'],
-          $config['yoti_pem']['contents'],
+          $this->config['yoti_sdk_id'],
+          $this->config['yoti_pem']['contents'],
           YotiClient::DEFAULT_CONNECT_API,
           self::SDK_IDENTIFIER
       );
@@ -102,10 +100,15 @@ class YotiHelper {
       return FALSE;
     }
 
-    // Check if yoti user exists.
+    if(!$this->passedAgeVerification($activityDetails))
+    {
+        return FALSE;
+    }
+
+    // Check if Yoti user exists.
     $drupalYotiUid = $this->getDrupalUid($activityDetails->getUserId());
 
-    // If yoti user exists in db but isn't linked to a drupal account
+    // If Yoti user exists in db but isn't linked to a drupal account
     // (orphaned row) then delete it.
     if (
         $drupalYotiUid
@@ -124,12 +127,12 @@ class YotiHelper {
         $errMsg = NULL;
 
         // Attempt to connect by email.
-        $drupalYotiUid = $this->shouldLoginByEmail($activityDetails, $config['yoti_user_email']);
+        $drupalYotiUid = $this->shouldLoginByEmail($activityDetails);
 
         // If config only existing enabled then check if user exists, if not
         // then redirect to login page.
         if (!$drupalYotiUid) {
-          if (empty($config['yoti_only_existing'])) {
+          if (empty($this->config['yoti_only_existing'])) {
             try {
               $drupalYotiUid = $this->createUser($activityDetails);
             }
@@ -171,19 +174,39 @@ class YotiHelper {
     return TRUE;
   }
 
+    /**
+     * Check if age verification applies and is valid.
+     *
+     * @param ActivityDetails $activityDetails
+     *
+     * @return bool
+     */
+  public function passedAgeVerification(ActivityDetails $activityDetails)
+  {
+    $ageVerified = $activityDetails->isAgeVerified();
+    if ($this->config['yoti_age_verification'] && is_bool($ageVerified) && !$ageVerified)
+    {
+      $verifiedAge = $activityDetails->getVerifiedAge();
+      self::setFlash("Could not log you in as you haven't passed the age verification ({$verifiedAge})", 'error');
+      return FALSE;
+    }
+    return TRUE;
+  }
+
   /**
    * Attempt to log user in by email.
    *
    * @param \Yoti\ActivityDetails $activityDetails
    *   Yoti user details Object.
-   * @param string $emailConfig
-   *   Yoti setting to link user with email.
    *
    * @return null|int
    *   Yoti user Id.
+   *
+   * @throws Exception
    */
-  private function shouldLoginByEmail(ActivityDetails $activityDetails, $emailConfig) {
+  private function shouldLoginByEmail(ActivityDetails $activityDetails) {
     $drupalYotiUid = NULL;
+    $emailConfig = $this->config['yoti_user_email'];
     $email = $activityDetails->getEmailAddress();
     // Attempt to connect by email.
     if ($email && !empty($emailConfig)) {
@@ -433,6 +456,8 @@ class YotiHelper {
    *   Created user ID.
    * @param \Yoti\ActivityDetails $activityDetails
    *   Yoti user details.
+   *
+   * @throws Exception
    */
   public function createYotiUser($userId, ActivityDetails $activityDetails) {
     $meta = $activityDetails->getProfileAttribute();
@@ -449,6 +474,17 @@ class YotiHelper {
       $selfieFilename = md5("selfie" . time()) . '.png';
       file_put_contents("$uploadDir/$selfieFilename", $content);
       $meta['selfie_filename'] = $selfieFilename;
+    }
+
+    // Extract age verification values if the option is set in the dashboard
+    // and in the Yoti's config in WP admin
+    $meta[self::AGE_VERIFICATION_ATTR] = 'N/A';
+    $ageVerified = $activityDetails->isAgeVerified();
+    if (is_bool($ageVerified) && $this->config['yoti_age_verification'])
+    {
+      $ageVerified = $ageVerified ? 'yes' : 'no';
+      $verifiedAge = $activityDetails->getVerifiedAge();
+      $meta[self::AGE_VERIFICATION_ATTR] = "({$verifiedAge}) : $ageVerified";
     }
 
     db_insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
@@ -543,11 +579,13 @@ class YotiHelper {
         $contents = (!empty($fileFullPath)) ? file_get_contents($fileFullPath) : NULL;
       }
     }
+
     $config = [
       'yoti_app_id' => variable_get('yoti_app_id'),
       'yoti_scenario_id' => variable_get('yoti_scenario_id'),
       'yoti_sdk_id' => variable_get('yoti_sdk_id'),
       'yoti_company_name' => variable_get('yoti_company_name'),
+      'yoti_age_verification' => variable_get('yoti_age_verification'),
       'yoti_only_existing' => variable_get('yoti_only_existing'),
       'yoti_success_url' => variable_get('yoti_success_url', '/user'),
       'yoti_fail_url' => variable_get('yoti_fail_url', '/'),
@@ -569,7 +607,6 @@ class YotiHelper {
     if (empty($config['yoti_app_id'])) {
       return NULL;
     }
-
     return YotiClient::getLoginUrl($config['yoti_app_id']);
   }
 
@@ -592,4 +629,27 @@ class YotiHelper {
     return $userProfileArr;
   }
 
+    /**
+     * Get Yoti user profile attributes.
+     *
+     * We are using a func to allow support from PHP 5.4
+     *
+     * @return array
+     */
+  public static function getUserProfileAttributes()
+  {
+    return [
+      ActivityDetails::ATTR_SELFIE => 'Selfie',
+      ActivityDetails::ATTR_FULL_NAME => 'Full Name',
+      ActivityDetails::ATTR_GIVEN_NAMES => 'Given Name(s)',
+      ActivityDetails::ATTR_FAMILY_NAME => 'Family Name',
+      ActivityDetails::ATTR_PHONE_NUMBER => 'Mobile Number',
+      ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
+      ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date Of Birth',
+      self::AGE_VERIFICATION_ATTR => 'Age Verified',
+      ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
+      ActivityDetails::ATTR_GENDER => 'Gender',
+      ActivityDetails::ATTR_NATIONALITY => 'Nationality',
+    ];
+  }
 }

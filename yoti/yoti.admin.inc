@@ -93,6 +93,13 @@ function yoti_api_keys_settings($form, &$form_state) {
     ],
   ];
 
+  $form['yoti_settings']['yoti_age_verification'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Prevent users who have not passed age verification to access your site'),
+    '#description' => t('Requires Age verify condition to be set in the <a href="@yoti-dev" target="_blank">Yoti Dashboard</a>.', ['@yoti-dev' => YotiClient::DASHBOARD_URL]),
+    '#default_value' => variable_get('yoti_only_existing'),
+  ];
+
   $form['yoti_settings']['yoti_only_existing'] = [
     '#type' => 'checkbox',
     '#title' => t('Only allow existing Drupal users to link their Yoti account'),
