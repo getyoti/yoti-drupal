@@ -16,7 +16,10 @@ class YotiHelper {
    * Yoti user database table name.
    */
   const YOTI_USER_TABLE_NAME = 'users_yoti';
-  
+
+  /**
+     * Age verification attribute.
+     */
   const AGE_VERIFICATION_ATTR = 'age_verified';
 
   /**
@@ -39,19 +42,21 @@ class YotiHelper {
      */
   const YOTI_SDK_JAVASCRIPT_LIBRARY = 'https://sdk.yoti.com/clients/browser.2.0.1.js';
 
-    /**
-     * Yoti module config.
-     *
-     * @var array
-     */
+  /**
+   * Yoti module config.
+   *
+   * @var array
+   */
   private $config;
 
-  public function __construct()
-  {
-      $this->config = self::getConfig();
+  /**
+   * YotiHelper constructor.
+   */
+  public function __construct() {
+    $this->config = self::getConfig();
   }
 
-    /**
+  /**
    * Link drupal user to Yoti user.
    *
    * @param mixed $currentUser
@@ -100,9 +105,8 @@ class YotiHelper {
       return FALSE;
     }
 
-    if(!$this->passedAgeVerification($activityDetails))
-    {
-        return FALSE;
+    if (!$this->passedAgeVerification($activityDetails)) {
+      return FALSE;
     }
 
     // Check if Yoti user exists.
@@ -174,18 +178,18 @@ class YotiHelper {
     return TRUE;
   }
 
-    /**
-     * Check if age verification applies and is valid.
-     *
-     * @param ActivityDetails $activityDetails
-     *
-     * @return bool
-     */
-  public function passedAgeVerification(ActivityDetails $activityDetails)
-  {
+  /**
+   * Check if age verification applies and is valid.
+   *
+   * @param \Yoti\ActivityDetails $activityDetails
+   *   Yoti user profile Object.
+   *
+   * @return bool
+   *   Return TRUE or FALSE
+   */
+  public function passedAgeVerification(ActivityDetails $activityDetails) {
     $ageVerified = $activityDetails->isAgeVerified();
-    if ($this->config['yoti_age_verification'] && is_bool($ageVerified) && !$ageVerified)
-    {
+    if ($this->config['yoti_age_verification'] && is_bool($ageVerified) && !$ageVerified) {
       $verifiedAge = $activityDetails->getVerifiedAge();
       self::setFlash("Could not log you in as you haven't passed the age verification ({$verifiedAge})", 'error');
       return FALSE;
@@ -477,11 +481,10 @@ class YotiHelper {
     }
 
     // Extract age verification values if the option is set in the dashboard
-    // and in the Yoti's config in WP admin
+    // and in the Yoti's config in WP admin.
     $meta[self::AGE_VERIFICATION_ATTR] = 'N/A';
     $ageVerified = $activityDetails->isAgeVerified();
-    if (is_bool($ageVerified) && $this->config['yoti_age_verification'])
-    {
+    if (is_bool($ageVerified) && $this->config['yoti_age_verification']) {
       $ageVerified = $ageVerified ? 'yes' : 'no';
       $verifiedAge = $activityDetails->getVerifiedAge();
       $meta[self::AGE_VERIFICATION_ATTR] = "({$verifiedAge}) : $ageVerified";
@@ -629,15 +632,13 @@ class YotiHelper {
     return $userProfileArr;
   }
 
-    /**
-     * Get Yoti user profile attributes.
-     *
-     * We are using a func to allow support from PHP 5.4
-     *
-     * @return array
-     */
-  public static function getUserProfileAttributes()
-  {
+  /**
+   * Get Yoti user profile attributes.
+   *
+   * @return array
+   *   Yoti user profile attributes
+   */
+  public static function getUserProfileAttributes() {
     return [
       ActivityDetails::ATTR_SELFIE => 'Selfie',
       ActivityDetails::ATTR_FULL_NAME => 'Full Name',
@@ -652,4 +653,5 @@ class YotiHelper {
       ActivityDetails::ATTR_NATIONALITY => 'Nationality',
     ];
   }
+
 }

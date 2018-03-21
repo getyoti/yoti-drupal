@@ -1,6 +1,6 @@
 #!/bin/bash
 #####################
-# this script symlinks to the plugin dirs to the correct places in joomla in order to build
+# this script symlinks to the plugin dirs to the correct places in Drupal in order to build
 #####################
 BASE=$1
 
