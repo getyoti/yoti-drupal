@@ -286,7 +286,7 @@ class YotiHelper {
    * @param string $username
    *   Username to be validated.
    *
-   * @return bool|int
+   * @return bool
    *   Return TRUE or FALSE
    */
   protected function isValidUsername($username) {
@@ -481,7 +481,7 @@ class YotiHelper {
     }
 
     // Extract age verification values if the option is set in the dashboard
-    // and in the Yoti's config in WP admin.
+    // and in the Yoti's config in Drupal admin.
     $meta[self::AGE_VERIFICATION_ATTR] = 'N/A';
     $ageVerified = $activityDetails->isAgeVerified();
     if (is_bool($ageVerified) && $this->config['yoti_age_verification']) {
