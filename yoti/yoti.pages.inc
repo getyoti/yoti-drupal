@@ -2,7 +2,7 @@
 
 /**
  * @file
- * User page callback file for the yoti module.
+ * User page callback file for the Yoti module.
  */
 
 require_once __DIR__ . '/YotiHelper.php';
