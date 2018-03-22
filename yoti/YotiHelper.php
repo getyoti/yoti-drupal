@@ -465,8 +465,8 @@ class YotiHelper {
    */
   public function createYotiUser($userId, ActivityDetails $activityDetails) {
     $meta = $activityDetails->getProfileAttribute();
-    // Don't save selfie to db.
-    unset($meta[ActivityDetails::ATTR_SELFIE]);
+
+    $this->cleanUserData($meta);
 
     $selfieFilename = NULL;
     if ($content = $activityDetails->getSelfie()) {
@@ -495,6 +495,25 @@ class YotiHelper {
       'identifier' => $activityDetails->getUserId(),
       'data' => serialize($meta),
     ])->execute();
+  }
+
+  /**
+   * Remove unwanted profile attributes.
+   *
+   * @param mixed $meta
+   *   User profile data.
+   */
+  private function cleanUserData(&$meta) {
+    $providedAttr = array_keys($meta);
+    $wantedAttr = array_keys(self::getUserProfileAttributes());
+    $unwantedAttr = array_diff($providedAttr, $wantedAttr);
+
+    foreach ($unwantedAttr as $attr) {
+      unset($meta[$attr]);
+    }
+
+    // Don't save selfie to the db.
+    unset($meta[ActivityDetails::ATTR_SELFIE]);
   }
 
   /**
