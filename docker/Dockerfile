@@ -31,8 +31,8 @@ RUN set -ex \
 ENV DIRPATH /var/www/html
 ENV DEFAULT_BRANCH master
 ENV PLUGIN_PACKAGE_NAME yoti-for-drupal-7.x-1.x-edge.zip
-ENV DRUPAL_VERSION 7.56
-ENV DRUPAL_MD5 5d198f40f0f1cbf9cdf1bf3de842e534
+ENV DRUPAL_VERSION 7.57
+ENV DRUPAL_MD5 44dec95a0ef56c4786785f575ac59a60
 
 WORKDIR $DIRPATH
 
@@ -46,14 +46,14 @@ RUN curl -fSL "https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.ta
 	&& rm drupal.tar.gz \
 	&& chown -R www-data:www-data sites
 
-RUN git clone -b ${BRANCH} https://github.com/getyoti/yoti-drupal-7.git --single-branch \
+RUN git clone -b ${BRANCH} https://github.com/getyoti/yoti-drupal.git --single-branch \
         && echo "Finished cloning ${BRANCH}" \
-        && cd yoti-drupal-7 \
+        && cd yoti-drupal \
         && mkdir __sdk-sym \
         && ./pack-plugin.sh \
         && mv ./${PLUGIN_PACKAGE_NAME} ${DIRPATH}/sites/all/modules \
         && cd .. \
-        && rm -rf yoti-drupal-7 \
+        && rm -rf yoti-drupal \
         && cd ${DIRPATH}/sites/all/modules \
         && unzip ${PLUGIN_PACKAGE_NAME} \
         && rm -f ${PLUGIN_PACKAGE_NAME}

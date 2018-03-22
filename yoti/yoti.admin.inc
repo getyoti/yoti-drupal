@@ -69,7 +69,7 @@ function yoti_api_keys_settings($form, &$form_state) {
     '#required' => TRUE,
     '#title' => t('Success URL'),
     '#default_value' => variable_get('yoti_success_url', '/user'),
-    '#description' => t('Redirect users here if they successfully log in with Yoti'),
+    '#description' => t('Redirect users here if they successfully log in with Yoti.'),
   ];
 
   $form['yoti_settings']['yoti_fail_url'] = [
@@ -77,7 +77,7 @@ function yoti_api_keys_settings($form, &$form_state) {
     '#required' => TRUE,
     '#title' => t('Fail URL'),
     '#default_value' => variable_get('yoti_fail_url', '/'),
-    '#description' => t('Redirect users here if they were unable to log in with Yoti'),
+    '#description' => t('Redirect users here if they were unable to log in with Yoti.'),
   ];
 
   $form['yoti_settings']['yoti_pem'] = [
@@ -91,6 +91,13 @@ function yoti_api_keys_settings($form, &$form_state) {
     '#upload_validators' => [
       'file_validate_extensions' => ['pem'],
     ],
+  ];
+
+  $form['yoti_settings']['yoti_age_verification'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Prevent users who have not passed age verification to access your site'),
+    '#description' => t('Requires Age verify condition to be set in the <a href="@yoti-dev" target="_blank">Yoti Dashboard</a>.', ['@yoti-dev' => YotiClient::DASHBOARD_URL]),
+    '#default_value' => variable_get('yoti_age_verification'),
   ];
 
   $form['yoti_settings']['yoti_only_existing'] = [
