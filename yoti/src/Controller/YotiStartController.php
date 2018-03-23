@@ -29,10 +29,6 @@ class YotiStartController extends ControllerBase {
 
     // If no token is given check if we are in mock request mode.
     if (!array_key_exists('token', $_GET)) {
-      if (YotiHelper::mockRequests()) {
-        $token = file_get_contents(__DIR__ . '/../../sdk/sample-data/connect-token.txt');
-        return $this->redirect('yoti.link', ['token' => $token]);
-      }
       return new TrustedRedirectResponse($helper::getLoginUrl());
     }
 

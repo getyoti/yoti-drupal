@@ -78,10 +78,6 @@ class YotiSettingsForm extends ConfigFormBase {
       ]),
     ];
 
-    if (YotiHelper::mockRequests()) {
-      $form['yoti_settings']['#description'] .= '<br /><br /><strong>NOTE: YOTI MOCK REQUESTS ENABLED</strong><br/><br>';
-    }
-
     $form['yoti_settings']['yoti_app_id'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
@@ -141,6 +137,13 @@ class YotiSettingsForm extends ConfigFormBase {
       ],
     ];
 
+    $form['yoti_settings']['yoti_age_verification'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Prevent users who have not passed age verification to access your site'),
+      '#default_value' => $config->get('yoti_age_verification'),
+      '#description' => $this->t('Requires Age over/under attribute to be set in the <a href="@yoti-dev" target="_blank">Yoti Dashboard</a>', ['@yoti-dev' => YotiClient::DASHBOARD_URL]),
+    ];
+
     $form['yoti_settings']['yoti_only_existing'] = [
       '#type' => 'checkbox',
       '#title' => t('Only allow existing Drupal users to link their Yoti account'),
@@ -182,6 +185,7 @@ class YotiSettingsForm extends ConfigFormBase {
       ->set('yoti_success_url', $values['yoti_success_url'])
       ->set('yoti_fail_url', $values['yoti_fail_url'])
       ->set('yoti_pem', $values['yoti_pem'])
+      ->set('yoti_age_verification', $values['yoti_age_verification'])
       ->set('yoti_only_existing', $values['yoti_only_existing'])
       ->set('yoti_user_email', $values['yoti_user_email'])
       ->set('yoti_company_name', $values['yoti_company_name'])
