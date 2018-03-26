@@ -195,7 +195,6 @@ class YotiHelper {
       // If Drupal user not found in Yoti table then create new Yoti user.
       elseif (!$drupalYotiUid) {
         $this->createYotiUser($currentUser->id(), $activityDetails);
-        self::setFlash('Your Yoti account has been successfully linked.');
       }
     }
 
@@ -507,6 +506,16 @@ class YotiHelper {
       $meta[self::ATTR_SELFIE_FILE_NAME] = $selfieFilename;
     }
 
+    // Extract age verification values if the option is set in the dashboard
+    // and in the Yoti's config in Drupal admin.
+    $meta[self::AGE_VERIFICATION_ATTR] = 'N/A';
+    $ageVerified = $activityDetails->isAgeVerified();
+    if (is_bool($ageVerified) && $this->config['yoti_age_verification']) {
+      $ageVerified = $ageVerified ? 'yes' : 'no';
+      $verifiedAge = $activityDetails->getVerifiedAge();
+      $meta[self::AGE_VERIFICATION_ATTR] = "({$verifiedAge}) : $ageVerified";
+    }
+
     $this->formatDateOfBirth($meta);
 
     YotiUserModel::createYotiUser($userId, $activityDetails, $meta);
@@ -603,6 +612,7 @@ class YotiHelper {
       'yoti_success_url' => $settings->get('yoti_success_url') ?: '/user',
       'yoti_fail_url' => $settings->get('yoti_fail_url') ?: '/',
       'yoti_user_email' => $settings->get('yoti_user_email'),
+      'yoti_age_verification' => $settings->get('yoti_age_verification'),
       'yoti_company_name' => $settings->get('yoti_company_name'),
       'yoti_pem' => compact('name', 'contents'),
     ];
