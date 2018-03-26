@@ -42,6 +42,16 @@ class YotiHelper {
   const ATTR_SELFIE_FILE_NAME = 'selfie_filename';
 
   /**
+     * Yoti Drupal SDK identifier.
+     */
+  const SDK_IDENTIFIER = 'Drupal';
+
+  /**
+     * Age verification attribute.
+     */
+  const AGE_VERIFICATION_ATTR = 'age_verified';
+
+  /**
    * MySQL Database connection.
    *
    * @var \Drupal\Core\Database\Driver\mysql\Connection
@@ -56,12 +66,10 @@ class YotiHelper {
   protected $userStorage;
 
   /**
-   * Yoti Drupal SDK identifier.
+   * Yoti plugin config data.
+   *
+   * @var array
    */
-  const SDK_IDENTIFIER = 'Drupal';
-
-  const AGE_VERIFICATION_ATTR = 'age_verified';
-
   private $config;
 
   /**
@@ -127,9 +135,8 @@ class YotiHelper {
       return FALSE;
     }
 
-    if(!$this->passedAgeVerification($activityDetails))
-    {
-        return FALSE;
+    if (!$this->passedAgeVerification($activityDetails)) {
+      return FALSE;
     }
 
     // Check if Yoti user exists.
@@ -202,16 +209,15 @@ class YotiHelper {
   }
 
   /**
-  * Check if age verification applies and is valid.
-  *
-  * @param \Yoti\ActivityDetails $activityDetails
-  *   Yoti user profile Object.
-  *
-  * @return bool
-  *   Return TRUE or FALSE
-  */
-  public function passedAgeVerification(ActivityDetails $activityDetails)
-  {
+   * Check if age verification applies and is valid.
+   *
+   * @param \Yoti\ActivityDetails $activityDetails
+   *   Yoti user profile Object.
+   *
+   * @return bool
+   *   Return TRUE or FALSE
+   */
+  public function passedAgeVerification(ActivityDetails $activityDetails) {
     $ageVerified = $activityDetails->isAgeVerified();
     if ($this->config['yoti_age_verification'] && is_bool($ageVerified) && !$ageVerified) {
       $verifiedAge = $activityDetails->getVerifiedAge();
@@ -521,32 +527,31 @@ class YotiHelper {
     YotiUserModel::createYotiUser($userId, $activityDetails, $meta);
   }
 
-    /**
-     * Remove unwanted profile attributes.
-     *
-     * @param mixed $profileArr
-     *   User profile data.
-     */
-  private function cleanUserData(&$profileArr)
-  {
-      $providedAttr = array_keys($profileArr);
-      $wantedAttr = array_keys(self::getUserProfileAttributes());
-      $unwantedAttr = array_diff($providedAttr, $wantedAttr);
-      foreach ($unwantedAttr as $attr) {
-          unset($profileArr[$attr]);
-      }
-      // Don't save selfie to the db.
-      unset($profileArr[ActivityDetails::ATTR_SELFIE]);
+  /**
+   * Remove unwanted profile attributes.
+   *
+   * @param mixed $profileArr
+   *   User profile data.
+   */
+  private function cleanUserData(&$profileArr) {
+    $providedAttr = array_keys($profileArr);
+    $wantedAttr = array_keys(self::getUserProfileAttributes());
+    $unwantedAttr = array_diff($providedAttr, $wantedAttr);
+    foreach ($unwantedAttr as $attr) {
+      unset($profileArr[$attr]);
+    }
+    // Don't save selfie to the db.
+    unset($profileArr[ActivityDetails::ATTR_SELFIE]);
   }
 
   /**
-  * Format Date Of birth to d-m-Y.
-  *
-  * @param $profileArr
-  */
-  private function formatDateOfBirth(&$profileArr)
-  {
-    if(isset($profileArr[ActivityDetails::ATTR_DATE_OF_BIRTH])) {
+   * Format Date Of birth to d-m-Y.
+   *
+   * @param mixed $profileArr
+   *   User profile data.
+   */
+  private function formatDateOfBirth(&$profileArr) {
+    if (isset($profileArr[ActivityDetails::ATTR_DATE_OF_BIRTH])) {
       $dateOfBirth = $profileArr[ActivityDetails::ATTR_DATE_OF_BIRTH];
       $profileArr[ActivityDetails::ATTR_DATE_OF_BIRTH] = date('d-m-Y', strtotime($dateOfBirth));
     }
@@ -660,25 +665,25 @@ class YotiHelper {
   }
 
   /**
-  * Get Yoti user profile attributes.
-  *
-  * @return array
-  *   Yoti user profile attributes
-  */
+   * Get Yoti user profile attributes.
+   *
+   * @return array
+   *   Yoti user profile attributes
+   */
   public static function getUserProfileAttributes() {
-     return [
-        ActivityDetails::ATTR_SELFIE => 'Selfie',
-        ActivityDetails::ATTR_FULL_NAME => 'Full Name',
-        ActivityDetails::ATTR_GIVEN_NAMES => 'Given Name(s)',
-        ActivityDetails::ATTR_FAMILY_NAME => 'Family Name',
-        ActivityDetails::ATTR_PHONE_NUMBER => 'Mobile Number',
-        ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
-        ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date Of Birth',
-        self::AGE_VERIFICATION_ATTR => 'Age Verified',
-        ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
-        ActivityDetails::ATTR_GENDER => 'Gender',
-        ActivityDetails::ATTR_NATIONALITY => 'Nationality',
-     ];
+    return [
+      ActivityDetails::ATTR_SELFIE => 'Selfie',
+      ActivityDetails::ATTR_FULL_NAME => 'Full Name',
+      ActivityDetails::ATTR_GIVEN_NAMES => 'Given Name(s)',
+      ActivityDetails::ATTR_FAMILY_NAME => 'Family Name',
+      ActivityDetails::ATTR_PHONE_NUMBER => 'Mobile Number',
+      ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
+      ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date Of Birth',
+      self::AGE_VERIFICATION_ATTR => 'Age Verified',
+      ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
+      ActivityDetails::ATTR_GENDER => 'Gender',
+      ActivityDetails::ATTR_NATIONALITY => 'Nationality',
+    ];
   }
 
 }
