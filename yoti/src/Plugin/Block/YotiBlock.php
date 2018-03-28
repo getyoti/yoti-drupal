@@ -33,14 +33,9 @@ class YotiBlock extends BlockBase {
   public function build() {
     $user = \Drupal::currentUser();
 
-    $testToken = NULL;
-    if (YotiHelper::mockRequests()) {
-      $testToken = file_get_contents(__DIR__ . '/sdk/sample-data/connect-token.txt');
-    }
-
     // No config? no button.
     $config = YotiHelper::getConfig();
-    if (!$config && !$testToken) {
+    if (!$config) {
       return [];
     }
 

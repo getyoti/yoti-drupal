@@ -17,17 +17,7 @@ require_once __DIR__ . '/sdk/boot.php';
  * Display these fields.
  */
 function yoti_map_params() {
-  return [
-    ActivityDetails::ATTR_SELFIE => 'Selfie',
-    ActivityDetails::ATTR_PHONE_NUMBER => 'Phone number',
-    ActivityDetails::ATTR_DATE_OF_BIRTH => 'Date of birth',
-    ActivityDetails::ATTR_GIVEN_NAMES => 'Given names',
-    ActivityDetails::ATTR_FAMILY_NAME => 'Family name',
-    ActivityDetails::ATTR_NATIONALITY => 'Nationality',
-    ActivityDetails::ATTR_GENDER => 'Gender',
-    ActivityDetails::ATTR_EMAIL_ADDRESS => 'Email Address',
-    ActivityDetails::ATTR_POSTAL_ADDRESS => 'Postal Address',
-  ];
+  return YotiHelper::getUserProfileAttributes();
 }
 
 /**
@@ -70,13 +60,8 @@ function yoti_user_view(array &$build, UserInterface $account) {
 
   $userProfileArr = unserialize($dbProfile['data']);
 
-  // Set up profile.
-  $userId = $dbProfile['identifier'];
-  unset($dbProfile['identifier']);
-  $userProfileObj = YotiHelper::makeYotiUserProfile($userProfileArr, $userId);
-
   foreach ($map as $param => $label) {
-    $value = $userProfileObj->getProfileAttribute($param);
+    $value = isset($userProfileArr[$param]) ? $userProfileArr[$param] : '';
     if ($param === ActivityDetails::ATTR_SELFIE) {
       // Yoti user selfie file name.
       $selfieFileName = NULL;
