@@ -40,7 +40,7 @@ class YotiHelper {
   /**
      * Yoti SDK javascript library.
      */
-  const YOTI_SDK_JAVASCRIPT_LIBRARY = 'https://sdk.yoti.com/clients/browser.2.0.1.js';
+  const YOTI_SDK_JAVASCRIPT_LIBRARY = 'https://sdk.yoti.com/clients/browser.2.1.0.js';
 
   /**
    * Yoti module config.
