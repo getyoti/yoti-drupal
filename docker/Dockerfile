@@ -3,7 +3,11 @@ FROM php:7.1-apache
 
 ARG BRANCH
 
-RUN a2enmod rewrite
+COPY default.conf /etc/apache2/sites-available/000-default.conf
+COPY ./keys/server.crt /etc/apache2/ssl/server.crt
+COPY ./keys/server.key /etc/apache2/ssl/server.key
+
+RUN a2enmod rewrite ssl
 
 # install the PHP extensions we need
 RUN set -ex \
@@ -31,8 +35,8 @@ RUN set -ex \
 ENV DIRPATH /var/www/html
 ENV DEFAULT_BRANCH master
 ENV PLUGIN_PACKAGE_NAME yoti-for-drupal-7.x-1.x-edge.zip
-ENV DRUPAL_VERSION 7.57
-ENV DRUPAL_MD5 44dec95a0ef56c4786785f575ac59a60
+ENV DRUPAL_VERSION 7.59
+ENV DRUPAL_MD5 7e09c6b177345a81439fe0aa9a2d15fc
 
 WORKDIR $DIRPATH
 
@@ -57,3 +61,5 @@ RUN git clone -b ${BRANCH} https://github.com/getyoti/yoti-drupal.git --single-b
         && cd ${DIRPATH}/sites/all/modules \
         && unzip ${PLUGIN_PACKAGE_NAME} \
         && rm -f ${PLUGIN_PACKAGE_NAME}
+
+EXPOSE 443
