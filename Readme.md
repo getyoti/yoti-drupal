@@ -41,29 +41,31 @@ Please do not open the .pem file as this might corrupt the key and you will need
 
 ## Docker
 
-We provide a Docker container that includes the Yoti module.
+We provide a [Docker](https://docs.docker.com/) container that includes the Yoti module.
 
 ### Setup
 
-Clone this repository and go into the folder:
+Clone this repository, go into the `yoti-drupal` folder and checkout Drupal 7 branch by running the following commands:
 
 ```shell
-cd yoti-drupal-7
+$ git clone https://github.com/getyoti/yoti-drupal.git
+$ cd yoti-drupal
+$ git checkout 7.x-1.x
 ```
 
 Rebuild the images if you have modified the `docker-compose.yml` file:
 
 ```shell
-docker-compose build --no-cache
+$ docker-compose build --no-cache
 ```
 
 Build the containers:
 
 ```shell
-docker-compose up -d
+$ docker-compose up -d
 ```
 
-After the command has finished running, go to [http://localhost:8007](http://localhost:8007) and follow the instructions.
+After the command has finished running, go to [https://localhost:7007](https://localhost:7007) and follow the instructions.
 
 ### Database Configuration
 
@@ -81,8 +83,8 @@ The Yoti module will be installed alongside Drupal. Activate it and follow our [
 Run the following commands to remove docker containers:
 
 ```shell
-docker-compose stop
-docker-compose rm
+$ docker-compose stop
+$ docker-compose rm
 ```
 
 ## Support
