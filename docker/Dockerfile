@@ -1,7 +1,12 @@
 # from https://www.drupal.org/requirements/php#drupalversions
 FROM php:7.1-apache
 ARG BRANCH
-RUN a2enmod rewrite
+
+COPY default.conf /etc/apache2/sites-available/000-default.conf
+COPY ./keys/server.crt /etc/apache2/ssl/server.crt
+COPY ./keys/server.key /etc/apache2/ssl/server.key
+
+RUN a2enmod rewrite ssl
 
 # install the PHP extensions we need
 RUN set -ex \
@@ -66,3 +71,5 @@ RUN git clone -b ${BRANCH} https://github.com/getyoti/yoti-drupal.git --single-b
         && cd ${DIRPATH}/modules \
         && unzip ${PLUGIN_PACKAGE_NAME} \
         && rm -f ${PLUGIN_PACKAGE_NAME}
+
+EXPOSE 80 443

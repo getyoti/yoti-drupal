@@ -7,7 +7,7 @@ services:
       args:
         BRANCH: "8.x-1.x"
     ports:
-     - "8008:80"
+     - "8004:443"
     volumes:
       - /var/www/html/modules
       - /var/www/html/profiles
@@ -16,7 +16,6 @@ services:
       # volume (which is what we're creating here) will be initialized with the
       # existing content of the image at the same location
       - /var/www/html/sites
-    restart: always
   drupal-8-db:
     image: mysql:latest
     ports:
@@ -27,4 +26,3 @@ services:
       MYSQL_PORT: 3306
       MYSQL_USER: drupal
       MYSQL_PASSWORD: drupal
-    restart: always

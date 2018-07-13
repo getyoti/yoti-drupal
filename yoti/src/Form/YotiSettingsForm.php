@@ -64,10 +64,7 @@ class YotiSettingsForm extends ConfigFormBase {
     // Generate the callback URL.
     $callbackUrl = Url::fromRoute('yoti.link', [], ['absolute' => TRUE, 'https' => TRUE])
       ->toString();
-    // Make sure the port is included in Drupal URL if present.
-    if (strpos($_SERVER['HTTP_HOST'], $callbackUrl) === FALSE) {
-      $callbackUrl = str_replace($_SERVER['SERVER_NAME'], $_SERVER['HTTP_HOST'], $callbackUrl);
-    }
+
     $form['yoti_settings'] = [
       '#type' => 'details',
       '#title' => $this->t('Yoti Dashboard'),
@@ -75,7 +72,8 @@ class YotiSettingsForm extends ConfigFormBase {
       '#description' => $this->t('You need to first create a Yoti App at <a href="@yoti-dev" target="_blank">@yoti-dev</a>.', ['@yoti-dev' => YotiClient::DASHBOARD_URL]) . '</br >' .
       $this->t('Note: On the Yoti Dashboard the callback URL should be set to: <code>@cb</code>', [
         '@cb' => $callbackUrl,
-      ]),
+      ]) . '<br>' .
+      $this->t('Warning: User IDs provided by Yoti are only valid within the scope of the application. Changing your Yoti application will result in different Yoti user IDs'),
     ];
 
     $form['yoti_settings']['yoti_app_id'] = [
