@@ -12,7 +12,7 @@ RUN a2enmod rewrite ssl
 RUN set -ex \
 	&& buildDeps=' \
 		libjpeg62-turbo-dev \
-		libpng12-dev \
+		libpng-dev \
 		libpq-dev \
 	' \
 	&& apt-get update && apt-get install -y --no-install-recommends $buildDeps && rm -rf /var/lib/apt/lists/* \
@@ -72,4 +72,4 @@ RUN git clone -b ${BRANCH} https://github.com/getyoti/yoti-drupal.git --single-b
         && unzip ${PLUGIN_PACKAGE_NAME} \
         && rm -f ${PLUGIN_PACKAGE_NAME}
 
-EXPOSE 80 443
+EXPOSE 443
