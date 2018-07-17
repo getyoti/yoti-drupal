@@ -73,7 +73,7 @@ class YotiSettingsForm extends ConfigFormBase {
       $this->t('Note: On the Yoti Dashboard the callback URL should be set to: <code>@cb</code>', [
         '@cb' => $callbackUrl,
       ]) . '<br>' .
-      $this->t('Warning: User IDs provided by Yoti are only valid within the scope of the application. Changing your Yoti application will result in different Yoti user IDs'),
+      $this->t('Warning: User IDs provided by Yoti are unique to each Yoti Application. Using a different Yoti Application means you will receive a different Yoti User ID for all of your users.'),
     ];
 
     $form['yoti_settings']['yoti_app_id'] = [
