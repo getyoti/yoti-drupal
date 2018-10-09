@@ -1,6 +1,9 @@
 # from https://www.drupal.org/requirements/php#drupalversions
-FROM php:7.1-apache
+FROM php:7.0-apache
 ARG BRANCH
+
+# Fix for Error: Package 'php-XXX' has no installation candidate
+RUN rm /etc/apt/preferences.d/no-debian-php
 
 COPY default.conf /etc/apache2/sites-available/000-default.conf
 COPY ./keys/server.crt /etc/apache2/ssl/server.crt
@@ -21,7 +24,7 @@ RUN set -ex \
 		--with-png-dir=/usr \
 	&& docker-php-ext-install -j "$(nproc)" gd mbstring opcache pdo pdo_mysql pdo_pgsql zip \
 	&& apt-get update \
-	&& apt-get install -y git zip unzip vim nano \
+	&& apt-get install -y git zip unzip vim nano php7.0-gd \
 # PHP Warning:  PHP Startup: Unable to load dynamic library '/usr/local/lib/php/extensions/no-debug-non-zts-20151012/gd.so' - libjpeg.so.62: cannot open shared object file: No such file or directory in Unknown on line 0
 # PHP Warning:  PHP Startup: Unable to load dynamic library '/usr/local/lib/php/extensions/no-debug-non-zts-20151012/pdo_pgsql.so' - libpq.so.5: cannot open shared object file: No such file or directory in Unknown on line 0
 	&& apt-mark manual \
@@ -39,7 +42,6 @@ RUN { \
 		echo 'opcache.fast_shutdown=1'; \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
-
 
 # https://www.drupal.org/node/3060/release
 ENV DIRPATH /var/www/html
