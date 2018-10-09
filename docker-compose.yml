@@ -16,7 +16,7 @@ services:
       # existing content of the image at the same location
       - /var/www/html/sites/all/themes
   drupal-7-db:
-    image: mysql:latest
+    image: mysql:5.7
     ports:
     - "3306:3306"
     environment:
