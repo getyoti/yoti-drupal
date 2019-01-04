@@ -1,5 +1,5 @@
 # from https://www.drupal.org/requirements/php#drupalversions
-FROM php:7.0-apache
+FROM php:7.2-apache
 ARG BRANCH
 
 # Fix for Error: Package 'php-XXX' has no installation candidate
@@ -46,9 +46,9 @@ RUN { \
 # https://www.drupal.org/node/3060/release
 ENV DIRPATH /var/www/html
 ENV DEFAULT_BRANCH 8.x-1.x
-ENV DRUPAL_VERSION 8.5.0
+ENV DRUPAL_VERSION 8.6.5
 ENV PLUGIN_PACKAGE_NAME yoti-for-drupal-8.x-1.x-edge.zip
-ENV DRUPAL_MD5 5679d3fa188fb80368ee46ab40acdb6b
+ENV DRUPAL_MD5 3db4ab3674ae38d1b15d5faac3b10ff0
 
 WORKDIR $DIRPATH
 
