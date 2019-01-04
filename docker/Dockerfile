@@ -1,5 +1,5 @@
 # from https://www.drupal.org/requirements/php#drupalversions
-FROM php:7.0-apache
+FROM php:7.2-apache
 
 ARG BRANCH
 
@@ -38,8 +38,8 @@ RUN set -ex \
 ENV DIRPATH /var/www/html
 ENV DEFAULT_BRANCH master
 ENV PLUGIN_PACKAGE_NAME yoti-for-drupal-7.x-1.x-edge.zip
-ENV DRUPAL_VERSION 7.59
-ENV DRUPAL_MD5 7e09c6b177345a81439fe0aa9a2d15fc
+ENV DRUPAL_VERSION 7.61
+ENV DRUPAL_MD5 94bc49170d98e0cfe59db487911ecb9d
 
 WORKDIR $DIRPATH
 
