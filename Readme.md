@@ -39,6 +39,11 @@ Please do not open the .pem file as this might corrupt the key and you will need
 
 `Attempt to link Yoti email address with Drupal account for first time users` - This setting enables linking a Yoti account to a Drupal user if the email from both platforms is identical.
 
+## How to retrieve user data provided by Yoti
+Upon registration using Yoti, user data will be stored as serialized data into `users_yoti` table in the `data` field.
+
+You can write a query to retrieve all data stored in `users_yoti.data`, which will return a list of serialized data.
+
 ## Docker
 
 We provide a [Docker](https://docs.docker.com/) container that includes the Yoti module.
