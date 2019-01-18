@@ -46,9 +46,9 @@ RUN { \
 # https://www.drupal.org/node/3060/release
 ENV DIRPATH /var/www/html
 ENV DEFAULT_BRANCH 8.x-1.x
-ENV DRUPAL_VERSION 8.6.5
+ENV DRUPAL_VERSION 8.6.7
 ENV PLUGIN_PACKAGE_NAME yoti-for-drupal-8.x-1.x-edge.zip
-ENV DRUPAL_MD5 3db4ab3674ae38d1b15d5faac3b10ff0
+ENV DRUPAL_MD5 cd3d0c9ad1d9e976eb589a963e427388
 
 WORKDIR $DIRPATH
 
