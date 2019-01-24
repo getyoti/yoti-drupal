@@ -340,7 +340,8 @@ class YotiHelper {
    *   Return single user given name
    */
   private function getUserGivenNames(Profile $profile) {
-    $givenNames = $profile->getGivenNames()->getValue();
+    $givenNamesObj = $profile->getGivenNames();
+    $givenNames = $givenNamesObj ? $givenNamesObj->getValue() : '';
     $givenNamesArr = explode(' ', $givenNames);
     return (count($givenNamesArr) > 1) ? $givenNamesArr[0] : $givenNames;
   }
@@ -469,7 +470,8 @@ class YotiHelper {
     $this->cleanUserData($meta);
 
     $selfieFilename = NULL;
-    if ($selfie = $profile->getSelfie()->getValue()) {
+    if ($selfieObj = $profile->getSelfie()) {
+      $selfie = $selfieObj->getValue()->getContent();
       $uploadDir = self::secureUploadDir();
       if (!is_dir($uploadDir)) {
         drupal_mkdir($uploadDir, 0777, TRUE);
@@ -534,7 +536,7 @@ class YotiHelper {
           $ageStr .= $attrName . ': ' . $result . ',';
       }
       if (!empty($ageStr)) {
-          // this for profile display
+          // this is for profile display
           $ageVerificationsArr[self::AGE_VERIFICATION_ATTR] = rtrim($ageStr, ',');
       }
       return $ageVerificationsArr;
