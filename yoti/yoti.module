@@ -6,7 +6,7 @@
  */
 
 use Yoti\YotiClient;
-use Yoti\ActivityDetails;
+use Yoti\Entity\Profile;
 
 require_once __DIR__ . '/YotiHelper.php';
 
@@ -288,9 +288,10 @@ function yoti_user_view($account, $view_mode, $langcode) {
 
   $dbProfile = unserialize($dbProfile['data']);
 
+
   foreach ($map as $param => $label) {
     $value = isset($dbProfile[$param]) ? $dbProfile[$param] : '';
-    if ($param === ActivityDetails::ATTR_SELFIE) {
+    if ($param === Profile::ATTR_SELFIE) {
       // Make it backward compatible by checking the old files directory.
       $oldSelfieFullPath = YotiHelper::uploadDir() . "/{$dbProfile['selfie_filename']}";
       $selfieFullPath = YotiHelper::secureUploadDir() . "/{$dbProfile['selfie_filename']}";
@@ -308,11 +309,6 @@ function yoti_user_view($account, $view_mode, $langcode) {
       else {
         $value = '';
       }
-    }
-
-    // Format date of birth.
-    if ($param === ActivityDetails::ATTR_DATE_OF_BIRTH && !empty($value)) {
-      $value = date('d-m-Y', strtotime($value));
     }
 
     if (!$value) {
