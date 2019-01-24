@@ -2,7 +2,7 @@
 NAME="yoti-for-drupal-7.x-1.x-edge.zip"
 
 SDK_TAG=$1
-DEFAULT_SDK_TAG='1.2.1'
+DEFAULT_SDK_TAG='2.0.0'
 SDK_RELATIVE_PATH="sdk"
 
 if [ "$SDK_TAG" = "" ]; then
