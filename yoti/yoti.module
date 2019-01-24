@@ -8,7 +8,7 @@
 use Drupal\Core\Url;
 use Drupal\user\UserInterface;
 use Drupal\yoti\YotiHelper;
-use Yoti\ActivityDetails;
+use Yoti\Entity\Profile;
 use Drupal\yoti\Models\YotiUserModel;
 
 require_once __DIR__ . '/sdk/boot.php';
@@ -62,7 +62,7 @@ function yoti_user_view(array &$build, UserInterface $account) {
 
   foreach ($map as $param => $label) {
     $value = isset($userProfileArr[$param]) ? $userProfileArr[$param] : '';
-    if ($param === ActivityDetails::ATTR_SELFIE) {
+    if ($param === Profile::ATTR_SELFIE) {
       // Yoti user selfie file name.
       $selfieFileName = NULL;
       if (isset($userProfileArr[YotiHelper::ATTR_SELFIE_FILE_NAME])) {
