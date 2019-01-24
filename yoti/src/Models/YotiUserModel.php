@@ -112,7 +112,7 @@ class YotiUserModel {
   public static function createYotiUser($userId, ActivityDetails $activityDetails, array $meta) {
     Drupal::database()->insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
       'uid' => $userId,
-      'identifier' => $activityDetails->getUserId(),
+      'identifier' => $activityDetails->getRememberMeId(),
       'data' => serialize($meta),
     ])->execute();
   }
