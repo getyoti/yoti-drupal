@@ -158,8 +158,8 @@ class YotiSettingsForm extends ConfigFormBase {
     $pemFile = $config->get('yoti_pem');
     $file = (NULL !== $pemFile[0]) ? File::load($pemFile[0]) : NULL;
     // Change status to permanent.
-    if ($file && is_object(gettype($file))) {
-      $file->status = FILE_STATUS_PERMANENT;
+    if ($file && is_object($file)) {
+      $file->setPermanent();
       // Save.
       $file->save();
       $user = User::load(Drupal::currentUser()->id());
