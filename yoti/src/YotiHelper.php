@@ -630,8 +630,7 @@ class YotiHelper {
 
     $pem = $settings->get('yoti_pem');
     $name = $contents = NULL;
-    if ($pem) {
-      $file = File::load($pem[0]);
+    if (isset($pem[0]) && ($file = File::load($pem[0]))) {
       $name = $file->getFileUri();
       $contents = file_get_contents(\Drupal::service('file_system')->realpath($name));
     }
