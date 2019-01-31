@@ -74,4 +74,9 @@ RUN git clone -b ${BRANCH} https://github.com/getyoti/yoti-drupal.git --single-b
         && unzip ${PLUGIN_PACKAGE_NAME} \
         && rm -f ${PLUGIN_PACKAGE_NAME}
 
+RUN mkdir /var/www/private \
+	&& chown www-data /var/www/private \
+	&& chmod 755 /var/www/private \
+	&& echo '$settings["file_private_path"] = "/var/www/private";' >> ${DIRPATH}/sites/default/default.settings.php;
+
 EXPOSE 443
