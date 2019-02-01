@@ -25,26 +25,67 @@ class YotiUserModel {
    */
   public static function getYotiUserById($userId) {
     $userProfile = NULL;
-    if ((int) $userId > 0) {
-      $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
-      $userProfile = Drupal::database()->query("SELECT * from `{$tableName}` WHERE uid=" . $userId . " Limit 1")->fetchAssoc();
+    if (!empty($userId)) {
+      $userProfile = Drupal::database()
+        ->select(YotiHelper::YOTI_USER_TABLE_NAME, 'u')
+        ->fields('u')
+        ->condition('uid', (int) $userId)
+        ->range(0, 1)
+        ->execute()
+        ->fetchAssoc();
     }
     return $userProfile;
   }
 
   /**
-   * Create Yoti user table.
+   * Schema for Yoti user table.
    */
-  public static function createYotiUserTable() {
-    $table_name = YotiHelper::YOTI_USER_TABLE_NAME;
-    Drupal::database()->query("CREATE TABLE IF NOT EXISTS `{$table_name}` (
-            `id` INT(10) UNSIGNED AUTO_INCREMENT,
-            `uid` int(10) UNSIGNED NOT NULL,
-            `identifier` VARCHAR(255) NOT NULL,
-            `data` TEXT NULL,
-            PRIMARY KEY `id` (`id`),
-            UNIQUE KEY `uid` (`uid`)
-        )")->execute();
+  public static function getYotiUserTableSchema() {
+    return [
+      'description' => 'Stores Yoti user data.',
+      'fields' => [
+        'id' => [
+          'description' => 'Unique identifier',
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ],
+        'uid' => [
+          'description' => 'Drupal user ID',
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+        ],
+        'identifier' => [
+          'description' => 'Identifier',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ],
+        'data' => [
+          'description' => 'Yoti user data',
+          'type' => 'text',
+        ],
+      ],
+      'primary key' => [
+        'id',
+      ],
+      'unique keys' => [
+        'uid' => [
+          'uid',
+        ],
+      ],
+      // For documentation purposes only; foreign keys are not created in the
+      // database.
+      'foreign keys' => [
+        'data_user' => [
+          'table' => 'users',
+          'columns' => [
+            'uid' => 'uid',
+          ],
+        ],
+      ],
+    ];
   }
 
   /**
@@ -70,14 +111,6 @@ class YotiUserModel {
   }
 
   /**
-   * Delete Yoti user table.
-   */
-  public static function deleteYotiUserTable() {
-    $table_name = YotiHelper::YOTI_USER_TABLE_NAME;
-    Drupal::database()->query("DROP TABLE IF EXISTS `{$table_name}`")->execute();
-  }
-
-  /**
    * Get user Drupal Uid by Yoti user Id.
    *
    * @param int $yotiId
@@ -87,12 +120,27 @@ class YotiUserModel {
    *
    * @return mixed
    *   Drupal User Uid.
+   *
+   * @throws \InvalidArgumentException
    */
   public static function getUserUidByYotiId($yotiId, $field) {
-    $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
+    // Check that field is available in the Yoti user table schema.
+    $schema = self::getYotiUserTableSchema();
+    if (!in_array($field, array_keys($schema['fields']))) {
+      throw new \InvalidArgumentException(t('"%field_name" is not a valid Yoti field.', [
+        '%field_name' => $field,
+      ]));
+    }
+
     $col = NULL;
     if (!empty($yotiId) && !empty($field)) {
-      $col = Drupal::database()->query("SELECT uid FROM `{$tableName}` WHERE `{$field}` = '$yotiId' Limit 1")->fetchCol();
+      $col = Drupal::database()
+        ->select(YotiHelper::YOTI_USER_TABLE_NAME, 'u')
+        ->fields('u', ['uid'])
+        ->condition($field, $yotiId)
+        ->range(0, 1)
+        ->execute()
+        ->fetchCol();
     }
     return $col;
   }
