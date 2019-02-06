@@ -69,7 +69,7 @@ $ docker-compose build --no-cache
 
 Install Drupal and enable Yoti module
 
-```
+```shell
 $ ./install-drupal.sh
 ```
 
