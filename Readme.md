@@ -65,24 +65,27 @@ Rebuild the images if you have modified any Docker file:
 $ docker-compose build --no-cache
 ```
 
+#### Quick Installation (Drush)
+
+Install Drupal and enable Yoti module
+
+```
+$ ./install-drupal.sh
+```
+
+Visit <https://localhost:8004> and follow the [module setup process](#module-setup)
+
+#### Manual Installation
+
 Build the containers:
 
 ```shell
 $ docker-compose up -d
 ```
 
-After the command has finished running, go to [https://localhost:8004](https://localhost:8004) and follow the instructions.
+After the command has finished running, go to <https://localhost:8004> and follow the instructions.
 
-### Database Configuration
-
-When prompted, enter the following database details:
-
-* Name `drupal`
-* Username `drupal`
-* Password `drupal`
-* Host `drupal-8-db`
-
-The Yoti module will be installed alongside Drupal. Activate it and follow our [module setup process](#module-setup).
+Enable the Yoti module and follow our [module setup process](#module-setup).
 
 ### Removing the Docker containers
 
