@@ -6,8 +6,16 @@ services:
       context: ./docker/
       args:
         BRANCH: "8.x-1.x"
+    depends_on:
+      - drupal-8-db
     ports:
-     - "8004:443"
+      - "8004:443"
+    environment:
+      MYSQL_HOSTNAME: drupal-8-db
+      MYSQL_DATABASE: drupal
+      MYSQL_PORT: 3306
+      MYSQL_USER: drupal
+      MYSQL_PASSWORD: drupal
     volumes:
       - /var/www/html/modules
       - /var/www/html/profiles

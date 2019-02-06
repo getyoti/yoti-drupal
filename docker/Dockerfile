@@ -74,9 +74,29 @@ RUN git clone -b ${BRANCH} https://github.com/getyoti/yoti-drupal.git --single-b
         && unzip ${PLUGIN_PACKAGE_NAME} \
         && rm -f ${PLUGIN_PACKAGE_NAME}
 
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install- dir=/usr/local/bin --filename=composer \
+    && mv composer /usr/local/bin
+
+# Install Drush
+RUN curl -L -o drush.phar https://github.com/drush-ops/drush-launcher/releases/download/0.4.2/drush.phar \
+    && chmod +x drush.phar \
+    && mv drush.phar /usr/local/bin/drush \
+    && composer require drush/drush:^9.0
+
+# Install MySQL Client
+RUN apt-get install -y mysql-client
+
+# Create writable public files directory
+RUN mkdir sites/default/files \
+    && chown www-data:www-data sites/default/files
+
+# Create private file directory
 RUN mkdir /var/www/private \
-	&& chown www-data /var/www/private \
-	&& chmod 755 /var/www/private \
-	&& echo '$settings["file_private_path"] = "/var/www/private";' >> ${DIRPATH}/sites/default/default.settings.php;
+    && chown www-data:www-data /var/www/private
+
+# Copy local Drupal settings
+COPY settings.php ${DIRPATH}/sites/default/settings.php
+RUN chown www-data:www-data sites/default/settings.php
 
 EXPOSE 443
