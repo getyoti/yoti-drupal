@@ -1,6 +1,5 @@
 # from https://www.drupal.org/requirements/php#drupalversions
-FROM php:7.2-apache
-ARG BRANCH
+FROM php:7.2-apache AS drupal_8_base
 
 # Fix for Error: Package 'php-XXX' has no installation candidate
 RUN rm /etc/apt/preferences.d/no-debian-php
@@ -45,34 +44,16 @@ RUN { \
 
 # https://www.drupal.org/node/3060/release
 ENV DIRPATH /var/www/html
-ENV DEFAULT_BRANCH 8.x-1.x
 ENV DRUPAL_VERSION 8.6.7
-ENV PLUGIN_PACKAGE_NAME yoti-for-drupal-8.x-1.x-edge.zip
 ENV DRUPAL_MD5 cd3d0c9ad1d9e976eb589a963e427388
 
 WORKDIR $DIRPATH
-
-RUN if [ "$BRANCH" = "" ]; then \
-  $BRANCH = $DEFAULT_BRANCH; \
-fi
 
 RUN curl -fSL "https://ftp.drupal.org/files/projects/drupal-${DRUPAL_VERSION}.tar.gz" -o drupal.tar.gz \
 	&& echo "${DRUPAL_MD5} *drupal.tar.gz" | md5sum -c - \
 	&& tar -xz --strip-components=1 -f drupal.tar.gz \
 	&& rm drupal.tar.gz \
 	&& chown -R www-data:www-data sites modules themes
-
-RUN git clone -b ${BRANCH} https://github.com/getyoti/yoti-drupal.git --single-branch \
-        && echo "Finished cloning ${BRANCH}" \
-        && cd yoti-drupal \
-        && mkdir __sdk-sym \
-        && ./pack-plugin.sh \
-        && mv ./${PLUGIN_PACKAGE_NAME} ${DIRPATH}/modules \
-        && cd .. \
-        && rm -rf yoti-drupal \
-        && cd ${DIRPATH}/modules \
-        && unzip ${PLUGIN_PACKAGE_NAME} \
-        && rm -f ${PLUGIN_PACKAGE_NAME}
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install- dir=/usr/local/bin --filename=composer \
