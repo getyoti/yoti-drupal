@@ -526,7 +526,7 @@ class YotiHelper {
     ];
 
     foreach($profile->getAttributes() as $attrName => $attrObj) {
-        if (in_array($attrName, $excludedAttrs)) {
+        if (in_array($attrName, $excludedAttrs) || $attrObj === NULL) {
             continue;
         }
         $value = $attrObj->getValue();
