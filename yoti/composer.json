@@ -1,0 +1,10 @@
+{
+    "name": "drupal/yoti",
+    "description": "Let Yoti users quickly register on your site.",
+    "type": "drupal-module",
+    "homepage": "https://drupal.org/project/yoti",
+    "support": {
+        "issues": "https://drupal.org/project/issues/yoti"
+    },
+    "minimum-stability": "dev"
+}
