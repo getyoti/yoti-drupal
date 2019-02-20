@@ -6,6 +6,7 @@ use Yoti\YotiClient;
 use Drupal\Core\Block\BlockBase;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\Models\YotiUserModel;
+use Drupal\Core\Cache\Cache;
 
 /**
  * Provides a 'Yoti' Block.
@@ -47,12 +48,11 @@ class YotiBlock extends BlockBase {
       // Base url for connect.
       $baseUrl = preg_replace('/^(.+)\/connect$/', '$1', YotiClient::CONNECT_BASE_URL);
 
-      $script[] = sprintf('_ybg.config.qr = "%s/qr/";', $baseUrl);
-      $script[] = sprintf('_ybg.config.service = "%s/connect/";', $baseUrl);
+      $script[] = 'var _ybg_config = {};';
+      $script[] = sprintf('_ybg_config.qr = "%s/qr/";', $baseUrl);
+      $script[] = sprintf('_ybg_config.service = "%s/connect/";', $baseUrl);
     }
 
-    // Add init()
-    $script[] = '_ybg.init();';
     $script = implode("\r\n", $script);
 
     // Prep button.
@@ -99,4 +99,10 @@ class YotiBlock extends BlockBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    return Cache::mergeContexts(parent::getCacheContexts(), ['user']);
+  }
 }
