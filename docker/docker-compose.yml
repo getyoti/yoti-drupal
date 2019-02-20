@@ -16,6 +16,8 @@ services:
       dockerfile: app.dockerfile
       args:
         BRANCH: "8.x-1.x"
+    depends_on:
+      - drupal-8-db
     environment:
       MYSQL_HOSTNAME: drupal-8-db
       MYSQL_DATABASE: drupal
@@ -30,6 +32,8 @@ services:
     build:
       context: ../
       dockerfile: docker/app.dev.dockerfile
+    depends_on:
+      - drupal-8-db
     environment:
       MYSQL_HOSTNAME: drupal-8-db
       MYSQL_DATABASE: drupal
@@ -40,6 +44,7 @@ services:
      - "8005:443"
     volumes:
       - ../yoti/:/var/www/html/modules/yoti
+      - ./profiler_output:/tmp/profiler_output
   drupal-8-db:
     image: mysql:5.7
     ports:
