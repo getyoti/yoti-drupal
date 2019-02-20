@@ -61,13 +61,15 @@ $ git checkout 8.x-1.x
 
 Rebuild the images if you have modified any Docker file:
 
+>Note: Docker commands should be run from inside the `/docker/` directory.
+
 ```shell
 $ docker-compose build --no-cache
 ```
 
 #### Quick Installation (Drush)
 
-Install Drupal and enable Yoti module
+Install Drupal and enable Yoti module:
 
 ```shell
 $ ./install-drupal.sh
@@ -80,12 +82,22 @@ Visit <https://localhost:8004> and follow the [module setup process](#module-set
 Build the containers:
 
 ```shell
-$ docker-compose up -d
+$ docker-compose up -d drupal-8
 ```
 
 After the command has finished running, go to <https://localhost:8004> and follow the instructions.
 
 Enable the Yoti module and follow our [module setup process](#module-setup).
+
+### Local Development
+
+To install Drupal and enable the local working Yoti module:
+
+```shell
+$ ./install-drupal.sh drupal-8-dev
+```
+
+To use Xdebug in an IDE, map the `/var/www/html/modules/yoti` volume to the module directory on the host machine.
 
 ### Removing the Docker containers
 

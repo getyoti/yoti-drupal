@@ -5,7 +5,7 @@ if [ "$TARGET" = "" ]; then
     TARGET="drupal-8"
 fi
 
-docker-compose up -d
+docker-compose up -d $TARGET
 
 # Wait for services to be ready
 sleep 10
