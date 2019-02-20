@@ -1,1 +1,4 @@
 *.zip
+.vscode
+.idea
+docker/profiler_output
