@@ -14,6 +14,7 @@ use Yoti\ActivityDetails;
 use Yoti\YotiClient;
 use Yoti\Entity\Profile;
 use Yoti\Entity\AgeVerification;
+use Drupal\Core\Cache\Cache;
 
 require_once __DIR__ . '/../sdk/boot.php';
 
@@ -104,6 +105,9 @@ class YotiHelper {
     if (!$currentUser) {
       $currentUser = Drupal::currentUser();
     }
+
+    // Invalidate cache for current user.
+    $this->invalidateUserCache($currentUser->id());
 
     $token = (!empty($_GET['token'])) ? $_GET['token'] : NULL;
 
@@ -251,9 +255,22 @@ class YotiHelper {
     // Unlink Yoti user.
     if (!$currentUser->isAnonymous()) {
       YotiUserModel::deleteYotiUserById($currentUser->id());
+      $this->invalidateUserCache($currentUser->id());
       return TRUE;
     }
     return FALSE;
+  }
+
+  /**
+   * Invalidate cache for current user.
+   *
+   * @param int $userId
+   *   The Drupal user ID.
+   */
+  private function invalidateUserCache($userId) {
+    if ($user = User::load($userId)) {
+      Cache::invalidateTags($user->getCacheTagsToInvalidate());
+    }
   }
 
   /**
