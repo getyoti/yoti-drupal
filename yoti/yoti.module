@@ -115,7 +115,7 @@ function yoti_user_view(array &$build, UserInterface $account) {
 }
 
 /**
- * Implements hook_ENTITY_TYPE_insert().
+ * Implements hook_user_login().
  */
 function yoti_user_login($account) {
   $activityDetails = YotiHelper::getYotiUserFromStore();

@@ -8,6 +8,7 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\Models\YotiUserModel;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Cache\Cache;
 
 require_once __DIR__ . '/../../sdk/boot.php';
 
@@ -32,9 +33,6 @@ class YotiStartController extends ControllerBase {
       return new TrustedRedirectResponse($helper::getLoginUrl());
     }
 
-    $this->cache('dynamic_page_cache')->deleteAll();
-    $this->cache('render')->deleteAll();
-
     $result = $helper->link();
     if (!$result) {
       $failedURL = YotiHelper::getPathFullUrl($config['yoti_fail_url']);
@@ -54,9 +52,6 @@ class YotiStartController extends ControllerBase {
   public function unlink() {
     /** @var \Drupal\yoti\YotiHelper $helper */
     $helper = Drupal::service('yoti.helper');
-
-    $this->cache('dynamic_page_cache')->deleteAll();
-    $this->cache('render')->deleteAll();
 
     $helper->unlink();
     return $this->redirect('user.login');
