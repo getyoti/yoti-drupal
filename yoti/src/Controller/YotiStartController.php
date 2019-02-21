@@ -8,7 +8,6 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\Models\YotiUserModel;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Drupal\Core\Cache\Cache;
 
 require_once __DIR__ . '/../../sdk/boot.php';
 
