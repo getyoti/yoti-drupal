@@ -118,9 +118,6 @@ class YotiHelper {
       $currentUser = Drupal::currentUser();
     }
 
-    // Invalidate cache for current user.
-    $this->invalidateUserCache($currentUser->id());
-
     $token = (!empty($_GET['token'])) ? $_GET['token'] : NULL;
 
     // If no token then ignore.
@@ -151,6 +148,9 @@ class YotiHelper {
       self::setFlash("Could not log you in as you haven't passed the age verification", 'error');
       return FALSE;
     }
+
+    // Invalidate cache for current user.
+    $this->invalidateUserCache($currentUser->id());
 
     // Check if Yoti user exists.
     $drupalUid = $this->getDrupalUid($activityDetails->getRememberMeId());
@@ -289,7 +289,7 @@ class YotiHelper {
    *   The Drupal user ID.
    */
   private function invalidateUserCache($userId) {
-    if ($user = User::load($userId)) {
+    if ($user = $this->userStorage->load($userId)) {
       $this->cacheTagsInvalidator->invalidateTags($user->getCacheTagsToInvalidate());
     }
   }
@@ -342,7 +342,7 @@ class YotiHelper {
    *   Notification status.
    */
   public static function setFlash($message, $type = 'status') {
-    drupal_set_message($message, $type);
+    \Drupal::messenger()->addMessage($message, $type);
   }
 
   /**
