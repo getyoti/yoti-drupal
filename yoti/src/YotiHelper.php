@@ -14,7 +14,7 @@ use Yoti\ActivityDetails;
 use Yoti\YotiClient;
 use Yoti\Entity\Profile;
 use Yoti\Entity\AgeVerification;
-use Drupal\Core\Cache\Cache;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 
 require_once __DIR__ . '/../sdk/boot.php';
 
@@ -76,12 +76,22 @@ class YotiHelper {
   private $config;
 
   /**
+   * Cache tag invalidator.
+   *
+   * @var CacheTagsInvalidatorInterface
+   */
+  private $cacheTagsInvalidator;
+
+  /**
    * YotiHelper constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityManager
    *   Entity Type Manager.
    */
-  public function __construct(EntityTypeManagerInterface $entityManager) {
+  public function __construct(
+    EntityTypeManagerInterface $entityManager,
+    CacheTagsInvalidatorInterface $cacheTagsInvalidator
+  ) {
     try {
       $this->userStorage = $entityManager->getStorage('user');
     }
@@ -90,6 +100,7 @@ class YotiHelper {
     }
 
     $this->config = self::getConfig();
+    $this->cacheTagsInvalidator = $cacheTagsInvalidator;
   }
 
   /**
@@ -269,7 +280,7 @@ class YotiHelper {
    */
   private function invalidateUserCache($userId) {
     if ($user = User::load($userId)) {
-      Cache::invalidateTags($user->getCacheTagsToInvalidate());
+      $this->cacheTagsInvalidator->invalidateTags($user->getCacheTagsToInvalidate());
     }
   }
 
