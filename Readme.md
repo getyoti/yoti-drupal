@@ -107,6 +107,14 @@ $ ./install-drupal.sh drupal-8-dev
 
 To use Xdebug in an IDE, map the `/var/www/html/modules/yoti` volume to the module directory on the host machine.
 
+### Running Tests
+
+To check coding standards and run unit tests:
+
+```shell
+$ ./run-tests.sh
+```
+
 ### Removing the Docker containers
 
 Run the following commands to remove docker containers:
