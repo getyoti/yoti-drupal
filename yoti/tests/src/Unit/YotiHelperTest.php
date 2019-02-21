@@ -50,11 +50,11 @@ class YotiHelperTest extends UnitTestCase {
 
     // Attempt link with no token.
     $result = $helper->link();
+    $this->assertFalse($result);
 
     // Attempt link with an invalid token.
     $_GET['token'] = 'test_token';
     $result = $helper->link();
-
     $this->assertFalse($result);
   }
 
