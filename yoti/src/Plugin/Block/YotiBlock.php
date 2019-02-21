@@ -105,4 +105,5 @@ class YotiBlock extends BlockBase {
   public function getCacheContexts() {
     return Cache::mergeContexts(parent::getCacheContexts(), ['user']);
   }
+
 }
