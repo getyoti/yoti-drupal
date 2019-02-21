@@ -13,7 +13,6 @@ use Exception;
 use Yoti\ActivityDetails;
 use Yoti\YotiClient;
 use Yoti\Entity\Profile;
-use Yoti\Entity\AgeVerification;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 
 require_once __DIR__ . '/../sdk/boot.php';
@@ -78,7 +77,7 @@ class YotiHelper {
   /**
    * Cache tag invalidator.
    *
-   * @var CacheTagsInvalidatorInterface
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
    */
   private $cacheTagsInvalidator;
 
@@ -87,6 +86,8 @@ class YotiHelper {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityManager
    *   Entity Type Manager.
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
+   *   Cache tags invalidator.
    */
   public function __construct(
     EntityTypeManagerInterface $entityManager,
@@ -223,7 +224,7 @@ class YotiHelper {
   /**
    * Check if age verification applies and is valid.
    *
-   * @param Profile $profile
+   * @param \Yoti\Entity\Profile $profile
    *   Yoti user profile Object.
    *
    * @return bool
@@ -233,6 +234,15 @@ class YotiHelper {
     return !($this->config['yoti_age_verification'] && !$this->oneAgeIsVerified($profile));
   }
 
+  /**
+   * Check that one age is verified.
+   *
+   * @param \Yoti\Entity\Profile $profile
+   *   Yoti user profile Object.
+   *
+   * @return bool
+   *   Return TRUE or FALSE
+   */
   private function oneAgeIsVerified(Profile $profile) {
     $ageVerificationsArr = $this->processAgeVerifications($profile);
     return empty($ageVerificationsArr) || in_array('Yes', array_values($ageVerificationsArr));
@@ -338,7 +348,7 @@ class YotiHelper {
   /**
    * Generate Yoti username.
    *
-   * @param Profile $profile
+   * @param \Yoti\Entity\Profile $profile
    *   Yoti user data.
    * @param string $prefix
    *   Yoti username prefix.
@@ -399,7 +409,7 @@ class YotiHelper {
   /**
    * If user has more than one given name return the first one.
    *
-   * @param Profile $profile
+   * @param \Yoti\Entity\Profile $profile
    *   Yoti user details.
    *
    * @return null|string
@@ -546,30 +556,39 @@ class YotiHelper {
     YotiUserModel::createYotiUser($userId, $activityDetails, $meta);
   }
 
+  /**
+   * Process profile attributes into an associative array.
+   *
+   * @param \Yoti\Entity\Profile $profile
+   *   Yoti user data.
+   *
+   * @return array
+   *   Array of process profile attributes.
+   */
   private function processProfileAttributes(Profile $profile) {
     $attrsArr = [];
     $excludedAttrs = [
-        Profile::ATTR_DOCUMENT_DETAILS,
-        Profile::ATTR_STRUCTURED_POSTAL_ADDRESS
+      Profile::ATTR_DOCUMENT_DETAILS,
+      Profile::ATTR_STRUCTURED_POSTAL_ADDRESS,
     ];
 
-    foreach($profile->getAttributes() as $attrName => $attrObj) {
-        if (in_array($attrName, $excludedAttrs) || $attrObj === NULL) {
-            continue;
-        }
-        $value = $attrObj->getValue();
-        if ($attrName === Profile::ATTR_DATE_OF_BIRTH && NULL !== $value) {
-            $value = $value->format('d-m-Y');
-        }
-        if ($attrName === Profile::ATTR_SELFIE && NULL !== $value) {
-            $value = $value->getContent();
-        }
-        $attrsArr[$attrName] = $value;
+    foreach ($profile->getAttributes() as $attrName => $attrObj) {
+      if (in_array($attrName, $excludedAttrs) || $attrObj === NULL) {
+        continue;
+      }
+      $value = $attrObj->getValue();
+      if ($attrName === Profile::ATTR_DATE_OF_BIRTH && NULL !== $value) {
+        $value = $value->format('d-m-Y');
+      }
+      if ($attrName === Profile::ATTR_SELFIE && NULL !== $value) {
+        $value = $value->getContent();
+      }
+      $attrsArr[$attrName] = $value;
     }
 
     $ageVerificationsArr = $this->processAgeVerifications($profile);
     if (!empty($ageVerificationsArr)) {
-        $attrsArr = array_merge(
+      $attrsArr = array_merge(
             $attrsArr,
             $ageVerificationsArr
         );
@@ -577,19 +596,28 @@ class YotiHelper {
     return $attrsArr;
   }
 
-  private function processAgeVerifications(Profile $profile){
+  /**
+   * Process age verifications into an associative array.
+   *
+   * @param \Yoti\Entity\Profile $profile
+   *   Yoti user data.
+   *
+   * @return array
+   *   Array of age verifications.
+   */
+  private function processAgeVerifications(Profile $profile) {
     $ageVerificationsArr = [];
     $ageStr = '';
-    /** @var AgeVerification $ageVerification */
-    foreach($profile->getAgeVerifications() as $ageAttr => $ageVerification) {
-        $attrName = str_replace(':', '_', ucwords($ageAttr, '_'));
-        $result = $ageVerification->getResult() ? 'Yes' : 'No';
-        $ageVerificationsArr[$attrName] = $result;
-        $ageStr .= $attrName . ': ' . $result . ',';
+    /** @var \Yoti\Entity\AgeVerification $ageVerification */
+    foreach ($profile->getAgeVerifications() as $ageAttr => $ageVerification) {
+      $attrName = str_replace(':', '_', ucwords($ageAttr, '_'));
+      $result = $ageVerification->getResult() ? 'Yes' : 'No';
+      $ageVerificationsArr[$attrName] = $result;
+      $ageStr .= $attrName . ': ' . $result . ',';
     }
     if (!empty($ageStr)) {
-        // this is for profile display
-        $ageVerificationsArr[self::AGE_VERIFICATION_ATTR] = rtrim($ageStr, ',');
+      // This is for profile display.
+      $ageVerificationsArr[self::AGE_VERIFICATION_ATTR] = rtrim($ageStr, ',');
     }
     return $ageVerificationsArr;
   }
