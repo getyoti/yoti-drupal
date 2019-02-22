@@ -1,0 +1,39 @@
+{#
+/**
+ * @file
+ * Yoti Button.
+ *
+ * Available variables:
+ * - app_id: Yoti App ID
+ * - scenario_id: Yoti Scenario ID
+ * - button_text: Button Text
+ * - is_linked: Flag for linked accounts
+ * - is_staging: Flag for staging
+ * - qr_url: QR URL
+ * - service_url: Service URL
+ */
+#}
+<div class="yoti-connect">
+{% if is_linked %}
+    <strong>Yoti</strong> Linked
+{% else %}
+    <span
+        data-yoti-application-id="{{app_id}}"
+        data-yoti-type="inline"
+        data-yoti-scenario-id="{{scenario_id}}"
+        data-size="small">
+        {{button_text}}
+    </span>
+    {% if is_staging %}
+    <script>
+        var _ybg_config = {};
+        {% if qr_url %}
+        _ybg_config.qr = "{{qr_url}}";
+        {% endif %}
+        {% if service_url %}
+        _ybg_config.service = "{{service_url}}";
+        {% endif %}
+    </script>
+    {% endif %}
+{% endif %}
+</div>
