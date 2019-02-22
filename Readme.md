@@ -67,6 +67,14 @@ Rebuild the images if you have modified any Docker file:
 $ docker-compose build --no-cache
 ```
 
+#### Fetching the SDK
+
+To fetch the latest SDK and place in `./yoti/sdk` directory:
+
+```shell
+$ ./checkout-sdk.sh
+```
+
 #### Quick Installation (Drush)
 
 Install Drupal and enable Yoti module:
