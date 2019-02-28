@@ -28,10 +28,10 @@ class YotiHelperTest extends UnitTestCase {
     // Setup container to handle situations where dependencies
     // haven't been injected.
     $container = new ContainerBuilder();
-    $container->set('config.factory', $this->getMockConfigFactory());
+    $container->set('config.factory', $this->createMockConfigFactory());
     $container->set('current_user', $this->getMock(AccountProxyInterface::class));
     $container->set('messenger', $this->getMock(MessengerInterface::class));
-    $container->set('database', $this->getMockDatabase());
+    $container->set('database', $this->createMockDatabase());
     \Drupal::setContainer($container);
   }
 
@@ -46,7 +46,7 @@ class YotiHelperTest extends UnitTestCase {
       ->expects($this->exactly(0))
       ->method('invalidateTags');
 
-    $helper = new YotiHelper($this->getEntityTypeManager(), $cacheTagsInvalidator);
+    $helper = new YotiHelper($this->createMockEntityTypeManager(), $cacheTagsInvalidator);
 
     // Attempt link with no token.
     $result = $helper->link();
@@ -69,17 +69,17 @@ class YotiHelperTest extends UnitTestCase {
       ->method('invalidateTags')
       ->with($this->equalTo(['tag:1', 'tag:2']));
 
-    $helper = new YotiHelper($this->getEntityTypeManager(), $cacheTagsInvalidator);
+    $helper = new YotiHelper($this->createMockEntityTypeManager(), $cacheTagsInvalidator);
     $helper->unlink();
   }
 
   /**
-   * Get mock for entity type manager.
+   * Creates mock entity type manager.
    *
    * @return \Drupal\Core\Entity\EntityTypeManagerInterface
    *   Mocked entity type manager
    */
-  private function getEntityTypeManager() {
+  private function createMockEntityTypeManager() {
     // Mock user storage.
     $user = $this->getMock(EntityInterface::class);
     $user
@@ -106,12 +106,12 @@ class YotiHelperTest extends UnitTestCase {
   }
 
   /**
-   * Get mocked database connection.
+   * Creates mock database connection.
    *
    * @return \Drupal\Core\Database\Connection
    *   Mocked database connection.
    */
-  private function getMockDatabase() {
+  private function createMockDatabase() {
     // Mock database connextion.
     $database = $this->getMockBuilder(Connection::class)
       ->disableOriginalConstructor()
@@ -135,12 +135,12 @@ class YotiHelperTest extends UnitTestCase {
   }
 
   /**
-   * Get mock config factory.
+   * Creates mock config factory.
    *
    * @return \Drupal\Core\Config\ConfigFactoryInterface
    *   Mocked config factory.
    */
-  private function getMockConfigFactory() {
+  private function createMockConfigFactory() {
     return $this->getConfigFactoryStub([
       'yoti.settings' => [
         'yoti_app_id' => 'app_id',
