@@ -3,7 +3,7 @@
     var script = document.createElement('script');
     script.type='text/javascript';
     script.async='async';
-    script.src='https://sdk.yoti.com/clients/browser.2.1.0.js';
+    script.src='https://sdk.yoti.com/clients/browser.2.2.0.js';
 
     // Initialise button once browser JS is loaded.
     script.addEventListener('load', function() {
