@@ -1,4 +1,4 @@
-version: '3.4'
+version: '3.7'
 
 services:
   drupal-8-base:
@@ -10,6 +10,7 @@ services:
       - /var/www/html/profiles
       - /var/www/html/themes
       - /var/www/html/sites
+
   drupal-8:
     build:
       context: .
@@ -17,6 +18,7 @@ services:
       args:
         BRANCH: "8.x-1.x"
     depends_on:
+      - drupal-8-base
       - drupal-8-db
     environment:
       MYSQL_HOSTNAME: drupal-8-db
@@ -25,14 +27,16 @@ services:
       MYSQL_USER: drupal
       MYSQL_PASSWORD: drupal
     ports:
-     - "8004:443"
+      - "8004:443"
     volumes:
       - /var/www/html/modules
-  drupal-8-dev:
+
+  drupal-8-dev: &drupal-8-dev
     build:
       context: ../
       dockerfile: docker/app.dev.dockerfile
     depends_on:
+      - drupal-8-base
       - drupal-8-db
     environment:
       MYSQL_HOSTNAME: drupal-8-db
@@ -41,10 +45,21 @@ services:
       MYSQL_USER: drupal
       MYSQL_PASSWORD: drupal
     ports:
-     - "8005:443"
+      - "8005:443"
     volumes:
       - ../yoti/:/var/www/html/modules/yoti
       - ./profiler_output:/tmp/profiler_output
+
+  drupal-8-debug:
+    <<: *drupal-8-dev
+    build:
+      context: ../
+      dockerfile: docker/app.dev.dockerfile
+      args:
+        ENABLE_XDEBUG: "1"
+    ports:
+      - "8006:443"
+
   drupal-8-db:
     image: mysql:5.7
     ports:

@@ -105,6 +105,13 @@ To install Drupal and enable the local working Yoti module:
 $ ./install-drupal.sh drupal-8-dev
 ```
 
+### Xdebug
+
+To enable Xdebug, install using the debug container:
+```shell
+./install-drupal.sh drupal-8-debug
+```
+
 To use Xdebug in an IDE, map the `/var/www/html/modules/yoti` volume to the module directory on the host machine.
 
 ### Running Tests
