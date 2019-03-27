@@ -5,8 +5,11 @@
          backupGlobals="false"
          colors="true"
          bootstrap="core/tests/bootstrap.php"
-         verbose="true"
-        >
+         verbose="true">
+    <php>
+        <env name="SIMPLETEST_BASE_URL" value="https://localhost"/>
+        <env name="SIMPLETEST_DB" value="mysql://drupal:drupal@drupal-8-db/drupal"/>
+    </php>
     <testsuites>
         <testsuite name="Yoti tests">
             <directory>./modules/yoti</directory>
