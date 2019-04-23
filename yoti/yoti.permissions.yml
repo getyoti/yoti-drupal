@@ -1,0 +1,4 @@
+administer yoti:
+  title: 'Administer Yoti'
+  description: 'Administer the Yoti module'
+  restrict access: true
