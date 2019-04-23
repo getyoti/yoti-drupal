@@ -1,5 +1,10 @@
 <?php
-// Use environment variables for database
+
+/**
+ * @file
+ * Use environment variables for database.
+ */
+
 $databases['default']['default'] = [
   'database' => getenv('MYSQL_DATABASE'),
   'driver' => 'mysql',
@@ -11,5 +16,5 @@ $databases['default']['default'] = [
   'username' => getenv('MYSQL_USER'),
 ];
 
-// Configure private file path
+// Configure private file path.
 $settings['file_private_path'] = '/var/www/private';
