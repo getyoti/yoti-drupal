@@ -39,6 +39,8 @@ class YotiPermissionTest extends BrowserTestBase {
    */
   protected function setUp() {
     parent::setUp();
+
+    // Create a test user.
     $this->testUser = $this->drupalCreateUser([
       'access content',
     ]);
@@ -49,6 +51,7 @@ class YotiPermissionTest extends BrowserTestBase {
     unset($all_rids[array_search(RoleInterface::AUTHENTICATED_ID, $all_rids)]);
     $this->rid = reset($all_rids);
 
+    // Log test user in before each test.
     $this->drupalLogin($this->testUser);
   }
 
@@ -56,9 +59,9 @@ class YotiPermissionTest extends BrowserTestBase {
    * Test admin form access when permission is granted.
    */
   public function testYotiPermissionGranted() {
-    $role_object = Role::load($this->rid);
-    $role_object->grantPermission('administer yoti');
-    $role_object->save();
+    $role = Role::load($this->rid);
+    $role->grantPermission('administer yoti');
+    $role->save();
 
     $this->drupalGet('admin/config/people/yoti');
 
