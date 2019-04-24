@@ -13,7 +13,7 @@ yoti.register:
     _form: '\Drupal\yoti\Form\YotiUserLoginForm'
     _title: 'User Login'
   requirements:
-    _permission: 'access content'
+    _user_is_logged_in: 'FALSE'
   options:
     no_cache: TRUE
 
