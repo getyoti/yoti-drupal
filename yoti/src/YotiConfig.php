@@ -29,7 +29,7 @@ class YotiConfig implements YotiConfigInterface {
    * YotiConfig constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   Yoti plugin config data.
+   *   Config factory.
    */
   public function __construct(ConfigFactoryInterface $config_factory) {
     $this->configFactory = $config_factory;
