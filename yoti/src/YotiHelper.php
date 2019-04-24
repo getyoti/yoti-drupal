@@ -6,7 +6,6 @@ use Drupal\Core\Url;
 use Drupal;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
-use Drupal\file\Entity\File;
 use Drupal\user\Entity\User;
 use Drupal\yoti\Models\YotiUserModel;
 use Exception;
@@ -14,6 +13,7 @@ use Yoti\ActivityDetails;
 use Yoti\YotiClient;
 use Yoti\Entity\Profile;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 require_once __DIR__ . '/../sdk/boot.php';
 
@@ -68,11 +68,25 @@ class YotiHelper {
   protected $userStorage;
 
   /**
+   * Logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
    * Yoti plugin config data.
    *
-   * @var array
+   * @var \Drupal\yoti\YotiConfigInterface
    */
   private $config;
+
+  /**
+   * Yoti SDK Service.
+   *
+   * @var \Drupal\yoti\YotiSdkInterface
+   */
+  private $sdk;
 
   /**
    * Cache tag invalidator.
@@ -88,10 +102,19 @@ class YotiHelper {
    *   Entity Type Manager.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
    *   Cache tags invalidator.
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
+   *   Logger Factory.
+   * @param \Drupal\yoti\YotiSdkInterface $sdk
+   *   Yoti SDK.
+   * @param \Drupal\yoti\YotiConfigInterface $config
+   *   Yoti Configuration.
    */
   public function __construct(
     EntityTypeManagerInterface $entityManager,
-    CacheTagsInvalidatorInterface $cacheTagsInvalidator
+    CacheTagsInvalidatorInterface $cacheTagsInvalidator,
+    LoggerChannelFactoryInterface $loggerFactory,
+    YotiSdkInterface $sdk,
+    YotiConfigInterface $config
   ) {
     try {
       $this->userStorage = $entityManager->getStorage('user');
@@ -100,8 +123,10 @@ class YotiHelper {
       YotiHelper::setFlash('Could not retrieve user data', 'error');
     }
 
-    $this->config = self::getConfig();
+    $this->config = $config;
     $this->cacheTagsInvalidator = $cacheTagsInvalidator;
+    $this->logger = $loggerFactory->get('yoti');
+    $this->sdk = $sdk;
   }
 
   /**
@@ -129,12 +154,7 @@ class YotiHelper {
 
     // Init yoti client and attempt to request user details.
     try {
-      $yotiClient = new YotiClient(
-          $this->config['yoti_sdk_id'],
-          $this->config['yoti_pem']['contents'],
-          YotiClient::DEFAULT_CONNECT_API,
-          self::SDK_IDENTIFIER
-      );
+      $yotiClient = $this->sdk->getClient();
       $activityDetails = $yotiClient->getActivityDetails($token);
       $profile = $activityDetails->getProfile();
     }
@@ -179,12 +199,12 @@ class YotiHelper {
         // If config 'only log in existing user' is enabled then check
         // if user exists, if not then redirect to login page.
         if (!$drupalUid) {
-          if (empty($this->config['yoti_only_existing'])) {
+          if (empty($this->config->getOnlyExisting())) {
             try {
               $drupalUid = $this->createUser($activityDetails);
             }
             catch (Exception $e) {
-              $errMsg = $e->getMessage();
+              $this->logger->error($e->getMessage());
             }
           }
           else {
@@ -198,7 +218,7 @@ class YotiHelper {
         // No user id? no account.
         if (!$drupalUid) {
           // If unable to create user then bail.
-          self::setFlash("Could not create user account. $errMsg", 'error');
+          self::setFlash('Could not create user account.', 'error');
 
           return FALSE;
         }
@@ -231,7 +251,7 @@ class YotiHelper {
    *   Return TRUE or FALSE
    */
   public function passedAgeVerification(Profile $profile) {
-    return !($this->config['yoti_age_verification'] && !$this->oneAgeIsVerified($profile));
+    return !($this->config->getAgeVerification() && !$this->oneAgeIsVerified($profile));
   }
 
   /**
@@ -682,28 +702,7 @@ class YotiHelper {
    *   Config data as array.
    */
   public static function getConfig() {
-    $settings = Drupal::config('yoti.settings');
-
-    $pem = $settings->get('yoti_pem');
-    $name = $contents = NULL;
-    if (isset($pem[0]) && ($file = File::load($pem[0]))) {
-      $name = $file->getFileUri();
-      $contents = file_get_contents(\Drupal::service('file_system')->realpath($name));
-    }
-    $config = [
-      'yoti_app_id' => $settings->get('yoti_app_id'),
-      'yoti_scenario_id' => $settings->get('yoti_scenario_id'),
-      'yoti_sdk_id' => $settings->get('yoti_sdk_id'),
-      'yoti_only_existing' => $settings->get('yoti_only_existing'),
-      'yoti_success_url' => $settings->get('yoti_success_url') ?: '/user',
-      'yoti_fail_url' => $settings->get('yoti_fail_url') ?: '/',
-      'yoti_user_email' => $settings->get('yoti_user_email'),
-      'yoti_age_verification' => $settings->get('yoti_age_verification'),
-      'yoti_company_name' => $settings->get('yoti_company_name'),
-      'yoti_pem' => compact('name', 'contents'),
-    ];
-
-    return $config;
+    return Drupal::service('yoti.config')->getConfig();
   }
 
   /**
@@ -714,11 +713,11 @@ class YotiHelper {
    */
   public static function getLoginUrl() {
     $config = self::getConfig();
-    if (empty($config['yoti_app_id'])) {
+    if (empty($config->getAppId())) {
       return NULL;
     }
 
-    return YotiClient::getLoginUrl($config['yoti_app_id']);
+    return YotiClient::getLoginUrl($config->getAppId());
   }
 
   /**
@@ -736,7 +735,8 @@ class YotiHelper {
     $emailObj = $profile->getEmailAddress();
 
     $email = $emailObj ? $emailObj->getValue() : NULL;
-    $emailConfig = $this->config['yoti_user_email'];
+    $emailConfig = $this->config->getUserEmail();
+
     // Attempt to connect by email.
     if ($email && !empty($emailConfig)) {
       $byMail = user_load_by_mail($email);
