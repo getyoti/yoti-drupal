@@ -12,7 +12,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 class YotiConfig implements YotiConfigInterface {
 
   /**
-   * Yoti plugin config data.
+   * Config factory.
    *
    * @var Drupal\Core\Config\ConfigFactoryInterface
    */
