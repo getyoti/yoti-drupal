@@ -2,7 +2,6 @@
 
 namespace Drupal\yoti\Form;
 
-use Drupal;
 use Drupal\user\Entity\User;
 use Drupal\file\Entity\File;
 use Drupal\Core\Url;
@@ -49,7 +48,7 @@ class YotiSettingsForm extends ConfigFormBase {
     // Make sure private path exists, if not, create it.
     $path = YotiHelper::uploadDir();
     if ($path && !is_dir($path)) {
-      Drupal::service('file_system')->mkdir($path, 0777);
+      \Drupal::service('file_system')->mkdir($path, 0777);
     }
 
     $config = $this->config('yoti.settings');
@@ -162,10 +161,10 @@ class YotiSettingsForm extends ConfigFormBase {
       $file->setPermanent();
       // Save.
       $file->save();
-      $user = User::load(Drupal::currentUser()->id());
+      $user = User::load(\Drupal::currentUser()->id());
       $file->setOwner($user);
       // Record the module (in this example, user module) is using the file.
-      Drupal::service('file.usage')->add($file, 'yoti', 'yoti', $file->id());
+      \Drupal::service('file.usage')->add($file, 'yoti', 'yoti', $file->id());
     }
 
     return parent::buildForm($form, $form_state);

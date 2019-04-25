@@ -2,7 +2,6 @@
 
 namespace Drupal\yoti\Controller;
 
-use Drupal;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\yoti\YotiHelper;
@@ -24,7 +23,7 @@ class YotiStartController extends ControllerBase {
    */
   public function link() {
     /** @var \Drupal\yoti\YotiHelper $helper */
-    $helper = Drupal::service('yoti.helper');
+    $helper = \Drupal::service('yoti.helper');
     $config = YotiHelper::getConfig();
 
     // If no token is given check if we are in mock request mode.
@@ -50,7 +49,7 @@ class YotiStartController extends ControllerBase {
    */
   public function unlink() {
     /** @var \Drupal\yoti\YotiHelper $helper */
-    $helper = Drupal::service('yoti.helper');
+    $helper = \Drupal::service('yoti.helper');
 
     $helper->unlink();
     return $this->redirect('user.login');
@@ -60,7 +59,7 @@ class YotiStartController extends ControllerBase {
    * Send binary file from Yoti.
    */
   public function binFile($field) {
-    $current = Drupal::currentUser();
+    $current = \Drupal::currentUser();
     $isAdmin = in_array('administrator', $current->getRoles(), TRUE);
     $userId = (!empty($_GET['user_id']) && $isAdmin) ? (int) $_GET['user_id'] : $current->id();
     $dbProfile = YotiUserModel::getYotiUserById($userId);
