@@ -2,7 +2,6 @@
 
 namespace Drupal\yoti\Models;
 
-use Drupal;
 use Drupal\yoti\YotiHelper;
 use Yoti\ActivityDetails;
 
@@ -26,7 +25,7 @@ class YotiUserModel {
   public static function getYotiUserById($userId) {
     $userProfile = NULL;
     if (!empty($userId)) {
-      $userProfile = Drupal::database()
+      $userProfile = \Drupal::database()
         ->select(YotiHelper::YOTI_USER_TABLE_NAME, 'u')
         ->fields('u')
         ->condition('uid', (int) $userId)
@@ -97,7 +96,7 @@ class YotiUserModel {
   public static function removeDuplicatedFieldsFromYotiUserTable() {
     $table_name = YotiHelper::YOTI_USER_TABLE_NAME;
     $ret = [];
-    $dbConn = Drupal::database();
+    $dbConn = \Drupal::database();
     $ret[] = $dbConn->schema()->dropField($table_name, 'selfie_filename');
     $ret[] = $dbConn->schema()->dropField($table_name, 'phone_number');
     $ret[] = $dbConn->schema()->dropField($table_name, 'date_of_birth');
@@ -134,7 +133,7 @@ class YotiUserModel {
 
     $col = NULL;
     if (!empty($yotiId) && !empty($field)) {
-      $col = Drupal::database()
+      $col = \Drupal::database()
         ->select(YotiHelper::YOTI_USER_TABLE_NAME, 'u')
         ->fields('u', ['uid'])
         ->condition($field, $yotiId)
@@ -158,7 +157,7 @@ class YotiUserModel {
    * @throws \Exception
    */
   public static function createYotiUser($userId, ActivityDetails $activityDetails, array $meta) {
-    Drupal::database()->insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
+    \Drupal::database()->insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
       'uid' => $userId,
       'identifier' => $activityDetails->getRememberMeId(),
       'data' => serialize($meta),
@@ -172,7 +171,7 @@ class YotiUserModel {
    *   User Id.
    */
   public static function deleteYotiUserById($userId) {
-    Drupal::database()->delete(YotiHelper::YOTI_USER_TABLE_NAME)->condition("uid", $userId)->execute();
+    \Drupal::database()->delete(YotiHelper::YOTI_USER_TABLE_NAME)->condition("uid", $userId)->execute();
   }
 
   /**
@@ -187,7 +186,7 @@ class YotiUserModel {
   public static function getUsernameCountByPrefix($prefix) {
     $usernameCount = 0;
     if (!empty($prefix)) {
-      $userQuery = Drupal::database()->select('users_field_data', 'uf');
+      $userQuery = \Drupal::database()->select('users_field_data', 'uf');
       $userQuery->fields('uf', ['name']);
       $userQuery->condition('name', $userQuery->escapeLike($prefix) . '%', 'LIKE');
       $results = $userQuery->execute()->fetchAll();
@@ -208,9 +207,9 @@ class YotiUserModel {
   public static function getUserEmailCountByPrefix($prefix) {
     $emailCount = 0;
     if (!empty($prefix)) {
-      $userQuery = Drupal::database()->select('users_field_data', 'uf');
+      $userQuery = \Drupal::database()->select('users_field_data', 'uf');
       $userQuery->fields('uf', ['mail']);
-      $userQuery->condition('mail', Drupal::database()->escapeLike($prefix) . '%', 'LIKE');
+      $userQuery->condition('mail', \Drupal::database()->escapeLike($prefix) . '%', 'LIKE');
       $results = $userQuery->execute()->fetchAll();
       $emailCount = count($results);
     }

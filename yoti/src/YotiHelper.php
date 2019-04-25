@@ -3,7 +3,6 @@
 namespace Drupal\yoti;
 
 use Drupal\Core\Url;
-use Drupal;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\user\Entity\User;
@@ -155,7 +154,7 @@ class YotiHelper {
    */
   public function link($currentUser = NULL) {
     if (!$currentUser) {
-      $currentUser = Drupal::currentUser();
+      $currentUser = \Drupal::currentUser();
     }
 
     $token = (!empty($_GET['token'])) ? $_GET['token'] : NULL;
@@ -294,7 +293,7 @@ class YotiHelper {
    */
   public static function getPathFullUrl($path = NULL) {
     // Get the root path including any subdomain.
-    $fullUrl = Drupal::request()->getBaseUrl();
+    $fullUrl = \Drupal::request()->getBaseUrl();
     if (!empty($path)) {
       // Add the target path to the root path.
       $fullUrl .= ($path[0] === '/') ? $path : '/' . $path;
@@ -307,7 +306,7 @@ class YotiHelper {
    * Unlink account from currently logged in.
    */
   public function unlink() {
-    $currentUser = Drupal::currentUser();
+    $currentUser = \Drupal::currentUser();
     // Unlink Yoti user.
     if (!$currentUser->isAnonymous()) {
       YotiUserModel::deleteYotiUserById($currentUser->id());
@@ -336,7 +335,7 @@ class YotiHelper {
    *   Yoti user details.
    */
   public static function storeYotiUser(ActivityDetails $activityDetails) {
-    $session = Drupal::service('session');
+    $session = \Drupal::service('session');
     if (!$session->isStarted()) {
       $session->migrate();
     }
@@ -350,7 +349,7 @@ class YotiHelper {
    *   Yoti user details.
    */
   public static function getYotiUserFromStore() {
-    $session = Drupal::service('session');
+    $session = \Drupal::service('session');
     if (!$session->isStarted()) {
       $session->migrate();
     }
@@ -361,7 +360,7 @@ class YotiHelper {
    * Remove Yoti user from the session.
    */
   public static function clearYotiUserStore() {
-    $session = Drupal::service('session');
+    $session = \Drupal::service('session');
     if (!$session->isStarted()) {
       $session->migrate();
     }
@@ -506,7 +505,7 @@ class YotiHelper {
    * @throws Exception
    */
   private function createUser(ActivityDetails $activityDetails) {
-    $language = Drupal::languageManager()->getCurrentLanguage()->getId();
+    $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
     $user = User::create();
     $profile = $activityDetails->getProfile();
     $emailObj = $profile->getEmailAddress();
@@ -514,7 +513,7 @@ class YotiHelper {
 
     // If user has provided an email address and it's not in use then use it,
     // otherwise use Yoti generic email.
-    $isValidEmail = Drupal::service('email.validator')->isValid($userProvidedEmail);
+    $isValidEmail = \Drupal::service('email.validator')->isValid($userProvidedEmail);
     $userProvidedEmailCanBeUsed = $isValidEmail && !user_load_by_mail($userProvidedEmail);
     $userEmail = $userProvidedEmailCanBeUsed ? $userProvidedEmail : $this->generateEmail();
 
@@ -579,7 +578,7 @@ class YotiHelper {
       $content = $selfie->getValue()->getContent();
       $uploadDir = self::uploadDir(FALSE);
       if (!is_dir($uploadDir)) {
-        Drupal::service('file_system')->mkdir($uploadDir, 0777, TRUE);
+        \Drupal::service('file_system')->mkdir($uploadDir, 0777, TRUE);
       }
 
       $selfieFilename = md5("selfie_$userId" . time()) . '.png';
@@ -697,7 +696,7 @@ class YotiHelper {
    */
   public static function uploadDir($realPath = TRUE) {
     $yotiPemUploadDir = YotiHelper::YOTI_PEM_FILE_UPLOAD_LOCATION;
-    return $realPath ? Drupal::service('file_system')->realpath($yotiPemUploadDir) : $yotiPemUploadDir;
+    return $realPath ? \Drupal::service('file_system')->realpath($yotiPemUploadDir) : $yotiPemUploadDir;
   }
 
   /**
@@ -717,7 +716,7 @@ class YotiHelper {
    *   Config data as array.
    */
   public static function getConfig() {
-    return Drupal::service('yoti.config')->getSettings();
+    return \Drupal::service('yoti.config')->getSettings();
   }
 
   /**

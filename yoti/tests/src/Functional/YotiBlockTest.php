@@ -16,7 +16,7 @@ class YotiBlockTest extends BrowserTestBase {
    *
    * @var array
    */
-  public static $modules = ['yoti', 'node', 'block', 'file'];
+  public static $modules = ['yoti', 'node', 'block'];
 
   /**
    * Setup tests.
