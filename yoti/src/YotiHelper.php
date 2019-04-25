@@ -309,11 +309,36 @@ class YotiHelper {
     $currentUser = \Drupal::currentUser();
     // Unlink Yoti user.
     if (!$currentUser->isAnonymous()) {
+      $this->deleteSelfie($currentUser->id());
       YotiUserModel::deleteYotiUserById($currentUser->id());
       $this->invalidateUserCache($currentUser->id());
       return TRUE;
     }
     return FALSE;
+  }
+
+  /**
+   * Delete selfie for given user ID.
+   *
+   * @param int $userId
+   *   The Drupal user ID.
+   */
+  private function deleteSelfie($userId) {
+    $dbProfile = YotiUserModel::getYotiUserById($userId);
+    if (!$dbProfile) {
+      return;
+    }
+
+    $userProfileArr = unserialize($dbProfile['data']);
+    if (!isset($userProfileArr[self::ATTR_SELFIE_FILE_NAME])) {
+      return;
+    }
+
+    $selfieFileName = $userProfileArr[self::ATTR_SELFIE_FILE_NAME];
+    $selfieFullPath = self::uploadDir() . '/' . $selfieFileName;
+    if (is_file($selfieFullPath)) {
+      unlink($selfieFullPath);
+    }
   }
 
   /**
