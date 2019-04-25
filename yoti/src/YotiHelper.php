@@ -702,7 +702,7 @@ class YotiHelper {
    *   Config data as array.
    */
   public static function getConfig() {
-    return Drupal::service('yoti.config')->getConfig();
+    return Drupal::service('yoti.config')->getSettings();
   }
 
   /**
