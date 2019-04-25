@@ -7,6 +7,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\Delete;
 use Drupal\Core\Database\Query\Select;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -16,7 +17,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Tests\UnitTestCase;
 use Drupal\user\UserInterface;
 use Drupal\yoti\YotiConfigInterface;
 use Drupal\yoti\YotiHelper;
@@ -35,13 +35,38 @@ require_once __DIR__ . '/../../../sdk/boot.php';
  *
  * @group yoti
  */
-class YotiHelperTest extends UnitTestCase {
+class YotiHelperTest extends YotiUnitTestBase {
+
+  /**
+   * Selfie file path.
+   *
+   * @var string
+   */
+  private $selfieFilePath;
 
   /**
    * Setup for YotiHelper tests.
    */
   public function setUp() {
+    parent::setup();
+
+    // Create test selfie file.
+    $this->selfieFilePath = $this->tmpDir . DIRECTORY_SEPARATOR . 'test_selfie.jpg';
+    file_put_contents($this->selfieFilePath, 'test_selfie_contents');
+
     $this->createContainer();
+  }
+
+  /**
+   * Clean up test data.
+   */
+  public function teardown() {
+    // Remove test file.
+    if (is_file($this->selfieFilePath)) {
+      unlink($this->selfieFilePath);
+    }
+
+    parent::teardown();
   }
 
   /**
@@ -90,10 +115,7 @@ class YotiHelperTest extends UnitTestCase {
    */
   public function testUserSaveFailure() {
     // Set current user to anonymous so that a new user is created.
-    $current_user = $this->createMock(AccountProxyInterface::class);
-    $current_user
-      ->method('isAnonymous')
-      ->willReturn(TRUE);
+    $current_user = $this->createMockCurrentUser(0);
 
     // Return FALSE when new user is saved.
     $user = $this->createMock(UserInterface::class);
@@ -147,6 +169,23 @@ class YotiHelperTest extends UnitTestCase {
     );
 
     $helper->unlink();
+  }
+
+  /**
+   * @covers ::unlink
+   */
+  public function testUnlinkRemoveSelfie() {
+    $helper = new YotiHelper(
+      $this->createMockEntityTypeManager(),
+      $this->createMock(CacheTagsInvalidatorInterface::class),
+      $this->createMock(LoggerChannelFactoryInterface::class),
+      $this->createMock(YotiSdkInterface::class),
+      $this->createMock(YotiConfigInterface::class)
+    );
+
+    $this->assertFileExists($this->selfieFilePath);
+    $helper->unlink();
+    $this->assertFileNotExists($this->selfieFilePath);
   }
 
   /**
@@ -223,11 +262,8 @@ class YotiHelperTest extends UnitTestCase {
    *   Mocked database connection.
    */
   private function createMockDatabase() {
-    // Mock database connextion.
-    $database = $this->getMockBuilder(Connection::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['delete', 'select', 'escapeLike'])
-      ->getMockForAbstractClass();
+    // Mock database connection.
+    $database = $this->createMock(Connection::class);
 
     // Mock delete query.
     $deleteQuery = $this->getMockBuilder(Delete::class)
@@ -242,19 +278,45 @@ class YotiHelperTest extends UnitTestCase {
       ->method('delete')
       ->willReturn($deleteQuery);
 
-    // Mock the select query.
-    $selectQuery = $this->getMockBuilder(Select::class)
+    // Mock the user data select query.
+    $userDataSelectQuery = $this->getMockBuilder(Select::class)
       ->disableOriginalConstructor()
       ->setMethods(['condition', 'execute', 'fetchAll', 'escapeLike'])
       ->getMockForAbstractClass();
-    $selectQuery
+    $userDataSelectQuery
       ->method('fetchAll')
       ->willReturn([]);
-    $selectQuery->method('execute')
-      ->willReturn($selectQuery);
+    $userDataSelectQuery->method('execute')
+      ->willReturn($userDataSelectQuery);
+
+    // Mock the Yoti user data select query.
+    $yotiUserSelectQuery = $this->getMockBuilder(Select::class)
+      ->disableOriginalConstructor()
+      ->setMethods(['condition', 'execute', 'range', 'fetchAssoc'])
+      ->getMockForAbstractClass();
+
+    foreach (['condition', 'execute', 'range'] as $method) {
+      $yotiUserSelectQuery
+        ->method($method)
+        ->willReturn($yotiUserSelectQuery);
+    }
+
+    $yotiUserSelectQuery->method('fetchAssoc')
+      ->willReturn([
+        'data' => serialize([
+          'selfie_filename' => basename($this->selfieFilePath),
+        ]),
+      ]);
+
+    // Return mocked query depending on table.
     $database
       ->method('select')
-      ->willReturn($selectQuery);
+      ->will(
+        $this->returnValueMap([
+          ['users_field_data', 'uf', [], $userDataSelectQuery],
+          [YotiHelper::YOTI_USER_TABLE_NAME, 'u', [], $yotiUserSelectQuery],
+        ])
+      );
 
     return $database;
   }
@@ -343,13 +405,63 @@ class YotiHelperTest extends UnitTestCase {
   private function createContainer() {
     $container = new ContainerBuilder();
     $container->set('config.factory', $this->createMockConfigFactory());
-    $container->set('current_user', $this->createMock(AccountProxyInterface::class));
+    $container->set('current_user', $this->createMockCurrentUser(2));
     $container->set('messenger', $this->createMock(MessengerInterface::class));
     $container->set('database', $this->createMockDatabase());
     $container->set('email.validator', $this->createMockEmailValidator());
     $container->set('entity_type.repository', $this->createMock(EntityTypeRepositoryInterface::class));
     $container->set('language_manager', $this->createMockLanguageManager());
+    $container->set('file_system', $this->createMockFileSystem());
     \Drupal::setContainer($container);
+  }
+
+  /**
+   * Create mock current user.
+   *
+   * @param int $user_id
+   *   The mock user ID.
+   *
+   * @return \Drupal\Core\Session\AccountProxyInterface
+   *   Current user.
+   */
+  private function createMockCurrentUser($user_id) {
+    $current_user = $this->createMock(AccountProxyInterface::class);
+
+    if ($user_id == 0) {
+      $current_user
+        ->method('isAnonymous')
+        ->willReturn(TRUE);
+    }
+    else {
+      $current_user
+        ->method('isAnonymous')
+        ->willReturn(FALSE);
+      $current_user
+        ->method('id')
+        ->willReturn($user_id);
+    }
+
+    return $current_user;
+  }
+
+  /**
+   * Mock the file system.
+   *
+   * @return \Drupal\Core\File\FileSystemInterface
+   *   File system.
+   */
+  private function createMockFileSystem() {
+    $file_system = $this->createMock(FileSystemInterface::class);
+
+    $file_system
+      ->method('realpath')
+      ->will(
+        $this->returnValueMap([
+          [YotiHelper::YOTI_PEM_FILE_UPLOAD_LOCATION, $this->tmpDir],
+        ])
+      );
+
+    return $file_system;
   }
 
   /**
