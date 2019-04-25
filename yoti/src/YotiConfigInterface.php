@@ -10,12 +10,12 @@ namespace Drupal\yoti;
 interface YotiConfigInterface {
 
   /**
-   * Yoti config data.
+   * Yoti settings data.
    *
    * @return array
-   *   Config data as array.
+   *   Settings data as array.
    */
-  public function getConfig();
+  public function getSettings();
 
   /**
    * Yoti App ID.

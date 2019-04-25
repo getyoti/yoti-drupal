@@ -3,6 +3,8 @@
 namespace Drupal\yoti;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Class YotiConfig.
@@ -19,20 +21,44 @@ class YotiConfig implements YotiConfigInterface {
   private $configFactory;
 
   /**
-   * Yoti plugin config data.
+   * File Storage.
+   *
+   * @var Drupal\Core\Entity\EntityStorageInterface
+   */
+  private $fileStorage;
+
+  /**
+   * File System.
+   *
+   * @var Drupal\Core\File\FileSystemInterface
+   */
+  private $fileSystem;
+
+  /**
+   * Yoti plugin settings.
    *
    * @var array
    */
-  private $config;
+  private $settings;
 
   /**
    * YotiConfig constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Config factory.
+   * @param Drupal\Core\File\FileSystemInterface $file_system
+   *   File system.
+   * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   Entity type manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory) {
+  public function __construct(
+    ConfigFactoryInterface $config_factory,
+    FileSystemInterface $file_system,
+    EntityTypeManagerInterface $entity_type_manager
+  ) {
     $this->configFactory = $config_factory;
+    $this->fileSystem = $file_system;
+    $this->fileStorage = $entity_type_manager->getStorage('file');
     $this->setConfig();
   }
 
@@ -44,11 +70,12 @@ class YotiConfig implements YotiConfigInterface {
 
     $pem = $settings->get('yoti_pem');
     $name = $contents = NULL;
-    if (isset($pem[0]) && ($file = File::load($pem[0]))) {
+
+    if (isset($pem[0]) && ($file = $this->fileStorage->load($pem[0]))) {
       $name = $file->getFileUri();
-      $contents = file_get_contents(\Drupal::service('file_system')->realpath($name));
+      $contents = file_get_contents($this->fileSystem->realpath($name));
     }
-    $this->config = [
+    $this->settings = [
       'yoti_app_id' => $settings->get('yoti_app_id'),
       'yoti_scenario_id' => $settings->get('yoti_scenario_id'),
       'yoti_sdk_id' => $settings->get('yoti_sdk_id'),
@@ -65,78 +92,78 @@ class YotiConfig implements YotiConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConfig() {
-    return $this->config;
+  public function getSettings() {
+    return $this->settings;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAppId() {
-    return $this->config['yoti_app_id'];
+    return $this->settings['yoti_app_id'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getScenarioId() {
-    return $this->config['yoti_scenario_id'];
+    return $this->settings['yoti_scenario_id'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getSdkId() {
-    return $this->config['yoti_sdk_id'];
+    return $this->settings['yoti_sdk_id'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOnlyExisting() {
-    return $this->config['yoti_only_existing'];
+    return $this->settings['yoti_only_existing'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getSuccessUrl() {
-    return $this->config['yoti_success_url'];
+    return $this->settings['yoti_success_url'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getFailUrl() {
-    return $this->config['yoti_fail_url'];
+    return $this->settings['yoti_fail_url'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getUserEmail() {
-    return $this->config['yoti_user_email'];
+    return $this->settings['yoti_user_email'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAgeVerification() {
-    return $this->config['yoti_age_verification'];
+    return $this->settings['yoti_age_verification'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getCompanyName() {
-    return $this->config['yoti_company_name'];
+    return $this->settings['yoti_company_name'];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getPemContents() {
-    return $this->config['yoti_pem']['contents'];
+    return $this->settings['yoti_pem']['contents'];
   }
 
 }
