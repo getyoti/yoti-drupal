@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\yoti\Unit;
 
-use Drupal\Tests\UnitTestCase;
 use Drupal\yoti\YotiConfig;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -14,14 +13,7 @@ use Drupal\file\FileInterface;
  *
  * @group yoti
  */
-class YotiConfigTest extends UnitTestCase {
-
-  /**
-   * Test file directory.
-   *
-   * @var string
-   */
-  private $tmpDir;
+class YotiConfigTest extends YotiUnitTestBase {
 
   /**
    * PEM file path.
@@ -61,12 +53,6 @@ class YotiConfigTest extends UnitTestCase {
   public function setup() {
     parent::setup();
 
-    // Create tmp file directory.
-    $this->tmpDir = realpath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'drupal-yoti';
-    if (!is_dir($this->tmpDir)) {
-      mkdir($this->tmpDir, 0777, TRUE);
-    }
-
     // Create test pem file.
     $this->pemFilePath = $this->tmpDir . DIRECTORY_SEPARATOR . 'yoti_config_test.pem';
     file_put_contents($this->pemFilePath, 'test_pem_content');
@@ -87,17 +73,12 @@ class YotiConfigTest extends UnitTestCase {
    * Clean up test data.
    */
   public function teardown() {
-    parent::teardown();
-
     // Remove test file.
     if (is_file($this->pemFilePath)) {
       unlink($this->pemFilePath);
     }
 
-    // Remove test file directory.
-    if (is_dir($this->tmpDir)) {
-      rmdir($this->tmpDir);
-    }
+    parent::teardown();
   }
 
   /**

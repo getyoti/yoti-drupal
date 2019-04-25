@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\yoti\Unit;
 
-use Drupal\Tests\UnitTestCase;
 use Drupal\yoti\YotiSdk;
 use Drupal\yoti\YotiConfigInterface;
 use Yoti\YotiClient;
@@ -12,7 +11,7 @@ use Yoti\YotiClient;
  *
  * @group yoti
  */
-class YotiSdkTest extends UnitTestCase {
+class YotiSdkTest extends YotiUnitTestBase {
 
   /**
    * Yoti config.
