@@ -140,7 +140,7 @@ function yoti_user_login($account) {
   $activityDetails = YotiHelper::getYotiUserFromStore();
   if ($activityDetails && empty($_SESSION['yoti_nolink']) && !isset($_REQUEST['yoti_nolink'])) {
     // Link user account.
-    $helper = new YotiHelper(\Drupal::entityTypeManager());
+    $helper = \Drupal::service('yoti.helper');
     $helper->createYotiUser($account->id(), $activityDetails);
   }
 
