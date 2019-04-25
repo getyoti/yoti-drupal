@@ -111,16 +111,31 @@ class YotiHelper {
    */
   public function __construct(
     EntityTypeManagerInterface $entityManager,
-    CacheTagsInvalidatorInterface $cacheTagsInvalidator,
-    LoggerChannelFactoryInterface $loggerFactory,
-    YotiSdkInterface $sdk,
-    YotiConfigInterface $config
+    CacheTagsInvalidatorInterface $cacheTagsInvalidator = NULL,
+    LoggerChannelFactoryInterface $loggerFactory = NULL,
+    YotiSdkInterface $sdk = NULL,
+    YotiConfigInterface $config = NULL
   ) {
     try {
       $this->userStorage = $entityManager->getStorage('user');
     }
     catch (\Exception $e) {
       YotiHelper::setFlash('Could not retrieve user data', 'error');
+    }
+
+    // Fetch services for backwards compatibility.
+    // All injected services will be required in the next major release.
+    if (is_null($cacheTagsInvalidator)) {
+      $cacheTagsInvalidator = \Drupal::service('cache_tags.invalidator');
+    }
+    if (is_null($loggerFactory)) {
+      $loggerFactory = \Drupal::service('logger.factory');
+    }
+    if (is_null($sdk)) {
+      $sdk = \Drupal::service('yoti.sdk');
+    }
+    if (is_null($config)) {
+      $config = \Drupal::service('yoti.config');
     }
 
     $this->config = $config;
