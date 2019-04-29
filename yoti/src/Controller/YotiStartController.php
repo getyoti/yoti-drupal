@@ -24,7 +24,7 @@ class YotiStartController extends ControllerBase {
   public function link() {
     /** @var \Drupal\yoti\YotiHelper $helper */
     $helper = \Drupal::service('yoti.helper');
-    $config = YotiHelper::getConfig();
+    $config = \Drupal::service('yoti.config');
 
     // If no token is given check if we are in mock request mode.
     if (!array_key_exists('token', $_GET)) {
@@ -33,14 +33,14 @@ class YotiStartController extends ControllerBase {
 
     $result = $helper->link();
     if (!$result) {
-      $failedURL = YotiHelper::getPathFullUrl($config['yoti_fail_url']);
+      $failedURL = YotiHelper::getPathFullUrl($config->getFailUrl());
       return new TrustedRedirectResponse($failedURL);
     }
     elseif ($result instanceof RedirectResponse) {
       return $result;
     }
 
-    $successUrl = YotiHelper::getPathFullUrl($config['yoti_success_url']);
+    $successUrl = YotiHelper::getPathFullUrl($config->getSuccessUrl());
     return new TrustedRedirectResponse($successUrl);
   }
 

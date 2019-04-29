@@ -17,4 +17,12 @@ interface YotiSdkInterface {
    */
   public function getClient();
 
+  /**
+   * Get Yoti Dashboard app URL.
+   *
+   * @return null|string
+   *   Yoti App URL.
+   */
+  public function getLoginUrl();
+
 }

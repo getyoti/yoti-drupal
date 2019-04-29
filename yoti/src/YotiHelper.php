@@ -9,7 +9,6 @@ use Drupal\user\Entity\User;
 use Drupal\yoti\Models\YotiUserModel;
 use Exception;
 use Yoti\ActivityDetails;
-use Yoti\YotiClient;
 use Yoti\Entity\Profile;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
@@ -737,6 +736,8 @@ class YotiHelper {
   /**
    * Yoti config data.
    *
+   * @deprecated use `yoti.config` service instead.
+   *
    * @return array
    *   Config data as array.
    */
@@ -747,16 +748,13 @@ class YotiHelper {
   /**
    * Get Yoti Dashboard app URL.
    *
+   * @deprecated use `yoti.sdk` service instead.
+   *
    * @return null|string
    *   Yoti App URL.
    */
   public static function getLoginUrl() {
-    $config = self::getConfig();
-    if (empty($config->getAppId())) {
-      return NULL;
-    }
-
-    return YotiClient::getLoginUrl($config->getAppId());
+    return \Drupal::service('yoti.sdk')->getLoginUrl();
   }
 
   /**
