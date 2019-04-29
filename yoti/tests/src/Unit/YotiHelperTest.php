@@ -110,6 +110,11 @@ class YotiHelperTest extends YotiUnitTestBase {
 
   /**
    * @covers ::link
+   *
+   * @group legacy
+   *   Attribute getters on Yoti\ActivityDetails were deprecated in 1.2.0
+   *   Usage of deprecated methods has been addressed in 8.x-2.x
+   *
    * @backupGlobals enabled
    */
   public function testUserSaveFailure() {
