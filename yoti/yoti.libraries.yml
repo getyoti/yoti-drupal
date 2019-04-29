@@ -1,8 +1,9 @@
 yoti:
-  header: true
   version: 1.x
   js:
-    https://sdk.yoti.com/clients/browser.2.1.0.js: { type: external }
+    js/browser-loader.js:
+      attributes:
+        async: async
   css:
     theme:
       css/yoti.css: {}
