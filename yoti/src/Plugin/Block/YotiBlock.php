@@ -6,6 +6,7 @@ use Yoti\YotiClient;
 use Drupal\Core\Block\BlockBase;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\Models\YotiUserModel;
+use Drupal\Core\Cache\Cache;
 
 /**
  * Provides a 'Yoti' Block.
@@ -39,64 +40,50 @@ class YotiBlock extends BlockBase {
       return [];
     }
 
-    $script = [];
-
     // If connect url starts with 'https://staging' then we are in staging mode.
-    $isStaging = strpos(YotiClient::CONNECT_BASE_URL, 'https://staging') === 0;
-    if ($isStaging) {
+    $qr_url = NULL;
+    $service_url = NULL;
+    $is_staging = strpos(YotiClient::CONNECT_BASE_URL, 'https://staging') === 0;
+    if ($is_staging) {
       // Base url for connect.
-      $baseUrl = preg_replace('/^(.+)\/connect$/', '$1', YotiClient::CONNECT_BASE_URL);
-
-      $script[] = sprintf('_ybg.config.qr = "%s/qr/";', $baseUrl);
-      $script[] = sprintf('_ybg.config.service = "%s/connect/";', $baseUrl);
+      $base_url = preg_replace('/^(.+)\/connect$/', '$1', YotiClient::CONNECT_BASE_URL);
+      $qr_url = sprintf('%s/qr/', $base_url);
+      $service_url = sprintf('%s/connect/', $base_url);
     }
 
-    // Add init()
-    $script[] = '_ybg.init();';
-    $script = implode("\r\n", $script);
-
-    // Prep button.
-    $linkButton = '<span
-            data-yoti-application-id="' . $config['yoti_app_id'] . '"
-            data-yoti-type="inline"
-            data-yoti-scenario-id="' . $config['yoti_scenario_id'] . '"
-            data-size="small">
-            %s
-        </span>';
-
+    // Set button text based on current user.
     $userId = $user->id();
     if (!$userId) {
-      $button = sprintf($linkButton, YotiHelper::YOTI_LINK_BUTTON_DEFAULT_TEXT);
+      $button_text = YotiHelper::YOTI_LINK_BUTTON_DEFAULT_TEXT;
+      $is_linked = FALSE;
     }
     else {
-      $dbProfile = YotiUserModel::getYotiUserById($userId);
-      if ($dbProfile) {
-        $button = '<strong>Yoti</strong> Linked';
-      }
-      else {
-        $button = sprintf($linkButton, 'Link to Yoti');
-      }
+      $button_text = 'Link to Yoti';
+      $is_linked = YotiUserModel::getYotiUserById($userId) ? TRUE : FALSE;
     }
 
-    $html = '<div class="yoti-connect">' . $button . '</div>';
-
     return [
-      'inside' => [
-        '#type' => 'html_tag',
-        '#tag' => 'div',
-        '#value' => $html,
-        'inside' => [
-          '#type' => 'html_tag',
-          '#tag' => 'script',
-          '#value' => '<script>' . $script . '</script>',
-        ],
-      ],
+      '#theme' => 'yoti_button',
+      '#app_id' => $config['yoti_app_id'],
+      '#scenario_id' => $config['yoti_scenario_id'],
+      '#button_text' => $button_text,
+      '#is_linked' => $is_linked,
+      '#is_staging' => $is_staging,
+      '#qr_url' => $qr_url,
+      '#service_url' => $service_url,
       '#attached' => [
         'library' => [
           'yoti/yoti',
         ],
       ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheContexts() {
+    return Cache::mergeContexts(parent::getCacheContexts(), ['user']);
   }
 
 }

@@ -21,6 +21,25 @@ function yoti_map_params() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function yoti_theme($existing, $type, $theme, $path) {
+  return [
+    'yoti_button' => [
+      'variables' => [
+        'app_id' => NULL,
+        'scenario_id' => NULL,
+        'button_text' => NULL,
+        'is_staging' => NULL,
+        'is_linked' => NULL,
+        'qr_url' => NULL,
+        'service_url' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
  * Implements hook_entity_extra_field_info().
  */
 function yoti_entity_extra_field_info() {
@@ -115,13 +134,13 @@ function yoti_user_view(array &$build, UserInterface $account) {
 }
 
 /**
- * Implements hook_ENTITY_TYPE_insert().
+ * Implements hook_user_login().
  */
 function yoti_user_login($account) {
   $activityDetails = YotiHelper::getYotiUserFromStore();
   if ($activityDetails && empty($_SESSION['yoti_nolink']) && !isset($_REQUEST['yoti_nolink'])) {
     // Link user account.
-    $helper = new YotiHelper(\Drupal::entityTypeManager());
+    $helper = \Drupal::service('yoti.helper');
     $helper->createYotiUser($account->id(), $activityDetails);
   }
 
