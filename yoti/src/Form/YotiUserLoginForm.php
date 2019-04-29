@@ -4,7 +4,6 @@ namespace Drupal\yoti\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\Form\UserLoginForm;
-use Drupal\yoti\YotiHelper;
 
 /**
  * Class YotiUserLoginForm.
@@ -18,9 +17,9 @@ class YotiUserLoginForm extends UserLoginForm {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $config = YotiHelper::getConfig();
+    $config = \Drupal::service('yoti.config');
 
-    $company_name = (!empty($config['yoti_company_name'])) ? $config['yoti_company_name'] : 'Drupal';
+    $company_name = (!empty($config->getCompanyName())) ? $config->getCompanyName() : 'Drupal';
 
     $form['yoti_login_message'] = [
       '#type' => 'fieldset',
