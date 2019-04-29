@@ -35,8 +35,8 @@ class YotiBlock extends BlockBase {
     $user = \Drupal::currentUser();
 
     // No config? no button.
-    $config = YotiHelper::getConfig();
-    if (!$config) {
+    $config = \Drupal::service('yoti.config');
+    if (!$config->getSettings()) {
       return [];
     }
 
@@ -64,8 +64,8 @@ class YotiBlock extends BlockBase {
 
     return [
       '#theme' => 'yoti_button',
-      '#app_id' => $config['yoti_app_id'],
-      '#scenario_id' => $config['yoti_scenario_id'],
+      '#app_id' => $config->getAppId(),
+      '#scenario_id' => $config->getScenarioId(),
       '#button_text' => $button_text,
       '#is_linked' => $is_linked,
       '#is_staging' => $is_staging,
