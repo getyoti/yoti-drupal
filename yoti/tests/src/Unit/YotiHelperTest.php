@@ -189,6 +189,13 @@ class YotiHelperTest extends YotiUnitTestBase {
   }
 
   /**
+   * @covers ::getLoginUrl
+   */
+  public function testGetLoginUrl() {
+    $this->assertEquals('https://www.yoti.com/connect/test_app_id', YotiHelper::getLoginUrl());
+  }
+
+  /**
    * Creates mock entity storage.
    *
    * @param \Drupal\Core\Entity\EntityInterface $entity
@@ -412,6 +419,7 @@ class YotiHelperTest extends YotiUnitTestBase {
     $container->set('entity_type.repository', $this->createMock(EntityTypeRepositoryInterface::class));
     $container->set('language_manager', $this->createMockLanguageManager());
     $container->set('file_system', $this->createMockFileSystem());
+    $container->set('yoti.sdk', $this->createMockSdk());
     \Drupal::setContainer($container);
   }
 
@@ -493,6 +501,9 @@ class YotiHelperTest extends YotiUnitTestBase {
     $sdk
       ->method('getClient')
       ->willReturn($client);
+    $sdk
+      ->method('getLoginUrl')
+      ->willReturn('https://www.yoti.com/connect/test_app_id');
 
     return $sdk;
   }
