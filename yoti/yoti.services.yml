@@ -1,5 +1,10 @@
 services:
+  yoti.sdk:
+    class: Drupal\yoti\YotiSdk
+    arguments: ['@yoti.config']
+  yoti.config:
+    class: Drupal\yoti\YotiConfig
+    arguments: ['@config.factory', '@file_system', '@entity_type.manager']
   yoti.helper:
     class: Drupal\yoti\YotiHelper
-    arguments:
-      - '@entity_type.manager'
+    arguments: ['@entity_type.manager', '@cache_tags.invalidator', '@logger.factory', '@yoti.sdk', '@yoti.config']

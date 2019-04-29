@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/4.1/phpunit.xsd"
+         backupGlobals="false"
+         colors="true"
+         bootstrap="core/tests/bootstrap.php"
+         verbose="true">
+    <php>
+        <env name="SIMPLETEST_BASE_URL" value="https://localhost"/>
+        <env name="SIMPLETEST_DB" value="mysql://drupal:drupal@drupal-8-db/drupal"/>
+    </php>
+    <testsuites>
+        <testsuite name="Yoti tests">
+            <directory>./modules/yoti</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

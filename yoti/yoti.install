@@ -7,6 +7,7 @@
 
 use Drupal\Core\Site\Settings;
 use Drupal\yoti\Models\YotiUserModel;
+use Drupal\yoti\YotiHelper;
 
 /**
  * Implements hook_requirements().
@@ -39,10 +40,11 @@ function yoti_requirements($phase) {
 }
 
 /**
- * Implements hook_install().
+ * Implements hook_schema().
  */
-function yoti_install() {
-  YotiUserModel::createYotiUserTable();
+function yoti_schema() {
+  $schema[YotiHelper::YOTI_USER_TABLE_NAME] = YotiUserModel::getYotiUserTableSchema();
+  return $schema;
 }
 
 /**
@@ -60,6 +62,4 @@ function yoti_update_8101(&$sandbox) {
 function yoti_uninstall() {
   // Delete Yoti config data.
   \Drupal::configFactory()->getEditable('yoti.settings')->delete();
-  // Delete Yoti user table.
-  YotiUserModel::deleteYotiUserTable();
 }
