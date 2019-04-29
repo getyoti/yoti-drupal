@@ -682,6 +682,8 @@ class YotiHelper {
   /**
    * Yoti config data.
    *
+   * @deprecated use `yoti.config` service instead.
+   *
    * @return array
    *   Config data as array.
    */
@@ -692,16 +694,13 @@ class YotiHelper {
   /**
    * Get Yoti Dashboard app URL.
    *
+   * @deprecated use `yoti.sdk` service instead.
+   *
    * @return null|string
    *   Yoti App URL.
    */
   public static function getLoginUrl() {
-    $config = \Drupal::service('yoti.config');
-    if (empty($config->getAppId())) {
-      return NULL;
-    }
-
-    return YotiClient::getLoginUrl($config->getAppId());
+    return \Drupal::service('yoti.sdk')->getLoginUrl();
   }
 
   /**

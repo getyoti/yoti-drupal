@@ -47,4 +47,13 @@ class YotiSdk implements YotiSdkInterface {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getLoginUrl() {
+    if ($appId = $this->config->getAppId()) {
+      return YotiClient::getLoginUrl($appId);
+    }
+  }
+
 }
