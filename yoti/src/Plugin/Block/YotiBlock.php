@@ -40,9 +40,10 @@ class YotiBlock extends BlockBase {
       return [];
     }
 
-    // If connect url starts with 'https://staging' then we are in staging mode.
     $qr_url = NULL;
     $service_url = NULL;
+
+    // If connect url starts with 'https://staging' then we are in staging mode.
     $is_staging = strpos(YotiClient::CONNECT_BASE_URL, 'https://staging') === 0;
     if ($is_staging) {
       // Base url for connect.
