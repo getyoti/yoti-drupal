@@ -1,0 +1,136 @@
+<?php
+
+/**
+ * Yoti tests.
+ */
+class YotiTest extends DrupalWebTestCase {
+
+  /**
+   * Check that an element exists in HTML markup.
+   *
+   * @param string $xpath
+   *   An XPath expression.
+   * @param array $arguments
+   *   (optional) An associative array of XPath replacement tokens to pass to
+   *   DrupalWebTestCase::buildXPathQuery().
+   * @param string $message
+   *   (optional) The message to display along with the assertion.
+   * @param string $group
+   *   (optional) The type of assertion - examples are "Browser", "PHP".
+   *
+   * @return bool
+   *   TRUE if the assertion succeeded, FALSE otherwise.
+   */
+  protected function assertElementByXpath($xpath, array $arguments = array(), $message = '', $group = 'Other') {
+    $elements = $this->xpath($xpath, $arguments);
+    return $this->assertTrue(!empty($elements[0]), $message, $group);
+  }
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public $modules = array(
+    'block',
+    'node',
+    'yoti',
+  );
+
+  /**
+   * A user with the 'administer yoti' permission.
+   *
+   * @var object
+   */
+  private $adminUser;
+
+  /**
+   * Yoti test config.
+   *
+   * @var array
+   */
+  private $yotiConfig = array(
+    'yoti_app_id' => 'test_yoti_app_id',
+    'yoti_scenario_id' => 'test_yoti_scenario_id',
+    'yoti_sdk_id' => 'test_yoti_sdk_id',
+    'yoti_company_name' => 'test_yoti_company_name',
+    'yoti_age_verification' => 'test_yoti_age_verification',
+    'yoti_only_existing' => 'test_yoti_only_existing',
+    'yoti_success_url' => 'test_yoti_success_url',
+    'yoti_fail_url' => 'test_yoti_fail_url',
+    'yoti_user_email' => 'test_yoti_user_email',
+  );
+
+  /**
+   * Info.
+   *
+   * @return array
+   *   The test info
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Yoti',
+      'description' => 'Test Yoti.',
+      'group' => 'Yoti',
+    );
+  }
+
+  /**
+   * Setup.
+   */
+  public function setUp() {
+    parent::setUp($this->modules);
+
+    // Save test config.
+    foreach ($this->yotiConfig as $key => $value) {
+      variable_set($key, $value);
+    }
+
+    // Create admin user.
+    $this->adminUser = $this->drupalCreateUser(array(
+      'access administration pages',
+      'administer yoti',
+      'administer blocks',
+      'administer modules',
+    ));
+  }
+
+  /**
+   * Test Yoti block.
+   */
+  public function testBlock() {
+    $this->drupalLogin($this->adminUser);
+
+    // Place the block in the content region.
+    $edit = array(
+      'regions[bartik]' => 'content',
+      'regions[seven]' => 'content',
+    );
+    $this->drupalPost('admin/structure/block/manage/yoti/yoti_link/configure', $edit, t('Save block'));
+
+    // Check that the block is present with the correct configuration.
+    $this->drupalGet('admin/structure/block');
+    $this->assertText('Link to Yoti');
+
+    // Test that tokens were rendered correctly.
+    $attributes = array(
+      '[@data-size=:size]',
+      '[@data-yoti-application-id=:app_id]',
+      '[@data-yoti-scenario-id=:scenario_id]',
+      '[@data-yoti-type=:type]',
+    );
+    $attribute_values = array(
+      ':app_id' => $this->yotiConfig['yoti_app_id'],
+      ':scenario_id' => $this->yotiConfig['yoti_scenario_id'],
+      ':type' => 'inline',
+      ':size' => 'small',
+      ':class' => 'yoti-connect',
+    );
+    $this->assertElementByXpath(
+      '//div[@class=:class]/span' . implode('', $attributes),
+      $attribute_values,
+      'Check button markup is correct.'
+    );
+  }
+
+}
