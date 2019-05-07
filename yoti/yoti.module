@@ -71,6 +71,7 @@ function yoti_block_info() {
   $blocks = [];
   $blocks['yoti_link'] = [
     'info' => t('Yoti Button'),
+    'cache' => DRUPAL_CACHE_PER_USER,
   ];
 
   return $blocks;

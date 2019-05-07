@@ -702,11 +702,14 @@ class YotiHelper {
    *   Yoti user profile data.
    */
   public static function getYotiUserProfile($userUid) {
-    $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
     $userProfileArr = NULL;
-    $userUid = (int) $userUid;
     if ($userUid) {
-      $userProfileArr = db_query("SELECT * from `{$tableName}` WHERE uid=$userUid Limit 1")->fetchAssoc();
+      $userProfileArr = db_select(YotiHelper::YOTI_USER_TABLE_NAME, 'u')
+        ->fields('u')
+        ->condition('uid', (int) $userUid)
+        ->range(0, 1)
+        ->execute()
+        ->fetchAssoc();
     }
     return $userProfileArr;
   }

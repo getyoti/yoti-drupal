@@ -93,6 +93,14 @@ class YotiTest extends DrupalWebTestCase {
 
     // Configure module.
     $this->configureModule();
+
+    // Create a linked user.
+    $this->linkedUser = $this->drupalCreateUser();
+    db_insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
+      'uid' => $this->linkedUser->uid,
+      'identifier' => 'some-remember-me-id',
+      'data' => serialize(array()),
+    ])->execute();
   }
 
   /**
@@ -131,7 +139,7 @@ class YotiTest extends DrupalWebTestCase {
     $this->drupalPost('admin/structure/block/manage/yoti/yoti_link/configure', $edit, t('Save block'));
 
     // Check that the block is present with the correct configuration.
-    $this->drupalGet('admin/structure/block');
+    $this->drupalGet('<front>');
     $this->assertText('Link to Yoti');
 
     // Test that tokens were rendered correctly.
@@ -153,6 +161,21 @@ class YotiTest extends DrupalWebTestCase {
       $attribute_values,
       'Check button markup is correct.'
     );
+
+    // Check that linked users see linked message.
+    $this->drupalLogin($this->linkedUser);
+
+    $this->drupalGet('<front>');
+    $this->assertText('Yoti Linked');
+  }
+
+  /**
+   * Test Yoti Block Info.
+   */
+  public function testBlockInfo() {
+    $info = module_invoke('yoti', 'block_info');
+    $this->assertEqual(DRUPAL_CACHE_PER_USER, $info['yoti_link']['cache'], t('Cache is set to DRUPAL_CACHE_PER_USER'));
+    $this->assertFalse(count($info) > 1, t('No more than one block defined.'));
   }
 
   /**
