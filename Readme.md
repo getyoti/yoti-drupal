@@ -80,7 +80,7 @@ Install Drupal and enable Yoti module:
 $ ./install-drupal.sh
 ```
 
-Visit <https://localhost:7008> and follow the [module setup process](#module-setup)
+Visit <https://localhost:7007> and follow the [module setup process](#module-setup)
 
 #### Manual Installation
 
@@ -109,12 +109,16 @@ To install Drupal and enable the local working Yoti module:
 $ ./install-drupal.sh drupal-7-dev
 ```
 
+After the command has finished running, go to <https://localhost:7008>.
+
 ### Xdebug
 
 To enable Xdebug, install using the debug container:
 ```shell
 ./install-drupal.sh drupal-7-debug
 ```
+
+After the command has finished running, go to <https://localhost:7009>.
 
 To use Xdebug in an IDE, map the `/var/www/html/sites/all/modules/yoti` volume to the module directory on the host machine.
 
