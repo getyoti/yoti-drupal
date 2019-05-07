@@ -6,9 +6,6 @@ git:
 before_install:
     - ./checkout-sdk.sh
 
-install:
-    - cd docker
-    - ./install-drupal.sh drupal-8-dev
-
 script:
+    - cd docker
     - ./run-tests.sh
