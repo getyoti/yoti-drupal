@@ -64,15 +64,33 @@ Rebuild the images if you have modified the `docker-compose.yml` file:
 $ docker-compose build --no-cache
 ```
 
+#### Fetching the SDK
+
+To fetch the latest SDK and place in `./yoti/sdk` directory:
+
+```shell
+$ ./checkout-sdk.sh
+```
+
+#### Quick Installation (Drush)
+
+Install Drupal and enable Yoti module:
+
+```shell
+$ ./install-drupal.sh
+```
+
+Visit <https://localhost:7008> and follow the [module setup process](#module-setup)
+
+#### Manual Installation
+
 Build the containers:
 
 ```shell
-$ docker-compose up -d
+$ docker-compose up -d drupal-8
 ```
 
-After the command has finished running, go to [https://localhost:7007](https://localhost:7007) and follow the instructions.
-
-### Database Configuration
+After the command has finished running, go to <https://localhost:7007> and follow the instructions.
 
 When prompted, enter the following database details:
 
@@ -81,7 +99,32 @@ When prompted, enter the following database details:
 * Password `drupal`
 * Host `drupal-7-db`
 
-The Yoti module will be installed alongside Drupal. Activate it and follow our [module setup process](#module-setup).
+Enable the Yoti module and follow our [module setup process](#module-setup).
+
+### Local Development
+
+To install Drupal and enable the local working Yoti module:
+
+```shell
+$ ./install-drupal.sh drupal-7-dev
+```
+
+### Xdebug
+
+To enable Xdebug, install using the debug container:
+```shell
+./install-drupal.sh drupal-7-debug
+```
+
+To use Xdebug in an IDE, map the `/var/www/html/sites/all/modules/yoti` volume to the module directory on the host machine.
+
+### Running Tests
+
+To check coding standards and run unit tests:
+
+```shell
+$ ./run-tests.sh
+```
 
 ### Removing the Docker containers
 
