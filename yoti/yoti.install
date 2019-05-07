@@ -96,32 +96,68 @@ function yoti_requirements($phase) {
 }
 
 /**
- * Implements hook_install().
+ * Implements hook_schema().
  */
-function yoti_install() {
-  $table_name = YotiHelper::YOTI_USER_TABLE_NAME;
-  db_query("CREATE TABLE IF NOT EXISTS `{$table_name}` (
-    `id` INT(10) UNSIGNED AUTO_INCREMENT,
-    `uid` int(10) UNSIGNED NOT NULL,
-    `identifier` VARCHAR(255) NOT NULL,
-    `data` TEXT NULL,
-    PRIMARY KEY `id` (`id`),
-    UNIQUE KEY `uid` (`uid`)
-  )")->execute();
+function yoti_schema() {
+  return array(
+    YotiHelper::YOTI_USER_TABLE_NAME => array(
+      'description' => 'Stores Yoti user data.',
+      'fields' => array(
+        'id' => array(
+          'description' => 'Unique identifier',
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'uid' => array(
+          'description' => 'Drupal user ID',
+          'type' => 'int',
+          'not null' => TRUE,
+          'unsigned' => TRUE,
+        ),
+        'identifier' => array(
+          'description' => 'Identifier',
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => TRUE,
+        ),
+        'data' => array(
+          'description' => 'Yoti user data',
+          'type' => 'text',
+        ),
+      ),
+      'primary key' => array(
+        'id',
+      ),
+      'unique keys' => array(
+        'uid' => array(
+          'uid',
+        ),
+      ),
+      // For documentation purposes only; foreign keys are not created in the
+      // database.
+      'foreign keys' => array(
+        'data_user' => array(
+          'table' => 'users',
+          'columns' => array(
+            'uid' => 'uid',
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 /**
  * Implements hook_uninstall().
  */
 function yoti_uninstall() {
-  $table_name = YotiHelper::YOTI_USER_TABLE_NAME;
   $yotiConfigArr = array_keys(YotiHelper::getConfig());
   foreach ($yotiConfigArr as $configKey) {
     if (!empty($configKey)) {
       variable_del($configKey);
     }
   }
-  db_query("DROP TABLE IF EXISTS `{$table_name}`")->execute();
 }
 
 /**
