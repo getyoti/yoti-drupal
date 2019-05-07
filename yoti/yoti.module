@@ -253,14 +253,11 @@ function yoti_user_view($account, $view_mode, $langcode) {
 
   foreach ($map as $param => $label) {
     $value = isset($dbProfile[$param]) ? $dbProfile[$param] : '';
-    if ($param === Profile::ATTR_SELFIE) {
+    if ($param === Profile::ATTR_SELFIE && !empty($dbProfile['selfie_filename'])) {
       // Make it backward compatible by checking the old files directory.
-      $oldSelfieFullPath = YotiHelper::uploadDir() . "/{$dbProfile['selfie_filename']}";
-      $selfieFullPath = YotiHelper::secureUploadDir() . "/{$dbProfile['selfie_filename']}";
-      if (
-          $dbProfile['selfie_filename']
-          && (file_exists($selfieFullPath) || file_exists($oldSelfieFullPath))
-      ) {
+      $oldSelfieFullPath = YotiHelper::uploadDir() . '/' . $dbProfile['selfie_filename'];
+      $selfieFullPath = YotiHelper::secureUploadDir() . '/' . $dbProfile['selfie_filename'];
+      if (is_file($selfieFullPath) || is_file($oldSelfieFullPath)) {
         $params = ['field' => 'selfie'];
         if ($isAdmin) {
           $params['user_id'] = $account->uid;
