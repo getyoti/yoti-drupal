@@ -15,6 +15,3 @@ $databases['default']['default'] = [
   'prefix' => '',
   'username' => getenv('MYSQL_USER'),
 ];
-
-// Configure private file path.
-$conf['file_private_path'] = '/var/www/private';
