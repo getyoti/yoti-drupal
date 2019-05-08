@@ -59,10 +59,7 @@ class YotiTest extends DrupalWebTestCase {
     'yoti_success_url' => 'test_yoti_success_url',
     'yoti_fail_url' => 'test_yoti_fail_url',
     'yoti_user_email' => 'test_yoti_user_email',
-    'yoti_pem' => array(
-      'name' => 'test.pem',
-      'contents' => 'pem_contents',
-    ),
+    'yoti_pem' => 'pem_contents',
   );
 
   /**
@@ -105,6 +102,10 @@ class YotiTest extends DrupalWebTestCase {
     foreach ($this->yotiConfig as $key => $value) {
       variable_set($key, $value);
     }
+
+    // Create a test pem file.
+    $pem_file = file_save_data($this->yotiConfig['yoti_pem'], 'private://yoti_test.pem', FILE_EXISTS_REPLACE);
+    variable_set('yoti_pem', $pem_file->fid);
   }
 
   /**
