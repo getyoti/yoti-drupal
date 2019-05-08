@@ -59,6 +59,10 @@ class YotiTest extends DrupalWebTestCase {
     'yoti_success_url' => 'test_yoti_success_url',
     'yoti_fail_url' => 'test_yoti_fail_url',
     'yoti_user_email' => 'test_yoti_user_email',
+    'yoti_pem' => array(
+      'name' => 'test.pem',
+      'contents' => 'pem_contents',
+    ),
   );
 
   /**
@@ -81,18 +85,35 @@ class YotiTest extends DrupalWebTestCase {
   public function setUp() {
     parent::setUp($this->modules);
 
-    // Save test config.
-    foreach ($this->yotiConfig as $key => $value) {
-      variable_set($key, $value);
-    }
-
     // Create admin user.
     $this->adminUser = $this->drupalCreateUser(array(
       'access administration pages',
       'administer yoti',
       'administer blocks',
       'administer modules',
+      'administer site configuration',
     ));
+
+    // Configure module.
+    $this->configureModule();
+  }
+
+  /**
+   * Configure module.
+   */
+  private function configureModule() {
+    foreach ($this->yotiConfig as $key => $value) {
+      variable_set($key, $value);
+    }
+  }
+
+  /**
+   * Delete configuration.
+   */
+  private function deleteModuleConfiguration() {
+    foreach (array_keys($this->yotiConfig) as $key) {
+      variable_del($key);
+    }
   }
 
   /**
@@ -131,6 +152,25 @@ class YotiTest extends DrupalWebTestCase {
       $attribute_values,
       'Check button markup is correct.'
     );
+  }
+
+  /**
+   * Test Yoti Requirements.
+   */
+  public function testRequirements() {
+    $this->drupalLogin($this->adminUser);
+    $this->drupalGet('admin/reports/status');
+    $this->assertNoText('Yoti Configuration');
+
+    $this->deleteModuleConfiguration();
+    $this->drupalGet('admin/reports/status');
+    $this->assertText('Yoti Configuration');
+    $this->assertText('Not Configured');
+    $this->assertText('Please configure the following:');
+    $this->assertText('Application ID (yoti_app_id)');
+    $this->assertText('Scenario ID (yoti_scenario_id)');
+    $this->assertText('SDK ID (yoti_sdk_id)');
+    $this->assertText('PEM File (yoti_pem)');
   }
 
 }

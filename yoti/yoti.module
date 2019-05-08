@@ -232,44 +232,6 @@ function yoti_permission() {
 }
 
 /**
- * This function will initialize the App.
- *
- * @return true
- *   if initialization was OK. false otherwise.
- */
-function yoti_initialize() {
-  // Check that PHP version is 5.4 or higher.
-  if (version_compare(phpversion(), '5.4.0', '<')) {
-    drupal_set_message(t('Yoti not configured properly.'), 'error');
-    watchdog(
-        'yoti',
-        'Yoti PHP SDK requires PHP 5.4 or higher. Your PHP version is @version',
-        ['@version' => phpversion()],
-        WATCHDOG_ERROR
-    );
-    return FALSE;
-  }
-
-  // Check that the module is configured properly.
-  $app_id = variable_get('yoti_app_id', 0);
-  $app_secret = variable_get('yoti_sdk_id', 0);
-
-  if (!$app_id || !$app_secret) {
-    drupal_set_message(t('Yoti not configured properly.'), 'error');
-    watchdog(
-        'yoti',
-        'Could not initialize Yoti app. Define APP ID and PEM file on module settings.',
-        [],
-        WATCHDOG_ERROR
-    );
-    return FALSE;
-  }
-
-  // If we have not returned FALSE, SDK is found and module has been configured.
-  return TRUE;
-}
-
-/**
  * Implements hook_ENTITY_TYPE_view() for user entities.
  */
 function yoti_user_view($account, $view_mode, $langcode) {

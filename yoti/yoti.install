@@ -15,45 +15,80 @@ function yoti_requirements($phase) {
   $requirements = [];
   $t = get_t();
 
-  if ($phase == 'install') {
-    if (!function_exists('curl_init')) {
-      $requirements['curl']['severity'] = REQUIREMENT_ERROR;
-      $requirements['curl']['description'] = $t('Yoti could not be installed. The cURL library is not installed. Please check the <a href="@url">PHP cURL documentation</a> for information on how to correct this.', ['@url' => 'http://www.php.net/manual/en/curl.setup.php']);
-    }
+  switch ($phase) {
+    case 'install':
 
-    if (!function_exists('json_decode')) {
-      $requirements['json']['severity'] = REQUIREMENT_ERROR;
-      $requirements['json']['description'] = $t('Yoti could not be installed. The JSON library is not installed. Yoti PHP SDK needs the JSON PHP extension.');
-    }
+      if (!function_exists('curl_init')) {
+        $requirements['curl']['severity'] = REQUIREMENT_ERROR;
+        $requirements['curl']['description'] = $t('Yoti could not be installed. The cURL library is not installed. Please check the <a href="@url">PHP cURL documentation</a> for information on how to correct this.', ['@url' => 'http://www.php.net/manual/en/curl.setup.php']);
+      }
 
-    if (version_compare(phpversion(), '5.4.0', '<')) {
-      $requirements['php_version']['title'] = $t('PHP version');
-      $requirements['php_version']['value'] = check_plain(phpversion());
-      $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
-      $requirements['php_version']['description'] = $t('Yoti could not be installed. Yoti PHP SDK requires PHP 5.4 or higher.');
-    }
+      if (!function_exists('json_decode')) {
+        $requirements['json']['severity'] = REQUIREMENT_ERROR;
+        $requirements['json']['description'] = $t('Yoti could not be installed. The JSON library is not installed. Yoti PHP SDK needs the JSON PHP extension.');
+      }
 
-    // Check Drupal private file path is set.
-    $privateDir = isset($conf['file_private_path']) ? $conf['file_private_path'] : NULL;
-    $yotiUploadDir = $privateDir . '/yoti';
-    if (!$privateDir) {
-      $requirements['php_version']['title'] = $t('Secure folder');
-      $requirements['php_version']['value'] = $privateDir;
-      $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
-      $requirements['php_version']['description'] = $t('Yoti requires that you have the file_private_path setting enabled for your website. This should be set in Configuration -> File system -> Private file system path');
-    }
-    elseif (!is_dir($yotiUploadDir)) {
-      // Create Yoti upload dir if it doesn't exists.
-      drupal_mkdir($yotiUploadDir);
-    }
+      if (version_compare(phpversion(), '5.4.0', '<')) {
+        $requirements['php_version']['title'] = $t('PHP version');
+        $requirements['php_version']['value'] = check_plain(phpversion());
+        $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
+        $requirements['php_version']['description'] = $t('Yoti could not be installed. Yoti PHP SDK requires PHP 5.4 or higher.');
+      }
 
-    // Check Yoti files upload folder exists and is writable.
-    if ($privateDir && !is_writable($yotiUploadDir)) {
-      $requirements['php_version']['title'] = $t('Yoti secure folder');
-      $requirements['php_version']['value'] = $yotiUploadDir;
-      $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
-      $requirements['php_version']['description'] = $t('Yoti could not be installed. The following folder must exist and be writable by the server: ' . $yotiUploadDir);
-    }
+      // Check Drupal private file path is set.
+      $privateDir = isset($conf['file_private_path']) ? $conf['file_private_path'] : NULL;
+      $yotiUploadDir = $privateDir . '/yoti';
+      if (!$privateDir) {
+        $requirements['php_version']['title'] = $t('Secure folder');
+        $requirements['php_version']['value'] = $privateDir;
+        $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
+        $requirements['php_version']['description'] = $t('Yoti requires that you have the file_private_path setting enabled for your website. This should be set in Configuration -> File system -> Private file system path');
+      }
+      elseif (!is_dir($yotiUploadDir)) {
+        // Create Yoti upload dir if it doesn't exists.
+        drupal_mkdir($yotiUploadDir);
+      }
+
+      // Check Yoti files upload folder exists and is writable.
+      if ($privateDir && !is_writable($yotiUploadDir)) {
+        $requirements['php_version']['title'] = $t('Yoti secure folder');
+        $requirements['php_version']['value'] = $yotiUploadDir;
+        $requirements['php_version']['severity'] = REQUIREMENT_ERROR;
+        $requirements['php_version']['description'] = $t('Yoti could not be installed. The following folder must exist and be writable by the server: ' . $yotiUploadDir);
+      }
+
+      break;
+
+    case 'runtime':
+      // Check that the module is configured properly.
+      $required_config = array(
+        'yoti_app_id' => 'Application ID',
+        'yoti_scenario_id' => 'Scenario ID',
+        'yoti_sdk_id' => 'SDK ID',
+        'yoti_pem' => 'PEM File',
+      );
+
+      $items = [];
+      foreach ($required_config as $variable => $label) {
+        if (!variable_get($variable)) {
+          $items[] = $t(':label (:variable)', array(
+            ':label' => $label,
+            ':variable' => $variable,
+          ));
+        }
+      }
+
+      if (count($items) > 0) {
+        $requirements['yoti_config']['title'] = $t('Yoti Configuration');
+        $requirements['yoti_config']['value'] = 'Not Configured';
+        $requirements['yoti_config']['severity'] = REQUIREMENT_ERROR;
+        $item_list = array(
+          'items' => $items,
+        );
+        $requirements['yoti_config']['description'] = $t('Please configure the following: !items', array(
+          '!items' => theme('item_list', $item_list),
+        ));
+      }
 
   }
 
