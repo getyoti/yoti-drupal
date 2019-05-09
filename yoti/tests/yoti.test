@@ -55,7 +55,7 @@ class YotiTest extends DrupalWebTestCase {
     'yoti_sdk_id' => 'test_yoti_sdk_id',
     'yoti_company_name' => 'test_yoti_company_name',
     'yoti_age_verification' => 'test_yoti_age_verification',
-    'yoti_only_existing' => 'test_yoti_only_existing',
+    'yoti_only_existing' => FALSE,
     'yoti_success_url' => 'test_yoti_success_url',
     'yoti_fail_url' => 'test_yoti_fail_url',
     'yoti_user_email' => 'test_yoti_user_email',
@@ -218,6 +218,24 @@ class YotiTest extends DrupalWebTestCase {
     $this->assertText('Scenario ID (yoti_scenario_id)');
     $this->assertText('SDK ID (yoti_sdk_id)');
     $this->assertText('PEM File (yoti_pem)');
+  }
+
+  /**
+   * Test Register Form.
+   */
+  public function testRegisterForm() {
+    module_load_include('inc', 'yoti', 'yoti.pages');
+
+    // Set session data.
+    $_SESSION['yoti-user'] = serialize('test_user_data');
+
+    // Render form.
+    $form = drupal_get_form('yoti_register');
+    $form_markup = drupal_render($form);
+
+    // Check page has the correct content.
+    $this->assertTrue(strpos($form_markup, 'Warning: You are about to link your test_yoti_company_name account to your Yoti account.'));
+    $this->assertTrue(isset($form['yoti_login_message']['yoti_nolink']));
   }
 
 }
