@@ -703,10 +703,11 @@ class YotiHelper {
    */
   public static function getYotiUserProfile($userUid) {
     $userProfileArr = NULL;
+    $userUid = (int) $userUid;
     if ($userUid) {
       $userProfileArr = db_select(YotiHelper::YOTI_USER_TABLE_NAME, 'u')
         ->fields('u')
-        ->condition('uid', (int) $userUid)
+        ->condition('uid', $userUid)
         ->range(0, 1)
         ->execute()
         ->fetchAssoc();
