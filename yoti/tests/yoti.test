@@ -94,6 +94,9 @@ class YotiTest extends DrupalWebTestCase {
     // Configure module.
     $this->configureModule();
 
+    // Enable block caching.
+    variable_set('block_cache', TRUE);
+
     // Create a linked user.
     $this->linkedUser = $this->drupalCreateUser();
     db_insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
@@ -101,6 +104,9 @@ class YotiTest extends DrupalWebTestCase {
       'identifier' => 'some-remember-me-id',
       'data' => serialize(array()),
     ])->execute();
+
+    // Create an unlinked user.
+    $this->unlinkedUser = $this->drupalCreateUser();
   }
 
   /**
@@ -162,20 +168,36 @@ class YotiTest extends DrupalWebTestCase {
       'Check button markup is correct.'
     );
 
+    // Check that SDK script is included on page.
+    $this->assertElementByXpath(
+      '//head/script[@src=:src]',
+      array(
+        ':src' => 'https://sdk.yoti.com/clients/browser.2.1.0.js',
+      ),
+      'Check SDK browser JS is present.'
+    );
+
+    // Check that button CSS is included on page.
+    $this->assertRaw('/yoti/css/yoti.css');
+
+    // Check that SDK script is included on page.
+    $this->assertElementByXpath(
+      '//body//script[contains(text(),:script)]',
+      array(
+        ':script' => '_ybg.init();',
+      ),
+      'Check SDK inline init script is present.'
+    );
+
     // Check that linked users see linked message.
     $this->drupalLogin($this->linkedUser);
-
     $this->drupalGet('<front>');
     $this->assertText('Yoti Linked');
-  }
 
-  /**
-   * Test Yoti Block Info.
-   */
-  public function testBlockInfo() {
-    $info = module_invoke('yoti', 'block_info');
-    $this->assertEqual(DRUPAL_CACHE_PER_USER, $info['yoti_link']['cache'], t('Cache is set to DRUPAL_CACHE_PER_USER'));
-    $this->assertFalse(count($info) > 1, t('No more than one block defined.'));
+    // Check that unlinked users see link message.
+    $this->drupalLogin($this->unlinkedUser);
+    $this->drupalGet('<front>');
+    $this->assertText('Link to Yoti');
   }
 
   /**
