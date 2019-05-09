@@ -15,15 +15,24 @@ class YotiTest extends DrupalWebTestCase {
    *   DrupalWebTestCase::buildXPathQuery().
    * @param string $message
    *   (optional) The message to display along with the assertion.
+   * @param string $html
+   *   (optional) HTML to check.
    * @param string $group
    *   (optional) The type of assertion - examples are "Browser", "PHP".
    *
    * @return bool
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
-  protected function assertElementByXpath($xpath, array $arguments = array(), $message = '', $group = 'Other') {
-    $elements = $this->xpath($xpath, $arguments);
-    return $this->assertTrue(!empty($elements[0]), $message, $group);
+  protected function assertElementByXpath($xpath, array $arguments = array(), $message = '', $html = NULL, $group = 'Other') {
+    if (!empty($html)) {
+      $domXpath = new DOMXPath(filter_dom_load($html));
+      $expression = $this->buildXPathQuery($xpath, $arguments);
+      $result = $domXpath->query($expression);
+    }
+    else {
+      $result = $this->xpath($xpath, $arguments);
+    }
+    return $this->assertTrue(!empty($result[0]), $message, $group);
   }
 
   /**
@@ -233,9 +242,66 @@ class YotiTest extends DrupalWebTestCase {
     $form = drupal_get_form('yoti_register');
     $form_markup = drupal_render($form);
 
-    // Check page has the correct content.
-    $this->assertTrue(strpos($form_markup, 'Warning: You are about to link your test_yoti_company_name account to your Yoti account.'));
-    $this->assertTrue(isset($form['yoti_login_message']['yoti_nolink']));
+    $this->assertElementByXpath(
+      "//form//div[contains(@class,:class)]//input[@name=:name][@type=:type]",
+      array(
+        ':class' => 'yoti-login-message',
+        ':name' => 'yoti_nolink',
+        ':type' => 'checkbox',
+      ),
+      '"No link" checkbox exists',
+      $form_markup
+    );
+
+    $this->assertElementByXpath(
+      '//form//div[contains(@class,:class)]//label[@for=:id][contains(text(),:text)]',
+      array(
+        ':class' => 'yoti-login-message',
+        ':id' => 'edit-yoti-nolink',
+        ':text' => "Don't link my Yoti account",
+      ),
+      '"No link" checkbox label',
+      $form_markup
+    );
+
+    $messages = array(
+      'Warning: You are about to link your test_yoti_company_name account to your Yoti account.',
+      "If you don't want this to happen, tick the checkbox below.",
+    );
+    $this->assertElementByXpath(
+      '//form//div[contains(@class,:class)]//div/b[contains(text(),:text)]',
+      array(
+        ':class' => 'yoti-login-message',
+        ':text' => implode(' ', $messages),
+      ),
+      'Check login message',
+      $form_markup
+    );
+
+    $this->assertElementByXpath(
+      '//form//label[@for=:id][contains(text(),:text)]',
+      array(
+        ':id' => 'edit-name',
+        ':text' => "Your test_yoti_company_name Username",
+      ),
+      'Check username label',
+      $form_markup
+    );
+
+    $this->assertElementByXpath(
+      '//form//label[@for=:id][contains(text(),:text)]',
+      array(
+        ':id' => 'edit-pass',
+        ':text' => "Your test_yoti_company_name Password",
+      ),
+      'Check password label',
+      $form_markup
+    );
+
+    $this->assertTrue(
+      strstr($form['#attached']['css'][0]['data'], 'yoti/css/yoti.css'),
+      'Check CSS is attached to form'
+    );
   }
 
 }
