@@ -116,13 +116,9 @@ function yoti_register($form, &$form_state) {
   );
 
   $form['yoti_login_message'] = array(
-    '#type' => 'fieldset',
     '#weight' => -1000,
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
-    '#attributes' => array(
-      'class' => array('messages', 'warning'),
-    ),
+    '#prefix' => '<div class="messages warning yoti-login-message">',
+    '#suffix' => '</div>',
   );
 
   $form['yoti_login_message']['text'] = array(
@@ -132,16 +128,22 @@ function yoti_register($form, &$form_state) {
       If you don't want this to happen, tick the checkbox below.", $text_replacements),
   );
 
-  $form['yoti_login_message']['yoti_nolink'] = [
+  $form['yoti_login_message']['yoti_nolink'] = array(
     '#type' => 'checkbox',
     '#title' => t("Don't link my Yoti account"),
     '#default_value' => (int) !empty($form_state['input']['yoti_nolink']),
-  ];
+  );
 
   $form = user_login($form, $form_state);
 
   $form['name']['#title'] = t('Your @company_name Username', $text_replacements);
   $form['pass']['#title'] = t('Your @company_name Password', $text_replacements);
+
+  $form['#attached']['css'][] = array(
+    'data' => drupal_get_path('module', 'yoti') . '/css/yoti.css',
+    'group' => CSS_DEFAULT,
+    'every_page' => TRUE,
+  );
 
   return $form;
 }

@@ -12,3 +12,11 @@
   -moz-border-radius: 2px;
   border-radius: 2px;
 }
+
+#yoti-register .yoti-login-message {
+  margin: 0 0 15px 0;
+}
+
+#yoti-register .form-item-yoti-nolink {
+  margin-bottom: 0;
+}
