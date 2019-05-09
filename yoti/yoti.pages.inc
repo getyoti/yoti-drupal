@@ -110,23 +110,38 @@ function yoti_register($form, &$form_state) {
     drupal_goto();
   }
 
-  $companyName = (!empty(variable_get('yoti_company_name'))) ? variable_get('yoti_company_name') : 'Drupal';
+  // Associative array of text replacements.
+  $text_replacements = array(
+    '@company_name' => (!empty(variable_get('yoti_company_name'))) ? variable_get('yoti_company_name') : 'Drupal',
+  );
 
-  $form['yoti_nolink'] = [
+  $form['yoti_login_message'] = array(
+    '#type' => 'fieldset',
     '#weight' => -1000,
-    '#default_value' => variable_get('yoti_nolink'),
-    '#markup' => '<div class="form-item form-type-checkbox form-item-yoti-link messages warning" style="margin: 0 0 15px 0">
-                <div><b>Warning: You are about to link your ' . $companyName . ' account to your Yoti account. If you don\'t want this to happen, tick the checkbox below.</b></div>
-                <input type="checkbox" id="edit-yoti-link" name="yoti_nolink" value="1" class="form-checkbox"' . (!empty($form_state['input']['yoti_nolink']) ? ' checked="checked"' : '') . '>
-                <label class="option" for="edit-yoti-link">Don\'t link my Yoti account</label>
-            </div>',
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+    '#attributes' => array(
+      'class' => array('messages', 'warning'),
+    ),
+  );
+
+  $form['yoti_login_message']['text'] = array(
+    '#prefix' => '<div><b>',
+    '#suffix' => '</b></div>',
+    '#markup' => t("Warning: You are about to link your @company_name account to your Yoti account.
+      If you don't want this to happen, tick the checkbox below.", $text_replacements),
+  );
+
+  $form['yoti_login_message']['yoti_nolink'] = [
+    '#type' => 'checkbox',
+    '#title' => t("Don't link my Yoti account"),
+    '#default_value' => (int) !empty($form_state['input']['yoti_nolink']),
   ];
 
   $form = user_login($form, $form_state);
-  $loginFieldLabel = 'Your ' . $companyName . ' Username';
-  $passwordFieldLabel = 'Your ' . $companyName . ' Password';
-  $form['name']['#title'] = $loginFieldLabel;
-  $form['pass']['#title'] = $passwordFieldLabel;
+
+  $form['name']['#title'] = t('Your @company_name Username', $text_replacements);
+  $form['pass']['#title'] = t('Your @company_name Password', $text_replacements);
 
   return $form;
 }
