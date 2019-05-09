@@ -124,8 +124,10 @@ function yoti_register($form, &$form_state) {
   $form['yoti_login_message']['text'] = array(
     '#prefix' => '<div><b>',
     '#suffix' => '</b></div>',
-    '#markup' => t("Warning: You are about to link your @company_name account to your Yoti account.
-      If you don't want this to happen, tick the checkbox below.", $text_replacements),
+    '#markup' => implode(' ', array(
+      t('Warning: You are about to link your @company_name account to your Yoti account.', $text_replacements),
+      t("If you don't want this to happen, tick the checkbox below."),
+    )),
   );
 
   $form['yoti_login_message']['yoti_nolink'] = array(
