@@ -211,6 +211,41 @@ class YotiTest extends DrupalWebTestCase {
   }
 
   /**
+   * Test Unlink Form.
+   */
+  public function testUnlinkForm() {
+    $this->drupalLogin($this->linkedUser);
+    $this->drupalGet('user');
+
+    $this->assertElementByXpath(
+      "//div[contains(@class,:wrapper_class)]//a[@href=:href][@id=:id]",
+      array(
+        ':wrapper_class' => 'yoti-connect',
+        ':href' => '/yoti/unlink',
+        ':id' => 'yoti-unlink-button',
+        ':class' => 'button',
+      ),
+      'Check unlink Yoti Account link'
+    );
+
+    $this->clickLink('Unlink Yoti Account');
+    $this->assertElementByXpath(
+      "//h1[contains(text(),:text)]",
+      array(
+        ':text' => 'Unlink Yoti Account',
+      ),
+      'Check Unlink Yoti Account title'
+    );
+    $this->assertText('Are you sure you want to unlink your account from Yoti?');
+    $this->drupalPost('yoti/unlink', array(), t('Yes'));
+    $this->assertUrl('/');
+
+    // Check account was unlinked.
+    $this->drupalGet('user');
+    $this->assertNoText('Unlink Yoti Account');
+  }
+
+  /**
    * Test Yoti Requirements.
    */
   public function testRequirements() {

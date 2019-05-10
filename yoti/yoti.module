@@ -211,7 +211,8 @@ function yoti_menu() {
   $items['yoti/unlink'] = [
     'href' => 'yoti/unlink',
     'title' => 'Unlink Yoti',
-    'page callback' => 'yoti_unlink',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['yoti_unlink'],
     'access callback' => 'has_yoti_login',
     'type' => MENU_CALLBACK,
     'file' => 'yoti.pages.inc',
@@ -323,13 +324,19 @@ function yoti_user_view($account, $view_mode, $langcode) {
   }
 
   if ($current->uid === $account->uid) {
-    $account->content['summary']['yoti_unlink'] = [
-      '#type' => 'item',
-      '#markup' => '<div class="yoti-connect">' .
-      '<a  class="button" onclick="return confirm(\'' . $promptMessage . '\')" id="yoti-unlink-button" href="' .
-      url('/yoti/unlink') . '">' .
-      t('Unlink Yoti Account') .
-      '</a></div>',
-    ];
+    $account->content['summary']['yoti_unlink'] = array(
+      '#theme' => 'link',
+      '#text' => t('Unlink Yoti Account'),
+      '#path' => 'yoti/unlink',
+      '#prefix' => '<div class="yoti-connect">',
+      '#suffix' => '</div>',
+      '#options' => array(
+        'attributes' => array(
+          'class' => array('button'),
+          'id' => 'yoti-unlink-button',
+        ),
+        'html' => FALSE,
+      ),
+    );
   }
 }
