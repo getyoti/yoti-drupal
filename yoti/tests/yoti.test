@@ -170,9 +170,10 @@ class YotiTest extends DrupalWebTestCase {
 
     // Check that SDK script is included on page.
     $this->assertElementByXpath(
-      '//head/script[@src=:src]',
+      '//head/script[contains(@src,:base_url)][contains(@src,:ext)]',
       array(
-        ':src' => 'https://sdk.yoti.com/clients/browser.2.1.0.js',
+        ':base_url' => 'https://sdk.yoti.com/clients/browser',
+        ':ext' => '.js',
       ),
       'Check SDK browser JS is present.'
     );
