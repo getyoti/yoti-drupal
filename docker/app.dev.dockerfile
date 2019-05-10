@@ -9,9 +9,6 @@ RUN if [ "$ENABLE_XDEBUG" = "1" ]; then \
 fi
 COPY ./docker/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
-# Allows tests to be run as www-data
-RUN apt-get install sudo
-
 # Install PHP_CodeSniffer
 RUN composer require drupal/coder:^8.3.3
 RUN composer require dealerdirect/phpcodesniffer-composer-installer

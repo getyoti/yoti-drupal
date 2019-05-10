@@ -77,6 +77,9 @@ RUN curl -L -o drush.phar https://github.com/drush-ops/drush/releases/download/8
 # Install MySQL Client
 RUN apt-get install -y mysql-client
 
+# Allows installation and tests to be run as www-data
+RUN apt-get install sudo
+
 # Create writable public files directory
 RUN mkdir sites/default/files \
     && chown www-data:www-data sites/default/files
