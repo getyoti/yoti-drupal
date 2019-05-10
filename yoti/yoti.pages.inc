@@ -8,19 +8,9 @@
 require_once __DIR__ . '/YotiHelper.php';
 
 /**
- * Authenticate Yoti user or unlink if user is already linked to Yoti user.
+ * Authenticate Yoti user and link to current user account.
  */
 function yoti_link() {
-  global $user;
-
-  // Check if user already has an account.
-  if ($user) {
-    $dbProfile = YotiHelper::getYotiUserProfile($user->uid);
-    if ($dbProfile) {
-      return yoti_unlink();
-    }
-  }
-
   // Resume as normal.
   $helper = new YotiHelper();
   if (!array_key_exists('token', $_GET)) {
@@ -34,9 +24,28 @@ function yoti_link() {
 }
 
 /**
- * Unlink drupal user from Yoti user.
+ * Form to confirm unlinking of Drupal user from Yoti user.
+ *
+ * @ingroup forms
+ * @see yoti_unlink_submit()
  */
 function yoti_unlink() {
+  return confirm_form(
+    array(),
+    'Unlink Yoti Account',
+    '<front>',
+    'Are you sure you want to unlink your account from Yoti?',
+    t('Yes'),
+    t('Cancel')
+  );
+}
+
+/**
+ * Form submission handler for yoti_unlink().
+ *
+ * @see yoti_unlink()
+ */
+function yoti_unlink_submit() {
   $helper = new YotiHelper();
   $helper->unlink();
   return drupal_goto('/');
