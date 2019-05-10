@@ -204,8 +204,6 @@ class YotiHelper {
     if ($currentUser->isAnonymous()) {
       // Register new user.
       if (!$drupalUid) {
-        $errMsg = NULL;
-
         // Attempt to connect by email.
         $drupalUid = $this->shouldLoginByEmail($activityDetails);
 

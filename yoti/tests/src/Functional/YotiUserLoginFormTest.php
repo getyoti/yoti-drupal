@@ -2,30 +2,18 @@
 
 namespace Drupal\Tests\yoti\Functional;
 
-use Drupal\Tests\BrowserTestBase;
-
 /**
  * Tests the Yoti user login form.
  *
  * @group yoti
  */
-class YotiUserLoginFormTest extends BrowserTestBase {
-
-  /**
-   * Modules to enable.
-   *
-   * @var array
-   */
-  public static $modules = ['yoti'];
+class YotiUserLoginFormTest extends YotiBrowserTestBase {
 
   /**
    * Authenticated users can view login form.
    */
   public function testAuthenticatedUser() {
-    $testUser = $this->drupalCreateUser([
-      'access content',
-    ]);
-    $this->drupalLogin($testUser);
+    $this->drupalLogin($this->unlinkedUser);
 
     $this->drupalGet('yoti/register');
 
