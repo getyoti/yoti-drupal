@@ -211,6 +211,29 @@ class YotiTest extends DrupalWebTestCase {
   }
 
   /**
+   * Test link menu item for linked users.
+   */
+  public function testLinkForLinkedUsers() {
+    $this->drupalLogin($this->linkedUser);
+    $this->drupalGet('yoti/link');
+    $this->assertResponse(403);
+    $this->assertText('Access denied');
+  }
+
+  /**
+   * Test link menu item for unlinked users.
+   */
+  public function testLinkForUnlinkedUsers() {
+    $this->drupalLogin($this->unlinkedUser);
+
+    $this->drupalGet('yoti/link', array('query' => array('token' => '')));
+    $this->assertText('Could not get Yoti token.');
+
+    $this->drupalGet('yoti/link', array('query' => array('token' => 'some-invalid-token')));
+    $this->assertText('Yoti could not successfully connect to your account.');
+  }
+
+  /**
    * Test Unlink Form.
    */
   public function testUnlinkForm() {
