@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\yoti\Functional;
 
-use Drupal\Tests\BrowserTestBase;
 use Drupal\user\RoleInterface;
 use Drupal\user\Entity\Role;
 
@@ -11,21 +10,7 @@ use Drupal\user\Entity\Role;
  *
  * @group yoti
  */
-class YotiPermissionTest extends BrowserTestBase {
-
-  /**
-   * Modules to enable.
-   *
-   * @var array
-   */
-  public static $modules = ['yoti'];
-
-  /**
-   * Test user.
-   *
-   * @var \Drupal\user\UserInterface
-   */
-  protected $testUser;
+class YotiPermissionTest extends YotiBrowserTestBase {
 
   /**
    * User's role ID.
@@ -37,22 +22,17 @@ class YotiPermissionTest extends BrowserTestBase {
   /**
    * Setup permission tests.
    */
-  protected function setUp() {
+  public function setUp() {
     parent::setUp();
 
-    // Create a test user.
-    $this->testUser = $this->drupalCreateUser([
-      'access content',
-    ]);
-
     // Get the new role ID.
-    $all_rids = $this->testUser
+    $all_rids = $this->unlinkedUser
       ->getRoles();
     unset($all_rids[array_search(RoleInterface::AUTHENTICATED_ID, $all_rids)]);
     $this->rid = reset($all_rids);
 
     // Log test user in before each test.
-    $this->drupalLogin($this->testUser);
+    $this->drupalLogin($this->unlinkedUser);
   }
 
   /**
@@ -65,10 +45,10 @@ class YotiPermissionTest extends BrowserTestBase {
 
     $this->drupalGet('admin/config/people/yoti');
 
-    $assertSession = $this->assertSession();
-    $assertSession->statusCodeEquals(200);
-    $assertSession->pageTextContains('YOTI DASHBOARD');
-    $assertSession->elementExists('css', '#yoti-admin-form');
+    $assert = $this->assertSession();
+    $assert->statusCodeEquals(200);
+    $assert->pageTextContains('YOTI DASHBOARD');
+    $assert->elementExists('css', '#yoti-admin-form');
   }
 
   /**
@@ -77,10 +57,10 @@ class YotiPermissionTest extends BrowserTestBase {
   public function testYotiPermissionNotGranted() {
     $this->drupalGet('admin/config/people/yoti');
 
-    $assertSession = $this->assertSession();
-    $assertSession->statusCodeEquals(403);
-    $assertSession->pageTextContains('ACCESS DENIED');
-    $assertSession->elementNotExists('css', '#yoti-admin-form');
+    $assert = $this->assertSession();
+    $assert->statusCodeEquals(403);
+    $assert->pageTextContains('ACCESS DENIED');
+    $assert->elementNotExists('css', '#yoti-admin-form');
   }
 
 }
