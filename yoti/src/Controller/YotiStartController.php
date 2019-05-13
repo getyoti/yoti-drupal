@@ -81,22 +81,7 @@ class YotiStartController extends ControllerBase {
   }
 
   /**
-   * Check if current account is linked.
-   *
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   Run access checks for this account.
-   *
-   * @return \Drupal\Core\Access\AccessResult
-   *   If account is linked isAllowed() will be TRUE, otherwise
-   *   isNeutral() will be TRUE.
-   */
-  public static function accessAccountIsLinked(AccountInterface $account) {
-    $db_profile = YotiUserModel::getYotiUserById($account->id());
-    return AccessResult::allowedIf(!empty($db_profile));
-  }
-
-  /**
-   * Check if current account is not linked.
+   * Check that current account is not linked.
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
@@ -105,7 +90,7 @@ class YotiStartController extends ControllerBase {
    *   If account is not linked isAllowed() will be TRUE, otherwise
    *   isNeutral() will be TRUE.
    */
-  public static function accessAccountNotLinked(AccountInterface $account) {
+  public static function accessLink(AccountInterface $account) {
     $db_profile = YotiUserModel::getYotiUserById($account->id());
     return AccessResult::allowedIf(empty($db_profile));
   }
