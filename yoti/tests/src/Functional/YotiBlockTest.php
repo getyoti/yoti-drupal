@@ -2,14 +2,12 @@
 
 namespace Drupal\Tests\yoti\Functional;
 
-use Drupal\Tests\BrowserTestBase;
-
 /**
  * Tests the Yoti block.
  *
  * @group yoti
  */
-class YotiBlockTest extends BrowserTestBase {
+class YotiBlockTest extends YotiBrowserTestBase {
 
   /**
    * Modules to enable.
@@ -35,7 +33,7 @@ class YotiBlockTest extends BrowserTestBase {
    */
   public function testYotiBlock() {
     // Place the block.
-    $block = $this->drupalPlaceBlock('yoti_block');
+    $this->drupalPlaceBlock('yoti_block');
 
     // Load the homepage.
     $this->drupalGet('<front>');
@@ -47,8 +45,9 @@ class YotiBlockTest extends BrowserTestBase {
       '[data-yoti-scenario-id=\'test_scenario_id\']',
       '[data-size=\'small\']',
     ];
-    $this->assertSession()->elementExists('css', 'span' . implode('', $span_attributes));
-    $this->assertSession()->elementExists('css', 'script[src*=\'js/browser-loader.js\']');
+    $assert = $this->assertSession();
+    $assert->elementExists('css', 'span' . implode('', $span_attributes));
+    $assert->elementExists('css', 'script[src*=\'js/browser-loader.js\']');
   }
 
 }

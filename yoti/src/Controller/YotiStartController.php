@@ -7,6 +7,8 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\Models\YotiUserModel;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Session\AccountInterface;
 
 require_once __DIR__ . '/../../sdk/boot.php';
 
@@ -45,17 +47,6 @@ class YotiStartController extends ControllerBase {
   }
 
   /**
-   * Unlink user account from Yoti.
-   */
-  public function unlink() {
-    /** @var \Drupal\yoti\YotiHelper $helper */
-    $helper = \Drupal::service('yoti.helper');
-
-    $helper->unlink();
-    return $this->redirect('user.login');
-  }
-
-  /**
    * Send binary file from Yoti.
    */
   public function binFile($field) {
@@ -87,6 +78,21 @@ class YotiStartController extends ControllerBase {
     readfile($file);
     // Returning response here as required by Drupal controller action.
     return new TrustedRedirectResponse('yoti.bin-file');
+  }
+
+  /**
+   * Check that current account is not linked.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   Run access checks for this account.
+   *
+   * @return \Drupal\Core\Access\AccessResult
+   *   If account is not linked isAllowed() will be TRUE, otherwise
+   *   isNeutral() will be TRUE.
+   */
+  public static function accessLink(AccountInterface $account) {
+    $db_profile = YotiUserModel::getYotiUserById($account->id());
+    return AccessResult::allowedIf(empty($db_profile));
   }
 
 }

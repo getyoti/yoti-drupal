@@ -68,7 +68,6 @@ function yoti_entity_extra_field_info() {
  */
 function yoti_user_view(array &$build, UserInterface $account) {
   $map = yoti_map_params();
-  $promptMessage = 'This will unlink your account from Yoti.';
 
   $user = \Drupal::currentUser();
   $isAdmin = in_array('administrator', $user->getRoles(), TRUE);
@@ -111,8 +110,6 @@ function yoti_user_view(array &$build, UserInterface $account) {
     ];
   }
 
-  $onClickEvent = "return confirm('{$promptMessage}')";
-
   // Build Yoti unlink button.
   $unlinkUrl = Url::fromRoute('yoti.unlink');
   $link_options = [
@@ -120,7 +117,6 @@ function yoti_user_view(array &$build, UserInterface $account) {
       'id' => [
         'yoti-unlink-button',
       ],
-      'onclick' => $onClickEvent,
     ],
   ];
   $unlinkUrl->setOptions($link_options);
