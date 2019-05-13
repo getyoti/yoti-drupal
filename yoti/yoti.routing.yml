@@ -4,7 +4,7 @@ yoti.link:
     _controller: '\Drupal\yoti\Controller\YotiStartController::link'
   requirements:
     _permission: 'access content'
-    _custom_access: '\Drupal\yoti\Controller\YotiStartController::accessAccountNotLinked'
+    _custom_access: '\Drupal\yoti\Controller\YotiStartController::accessLink'
   options:
     no_cache: TRUE
 
@@ -25,7 +25,7 @@ yoti.unlink:
     _title: 'Unlink Yoti'
   requirements:
     _user_is_logged_in: 'TRUE'
-    _custom_access: '\Drupal\yoti\Controller\YotiStartController::accessAccountIsLinked'
+    _custom_access: '\Drupal\yoti\Form\YotiUnlinkForm::access'
   options:
     no_cache: TRUE
 
