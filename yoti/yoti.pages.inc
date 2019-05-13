@@ -8,7 +8,7 @@
 require_once __DIR__ . '/YotiHelper.php';
 
 /**
- * Authenticate Yoti user and link to current user account.
+ * Page callback to handle linking of Yoti user to current user.
  */
 function yoti_link() {
   // Resume as normal.
