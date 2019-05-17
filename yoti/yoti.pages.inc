@@ -77,15 +77,9 @@ function yoti_bin_file() {
     return;
   }
 
-  $file = YotiHelper::secureUploadDir() . "/{$dbProfile[$field]}";
-  if (!file_exists($file)) {
-    $oldFile = YotiHelper::uploadDir() . "/{$dbProfile[$field]}";
-    // Check if the path exists in the old upload dir.
-    if (!file_exists($oldFile)) {
-      return;
-    }
-    // Use the old file path to display user profile image.
-    $file = $oldFile;
+  $file = YotiHelper::selfieFilePath($dbProfile[$field]);
+  if (!is_file($file)) {
+    return;
   }
 
   $type = 'image/png';

@@ -583,7 +583,31 @@ class YotiHelper {
    *   Drupal user id.
    */
   private function deleteYotiUser($userId) {
+    $this->deleteSelfie($userId);
     db_delete(YotiHelper::YOTI_USER_TABLE_NAME)->condition('uid', $userId)->execute();
+  }
+
+  /**
+   * Delete selfie for given user ID.
+   *
+   * @param int $userId
+   *   The Drupal user ID.
+   */
+  private function deleteSelfie($userId) {
+    $dbProfile = YotiHelper::getYotiUserProfile($userId);
+    if (!$dbProfile) {
+      return;
+    }
+
+    $userProfileArr = unserialize($dbProfile['data']);
+    if (!isset($userProfileArr['selfie_filename'])) {
+      return;
+    }
+
+    $selfieFullPath = YotiHelper::selfieFilePath($userProfileArr['selfie_filename']);
+    if (is_file($selfieFullPath)) {
+      unlink($selfieFullPath);
+    }
   }
 
   /**
@@ -642,6 +666,29 @@ class YotiHelper {
    */
   public static function secureUploadUrl() {
     return file_create_url(self::secureUploadDir());
+  }
+
+  /**
+   * Returns the selfie file path.
+   *
+   * @param string $fileName
+   *   The name of the selfie file including extension.
+   *
+   * @return string|null
+   *   The path to the selfie or NULL when it doesn't exist.
+   */
+  public static function selfieFilePath($fileName) {
+    $selfieFullPath = YotiHelper::secureUploadDir() . '/' . $fileName;
+
+    // Make it backward compatible by checking the old files directory.
+    $oldSelfieFullPath = YotiHelper::uploadDir() . '/' . $fileName;
+
+    if (is_file($selfieFullPath)) {
+      return $selfieFullPath;
+    }
+    elseif (is_file($oldSelfieFullPath)) {
+      return $oldSelfieFullPath;
+    }
   }
 
   /**
