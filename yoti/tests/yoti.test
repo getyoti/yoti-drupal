@@ -54,6 +54,13 @@ class YotiTest extends DrupalWebTestCase {
   private $adminUser;
 
   /**
+   * Selfie file path.
+   *
+   * @var string
+   */
+  private $selfieFilePath;
+
+  /**
    * Yoti test config.
    *
    * @var array
@@ -106,16 +113,45 @@ class YotiTest extends DrupalWebTestCase {
     // Enable block caching.
     variable_set('block_cache', TRUE);
 
+    // Create secure file directory.
+    if (!is_dir(YotiHelper::secureUploadDir())) {
+      mkdir(YotiHelper::secureUploadDir(), 0777, TRUE);
+    }
+
+    // Create test selfie file.
+    $this->selfieFilePath = YotiHelper::secureUploadDir() . DIRECTORY_SEPARATOR . 'test_selfie.jpg';
+    file_put_contents($this->selfieFilePath, 'test_selfie_contents');
+
     // Create a linked user.
     $this->linkedUser = $this->drupalCreateUser();
     db_insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
       'uid' => $this->linkedUser->uid,
       'identifier' => 'some-remember-me-id',
-      'data' => serialize(array()),
+      'data' => serialize(array(
+        'selfie_filename' => $this->selfieFilePath,
+      )),
     ])->execute();
 
     // Create an unlinked user.
     $this->unlinkedUser = $this->drupalCreateUser();
+  }
+
+  /**
+   * Clean up test data.
+   */
+  public function teardown() {
+    // Remove test file.
+    clearstatcache(NULL, $this->selfieFilePath);
+    if (is_file($this->selfieFilePath)) {
+      unlink($this->selfieFilePath);
+    }
+
+    // Remove test directory.
+    if (is_dir(YotiHelper::secureUploadDir())) {
+      rmdir(YotiHelper::secureUploadDir());
+    }
+
+    parent::teardown();
   }
 
   /**
@@ -237,7 +273,22 @@ class YotiTest extends DrupalWebTestCase {
    * Test Unlink Form.
    */
   public function testUnlinkForm() {
+    // Log in as unlinked user.
+    $this->drupalLogin($this->unlinkedUser);
+
+    // Check selfie exists and cannot be viewed by another user.
+    $this->assertTrue(is_file($this->selfieFilePath), 'Check selfie exists');
+    $this->drupalGet('yoti/bin-file', array('query' => array('field' => 'selfie')));
+    $this->assertNoRaw('test_selfie_contents');
+
+    // Log in as linked user.
     $this->drupalLogin($this->linkedUser);
+
+    // Check selfie can be viewed by current linked user.
+    $this->drupalGet('yoti/bin-file', array('query' => array('field' => 'selfie')));
+    $this->assertRaw('test_selfie_contents');
+
+    // Visit user profile.
     $this->drupalGet('user');
 
     $this->assertElementByXpath(
@@ -249,6 +300,15 @@ class YotiTest extends DrupalWebTestCase {
         ':class' => 'button',
       ),
       'Check unlink Yoti Account link'
+    );
+
+    // Check selfie img tag exists.
+    $this->assertElementByXpath(
+      "//img[contains(@src,:img_src)]",
+      array(
+        ':img_src' => '/yoti/bin-file?field=selfie',
+      ),
+      'Check selfie exists'
     );
 
     $this->clickLink('Unlink Yoti Account');
@@ -266,6 +326,10 @@ class YotiTest extends DrupalWebTestCase {
     // Check account was unlinked.
     $this->drupalGet('user');
     $this->assertNoText('Unlink Yoti Account');
+
+    // Check selfie was removed.
+    clearstatcache(NULL, $this->selfieFilePath);
+    $this->assertFalse(is_file($this->selfieFilePath), 'Check selfie has been deleted');
   }
 
   /**
