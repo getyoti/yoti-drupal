@@ -448,15 +448,17 @@ class YotiHelper {
    *
    * @param int $yotiId
    *   Yoti user ID.
-   * @param string $field
-   *   Yoti user identifier.
    *
    * @return int
    *   User unique ID
    */
-  private function getDrupalUid($yotiId, $field = 'identifier') {
-    $tableName = YotiHelper::YOTI_USER_TABLE_NAME;
-    $col = db_query("SELECT uid FROM `{$tableName}` WHERE `{$field}` = '$yotiId' Limit 1")->fetchCol();
+  private function getDrupalUid($yotiId) {
+    $col = db_select(YotiHelper::YOTI_USER_TABLE_NAME, 'u')
+      ->fields('u', array('uid'))
+      ->condition('identifier', $yotiId)
+      ->range(0, 1)
+      ->execute()
+      ->fetchCol();
     return $col ? reset($col) : NULL;
   }
 
