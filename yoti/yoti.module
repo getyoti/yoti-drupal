@@ -10,6 +10,7 @@ use Drupal\user\UserInterface;
 use Drupal\yoti\YotiHelper;
 use Yoti\Entity\Profile;
 use Drupal\yoti\Models\YotiUserModel;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 
 require_once __DIR__ . '/sdk/boot.php';
 
@@ -47,17 +48,17 @@ function yoti_entity_extra_field_info() {
 
   $fields = [];
   foreach ($map as $param => $label) {
-    $fields['user']['yoti']['display'][$param] = [
+    $fields['user']['user']['display'][$param] = [
       'label' => $label,
       'description' => $label,
       'weight' => 10,
     ];
   }
 
-  $fields['user']['yoti']['display']['yoti_unlink'] = [
+  $fields['user']['user']['display']['yoti_unlink'] = [
     'label' => t('Unlink'),
     'description' => t('Unlink Yoti account'),
-    'weight' => 5,
+    'weight' => 15,
   ];
 
   return $fields;
@@ -66,7 +67,7 @@ function yoti_entity_extra_field_info() {
 /**
  * Implements hook_ENTITY_TYPE_view() for user entities.
  */
-function yoti_user_view(array &$build, UserInterface $account) {
+function yoti_user_view(array &$build, UserInterface $account, EntityViewDisplayInterface $display, $view_mode) {
   $map = yoti_map_params();
 
   $user = \Drupal::currentUser();
@@ -78,9 +79,14 @@ function yoti_user_view(array &$build, UserInterface $account) {
 
   $userProfileArr = unserialize($dbProfile['data']);
 
-  foreach ($map as $param => $label) {
-    $value = isset($userProfileArr[$param]) ? $userProfileArr[$param] : '';
-    if ($param === Profile::ATTR_SELFIE) {
+  foreach ($map as $field => $label) {
+    // Ensure we only display visible fields.
+    if (!$display->getComponent($field)) {
+      continue;
+    }
+
+    $value = isset($userProfileArr[$field]) ? $userProfileArr[$field] : '';
+    if ($field === Profile::ATTR_SELFIE) {
       // Yoti user selfie file name.
       $selfieFileName = NULL;
       if (isset($userProfileArr[YotiHelper::ATTR_SELFIE_FILE_NAME])) {
@@ -104,24 +110,25 @@ function yoti_user_view(array &$build, UserInterface $account) {
       $value = '<i>(empty)</i>';
     }
 
-    $build[$param] = [
+    $build[$field] = [
       '#type' => 'item',
       '#markup' => '<h4 class="label">' . $label . '</h4> ' . $value,
     ];
   }
 
-  // Build Yoti unlink button.
-  $unlinkUrl = Url::fromRoute('yoti.unlink');
-  $link_options = [
-    'attributes' => [
-      'id' => [
-        'yoti-unlink-button',
+  // Ensure we only display unlink for the current user's profile.
+  if (($user->id() === $account->id()) && $display->getComponent('yoti_unlink')) {
+    // Build Yoti unlink button.
+    $unlinkUrl = Url::fromRoute('yoti.unlink');
+    $link_options = [
+      'attributes' => [
+        'id' => [
+          'yoti-unlink-button',
+        ],
       ],
-    ],
-  ];
-  $unlinkUrl->setOptions($link_options);
+    ];
+    $unlinkUrl->setOptions($link_options);
 
-  if ($user->id() === $account->id()) {
     $build['yoti_unlink'] = [
       '#type' => 'item',
       '#markup' => \Drupal::l(t('Unlink Yoti account'), $unlinkUrl),
