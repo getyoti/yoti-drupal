@@ -281,8 +281,6 @@ function yoti_permission() {
 function yoti_user_view($account, $view_mode, $langcode) {
   global $user;
 
-  $promptMessage = 'This will unlink your account from Yoti.';
-
   $map = yoti_map_params();
 
   $current = $user;
