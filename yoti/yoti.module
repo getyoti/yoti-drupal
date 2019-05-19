@@ -93,7 +93,7 @@ function yoti_user_view(array &$build, UserInterface $account, EntityViewDisplay
         $selfieFileName = $userProfileArr[YotiHelper::ATTR_SELFIE_FILE_NAME];
       }
       $selfieFullPath = YotiHelper::uploadDir() . "/{$selfieFileName}";
-      if (!empty($selfieFileName) && file_exists($selfieFullPath)) {
+      if (!empty($selfieFileName) && is_file($selfieFullPath)) {
         $params = ['field' => 'selfie'];
         if ($isAdmin) {
           $params['user_id'] = $account->uid;
