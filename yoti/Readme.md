@@ -82,8 +82,7 @@ To allow your existing users to log in using Yoti instead of entering thier user
 
 ## Customising User Profiles
 
-By default, all shared attributes are displayed on user profile pages. This can be customised
-using [hook_user_view_alter()](https://api.drupal.org/api/drupal/modules%21user%21user.api.php/function/hook_user_view_alter/7.x).
+By default, all shared attributes are displayed on user profile pages. This can be customised using `hook_ENTITY_TYPE_view_alter()`.
 
 ### Example
 ```php
