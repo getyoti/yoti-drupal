@@ -22,10 +22,12 @@ How to set up the plugin in Drupal
 5) [Linking existing accounts to use Yoti authentication
 ](#linking-existing-accounts-to-use-yoti-authentication)
 
-6) [API Coverage](#api-coverage) -
+6) [Customising User Profiles](#customising-user-profiles)
+
+7) [API Coverage](#api-coverage) -
 Attributes defined
 
-7) [Support](#support) -
+8) [Support](#support) -
 Please feel free to reach out
 
 ## An Architectural view
@@ -37,7 +39,7 @@ must expose a GET endpoint that Yoti will use to forward tokens.
 The endpoint can be configured in the Yoti Dashboard when you create/update
 your application. For more information on how to create an application please
 check our [developer
-page](https://www.yoti.com/developers/documentation/#login-button-setup).
+page](https://www.yoti.com/developers/documentation/#integration-steps).
 
 The image below shows how your application back-end and Yoti integrate into
 the context of a Login flow.
@@ -78,7 +80,7 @@ To import the Yoti SDK inside your project:
 
 1) Log on to the admin console of your Drupal website. e.g.
    https://www.drupalurl.org.uk/admin
-2) Navigate to at `Modules' and Search for Yoti - you can also download the
+2) Navigate to at 'Modules' and Search for Yoti - you can also download the
    package from here.
 3) Install and enable the module.
 
