@@ -39,33 +39,58 @@ Please do not open the .pem file as this might corrupt the key and you will need
 
 `Attempt to link Yoti email address with Drupal account for first time users` - This setting enables linking a Yoti account to a Drupal user if the email from both platforms is identical.
 
+## How to retrieve user data provided by Yoti
+Upon registration using Yoti, user data will be stored as serialized data into `users_yoti` table in the `data` field.
+
+You can write a query to retrieve all data stored in `users_yoti.data`, which will return a list of serialized data.
+
 ## Docker
 
-We provide a Docker container that includes the Yoti module.
+We provide a [Docker](https://docs.docker.com/) container that includes the Yoti module.
 
 ### Setup
 
-Clone this repository and go into the folder:
+Clone this repository, go into the `yoti-drupal` folder and checkout Drupal 7 branch by running the following commands:
 
 ```shell
-cd yoti-drupal-7
+$ git clone https://github.com/getyoti/yoti-drupal.git
+$ cd yoti-drupal
+$ git checkout 7.x-1.x
 ```
 
 Rebuild the images if you have modified the `docker-compose.yml` file:
 
 ```shell
-docker-compose build --no-cache
+$ docker-compose build --no-cache
 ```
+
+#### Fetching the SDK
+
+To fetch the latest SDK and place in `./yoti/sdk` directory:
+
+```shell
+$ ./checkout-sdk.sh
+```
+
+#### Quick Installation (Drush)
+
+Install Drupal and enable Yoti module:
+
+```shell
+$ ./install-drupal.sh
+```
+
+Visit <https://localhost:7007> and follow the [module setup process](#module-setup)
+
+#### Manual Installation
 
 Build the containers:
 
 ```shell
-docker-compose up -d
+$ docker-compose up -d drupal-8
 ```
 
-After the command has finished running, go to [http://localhost:8007](http://localhost:8007) and follow the instructions.
-
-### Database Configuration
+After the command has finished running, go to <https://localhost:7007> and follow the instructions.
 
 When prompted, enter the following database details:
 
@@ -74,15 +99,44 @@ When prompted, enter the following database details:
 * Password `drupal`
 * Host `drupal-7-db`
 
-The Yoti module will be installed alongside Drupal. Activate it and follow our [module setup process](#module-setup).
+Enable the Yoti module and follow our [module setup process](#module-setup).
+
+### Local Development
+
+To install Drupal and enable the local working Yoti module:
+
+```shell
+$ ./install-drupal.sh drupal-7-dev
+```
+
+After the command has finished running, go to <https://localhost:7008>.
+
+### Xdebug
+
+To enable Xdebug, install using the debug container:
+```shell
+./install-drupal.sh drupal-7-debug
+```
+
+After the command has finished running, go to <https://localhost:7009>.
+
+To use Xdebug in an IDE, map the `/var/www/html/sites/all/modules/yoti` volume to the module directory on the host machine.
+
+### Running Tests
+
+To check coding standards and run unit tests:
+
+```shell
+$ ./run-tests.sh
+```
 
 ### Removing the Docker containers
 
 Run the following commands to remove docker containers:
 
 ```shell
-docker-compose stop
-docker-compose rm
+$ docker-compose stop
+$ docker-compose rm
 ```
 
 ## Support

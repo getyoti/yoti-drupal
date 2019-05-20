@@ -11,6 +11,24 @@ use Yoti\ActivityDetails;
 require_once __DIR__ . '/YotiHelper.php';
 
 /**
+ * Implements hook_theme().
+ */
+function yoti_theme($existing, $type, $theme, $path) {
+  return array(
+    'yoti_button' => array(
+      'variables' => array(
+        'app_id' => NULL,
+        'scenario_id' => NULL,
+        'is_linked' => FALSE,
+        'button_text' => NULL,
+      ),
+      'path' => $path . '/templates',
+      'template' => 'yoti-button',
+    ),
+  );
+}
+
+/**
  * Display these fields.
  *
  * @return array
@@ -71,6 +89,7 @@ function yoti_block_info() {
   $blocks = [];
   $blocks['yoti_link'] = [
     'info' => t('Yoti Button'),
+    'cache' => DRUPAL_NO_CACHE,
   ];
 
   return $blocks;
@@ -84,17 +103,64 @@ function yoti_block_view($delta = '') {
 
   $block = [];
 
-  // Add sdk url.
-  drupal_add_js(YotiHelper::YOTI_SDK_JAVASCRIPT_LIBRARY);
-  // Add Yoti css file.
-  drupal_add_css(drupal_get_path('module', 'yoti') . '/css/yoti.css', ['group' => CSS_DEFAULT, 'every_page' => TRUE]);
-
   // No config? no button.
   $config = YotiHelper::getConfig();
   if (!$config) {
     return $block;
   }
 
+  switch ($delta) {
+    case 'yoti_link':
+      if (empty($user->uid)) {
+        $button_text = YotiHelper::YOTI_LINK_BUTTON_DEFAULT_TEXT;
+        $is_linked = FALSE;
+      }
+      else {
+        $button_text = 'Link to Yoti';
+        $is_linked = !empty(YotiHelper::getYotiUserProfile($user->uid));
+      }
+
+      $block['content'] = array(
+        '#theme' => 'yoti_button',
+        '#is_linked' => $is_linked,
+        '#button_text' => check_plain($button_text),
+        '#app_id' => check_plain($config['yoti_app_id']),
+        '#scenario_id' => check_plain($config['yoti_scenario_id']),
+        '#attached' => array(
+          'css' => array(
+            array(
+              'data' => drupal_get_path('module', 'yoti') . '/css/yoti.css',
+              'group' => CSS_DEFAULT,
+              'every_page' => TRUE,
+            ),
+          ),
+          'js' => array(
+            array(
+              'type' => 'inline',
+              'data' => yoti_get_inline_script(),
+              'scope' => 'footer',
+            ),
+            array(
+              'type' => 'external',
+              'data' => YotiHelper::YOTI_SDK_JAVASCRIPT_LIBRARY,
+              'scope' => 'header',
+            ),
+          ),
+        ),
+      );
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Returns the inline button JavaScript.
+ *
+ * @return string
+ *   Inline button JavaScript,
+ */
+function yoti_get_inline_script() {
   $script = [];
 
   // If connect url starts with 'https://staging' then we are in staging mode.
@@ -109,31 +175,8 @@ function yoti_block_view($delta = '') {
 
   // Add init()
   $script[] = '_ybg.init();';
-  $linkButton = '<span
-            data-yoti-application-id="' . $config['yoti_app_id'] . '"
-            data-yoti-type="inline"
-            data-yoti-scenario-id="' . $config['yoti_scenario_id'] . '"
-            data-size="small">
-            %s
-        </span>
-        <script>' . implode("\r\n", $script) . '</script>';
 
-  if (!$user->uid) {
-    $button = sprintf($linkButton, YotiHelper::YOTI_LINK_BUTTON_DEFAULT_TEXT);
-  }
-  else {
-    $dbProfile = YotiHelper::getYotiUserProfile($user->uid);
-    if ($dbProfile) {
-      $button = '<strong>Yoti</strong> Linked';
-    }
-    else {
-      $button = sprintf($linkButton, 'Link to Yoti');
-    }
-  }
-
-  $block['content'] = '<div class="yoti-connect">' . $button . '</div>';
-
-  return $block;
+  return implode("\r\n", $script);
 }
 
 /**
@@ -168,7 +211,8 @@ function yoti_menu() {
   $items['yoti/unlink'] = [
     'href' => 'yoti/unlink',
     'title' => 'Unlink Yoti',
-    'page callback' => 'yoti_unlink',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['yoti_unlink'],
     'access callback' => 'has_yoti_login',
     'type' => MENU_CALLBACK,
     'file' => 'yoti.pages.inc',
@@ -232,50 +276,10 @@ function yoti_permission() {
 }
 
 /**
- * This function will initialize the App.
- *
- * @return true
- *   if initialization was OK. false otherwise.
- */
-function yoti_initialize() {
-  // Check that PHP version is 5.4 or higher.
-  if (version_compare(phpversion(), '5.4.0', '<')) {
-    drupal_set_message(t('Yoti not configured properly.'), 'error');
-    watchdog(
-        'yoti',
-        'Yoti PHP SDK requires PHP 5.4 or higher. Your PHP version is @version',
-        ['@version' => phpversion()],
-        WATCHDOG_ERROR
-    );
-    return FALSE;
-  }
-
-  // Check that the module is configured properly.
-  $app_id = variable_get('yoti_app_id', 0);
-  $app_secret = variable_get('yoti_sdk_id', 0);
-
-  if (!$app_id || !$app_secret) {
-    drupal_set_message(t('Yoti not configured properly.'), 'error');
-    watchdog(
-        'yoti',
-        'Could not initialize Yoti app. Define APP ID and PEM file on module settings.',
-        [],
-        WATCHDOG_ERROR
-    );
-    return FALSE;
-  }
-
-  // If we have not returned FALSE, SDK is found and module has been configured.
-  return TRUE;
-}
-
-/**
  * Implements hook_ENTITY_TYPE_view() for user entities.
  */
 function yoti_user_view($account, $view_mode, $langcode) {
   global $user;
-
-  $promptMessage = 'This will unlink your account from Yoti.';
 
   $map = yoti_map_params();
 
@@ -290,14 +294,9 @@ function yoti_user_view($account, $view_mode, $langcode) {
 
   foreach ($map as $param => $label) {
     $value = isset($dbProfile[$param]) ? $dbProfile[$param] : '';
-    if ($param === ActivityDetails::ATTR_SELFIE) {
-      // Make it backward compatible by checking the old files directory.
-      $oldSelfieFullPath = YotiHelper::uploadDir() . "/{$dbProfile['selfie_filename']}";
-      $selfieFullPath = YotiHelper::secureUploadDir() . "/{$dbProfile['selfie_filename']}";
-      if (
-          $dbProfile['selfie_filename']
-          && (file_exists($selfieFullPath) || file_exists($oldSelfieFullPath))
-      ) {
+    if ($param === ActivityDetails::ATTR_SELFIE && !empty($dbProfile['selfie_filename'])) {
+      $selfieFullPath = YotiHelper::selfieFilePath($dbProfile['selfie_filename']);
+      if (is_file($selfieFullPath)) {
         $params = ['field' => 'selfie'];
         if ($isAdmin) {
           $params['user_id'] = $account->uid;
@@ -326,13 +325,19 @@ function yoti_user_view($account, $view_mode, $langcode) {
   }
 
   if ($current->uid === $account->uid) {
-    $account->content['summary']['yoti_unlink'] = [
-      '#type' => 'item',
-      '#markup' => '<div class="yoti-connect">' .
-      '<a  class="button" onclick="return confirm(\'' . $promptMessage . '\')" id="yoti-unlink-button" href="' .
-      url('/yoti/unlink') . '">' .
-      t('Unlink Yoti Account') .
-      '</a></div>',
-    ];
+    $account->content['summary']['yoti_unlink'] = array(
+      '#theme' => 'link',
+      '#text' => t('Unlink Yoti Account'),
+      '#path' => 'yoti/unlink',
+      '#prefix' => '<div class="yoti-connect">',
+      '#suffix' => '</div>',
+      '#options' => array(
+        'attributes' => array(
+          'class' => array('button'),
+          'id' => 'yoti-unlink-button',
+        ),
+        'html' => FALSE,
+      ),
+    );
   }
 }
