@@ -8,19 +8,9 @@
 require_once __DIR__ . '/YotiHelper.php';
 
 /**
- * Authenticate Yoti user or unlink if user is already linked to Yoti user.
+ * Page callback to handle linking of Yoti user to current user.
  */
 function yoti_link() {
-  global $user;
-
-  // Check if user already has an account.
-  if ($user) {
-    $dbProfile = YotiHelper::getYotiUserProfile($user->uid);
-    if ($dbProfile) {
-      return yoti_unlink();
-    }
-  }
-
   // Resume as normal.
   $helper = new YotiHelper();
   if (!array_key_exists('token', $_GET)) {
@@ -34,9 +24,28 @@ function yoti_link() {
 }
 
 /**
- * Unlink drupal user from Yoti user.
+ * Form to confirm unlinking of Drupal user from Yoti user.
+ *
+ * @ingroup forms
+ * @see yoti_unlink_submit()
  */
 function yoti_unlink() {
+  return confirm_form(
+    array(),
+    'Unlink Yoti Account',
+    '<front>',
+    'Are you sure you want to unlink your account from Yoti?',
+    t('Yes'),
+    t('Cancel')
+  );
+}
+
+/**
+ * Form submission handler for yoti_unlink().
+ *
+ * @see yoti_unlink()
+ */
+function yoti_unlink_submit() {
   $helper = new YotiHelper();
   $helper->unlink();
   return drupal_goto('/');
@@ -68,15 +77,9 @@ function yoti_bin_file() {
     return;
   }
 
-  $file = YotiHelper::secureUploadDir() . "/{$dbProfile[$field]}";
-  if (!file_exists($file)) {
-    $oldFile = YotiHelper::uploadDir() . "/{$dbProfile[$field]}";
-    // Check if the path exists in the old upload dir.
-    if (!file_exists($oldFile)) {
-      return;
-    }
-    // Use the old file path to display user profile image.
-    $file = $oldFile;
+  $file = YotiHelper::selfieFilePath($dbProfile[$field]);
+  if (!is_file($file)) {
+    return;
   }
 
   $type = 'image/png';
@@ -110,23 +113,42 @@ function yoti_register($form, &$form_state) {
     drupal_goto();
   }
 
-  $companyName = (!empty(variable_get('yoti_company_name'))) ? variable_get('yoti_company_name') : 'Drupal';
+  // Associative array of text replacements.
+  $text_replacements = array(
+    '@company_name' => (!empty(variable_get('yoti_company_name'))) ? variable_get('yoti_company_name') : 'Drupal',
+  );
 
-  $form['yoti_nolink'] = [
+  $form['yoti_login_message'] = array(
     '#weight' => -1000,
-    '#default_value' => variable_get('yoti_nolink'),
-    '#markup' => '<div class="form-item form-type-checkbox form-item-yoti-link messages warning" style="margin: 0 0 15px 0">
-                <div><b>Warning: You are about to link your ' . $companyName . ' account to your Yoti account. If you don\'t want this to happen, tick the checkbox below.</b></div>
-                <input type="checkbox" id="edit-yoti-link" name="yoti_nolink" value="1" class="form-checkbox"' . (!empty($form_state['input']['yoti_nolink']) ? ' checked="checked"' : '') . '>
-                <label class="option" for="edit-yoti-link">Don\'t link my Yoti account</label>
-            </div>',
-  ];
+    '#prefix' => '<div class="messages warning yoti-login-message">',
+    '#suffix' => '</div>',
+  );
+
+  $form['yoti_login_message']['text'] = array(
+    '#prefix' => '<div><b>',
+    '#suffix' => '</b></div>',
+    '#markup' => implode(' ', array(
+      t('Warning: You are about to link your @company_name account to your Yoti account.', $text_replacements),
+      t("If you don't want this to happen, tick the checkbox below."),
+    )),
+  );
+
+  $form['yoti_login_message']['yoti_nolink'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Don't link my Yoti account"),
+    '#default_value' => (int) !empty($form_state['input']['yoti_nolink']),
+  );
 
   $form = user_login($form, $form_state);
-  $loginFieldLabel = 'Your ' . $companyName . ' Username';
-  $passwordFieldLabel = 'Your ' . $companyName . ' Password';
-  $form['name']['#title'] = $loginFieldLabel;
-  $form['pass']['#title'] = $passwordFieldLabel;
+
+  $form['name']['#title'] = t('Your @company_name Username', $text_replacements);
+  $form['pass']['#title'] = t('Your @company_name Password', $text_replacements);
+
+  $form['#attached']['css'][] = array(
+    'data' => drupal_get_path('module', 'yoti') . '/css/yoti.css',
+    'group' => CSS_DEFAULT,
+    'every_page' => TRUE,
+  );
 
   return $form;
 }

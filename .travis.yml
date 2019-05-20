@@ -1,0 +1,14 @@
+language: minimal
+
+git:
+  depth: 1
+
+before_install:
+    - ./checkout-sdk.sh
+
+install:
+    - cd docker
+    - ./install-drupal.sh drupal-7-dev
+
+script:
+    - ./run-tests.sh
