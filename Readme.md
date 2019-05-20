@@ -87,7 +87,7 @@ Visit <https://localhost:7007> and follow the [module setup process](#module-set
 Build the containers:
 
 ```shell
-$ docker-compose up -d drupal-8
+$ docker-compose up -d drupal-7
 ```
 
 After the command has finished running, go to <https://localhost:7007> and follow the instructions.
