@@ -1,0 +1,429 @@
+<?php
+
+/**
+ * Yoti tests.
+ */
+class YotiTest extends DrupalWebTestCase {
+
+  /**
+   * Check that an element exists in HTML markup.
+   *
+   * @param string $xpath
+   *   An XPath expression.
+   * @param array $arguments
+   *   (optional) An associative array of XPath replacement tokens to pass to
+   *   DrupalWebTestCase::buildXPathQuery().
+   * @param string $message
+   *   (optional) The message to display along with the assertion.
+   * @param string $html
+   *   (optional) HTML to check.
+   * @param string $group
+   *   (optional) The type of assertion - examples are "Browser", "PHP".
+   *
+   * @return bool
+   *   TRUE if the assertion succeeded, FALSE otherwise.
+   */
+  protected function assertElementByXpath($xpath, array $arguments = array(), $message = '', $html = NULL, $group = 'Other') {
+    if (!empty($html)) {
+      $domXpath = new DOMXPath(filter_dom_load($html));
+      $expression = $this->buildXPathQuery($xpath, $arguments);
+      $result = $domXpath->query($expression);
+    }
+    else {
+      $result = $this->xpath($xpath, $arguments);
+    }
+    return $this->assertTrue(!empty($result[0]), $message, $group);
+  }
+
+  /**
+   * Modules to enable.
+   *
+   * @var array
+   */
+  public $modules = array(
+    'block',
+    'node',
+    'yoti',
+  );
+
+  /**
+   * A user with the 'administer yoti' permission.
+   *
+   * @var object
+   */
+  private $adminUser;
+
+  /**
+   * Selfie file path.
+   *
+   * @var string
+   */
+  private $selfieFilePath;
+
+  /**
+   * Yoti test config.
+   *
+   * @var array
+   */
+  private $yotiConfig = array(
+    'yoti_app_id' => 'test_yoti_app_id',
+    'yoti_scenario_id' => 'test_yoti_scenario_id',
+    'yoti_sdk_id' => 'test_yoti_sdk_id',
+    'yoti_company_name' => 'test_yoti_company_name',
+    'yoti_age_verification' => 'test_yoti_age_verification',
+    'yoti_only_existing' => FALSE,
+    'yoti_success_url' => 'test_yoti_success_url',
+    'yoti_fail_url' => 'test_yoti_fail_url',
+    'yoti_user_email' => 'test_yoti_user_email',
+    'yoti_pem' => 'pem_contents',
+  );
+
+  /**
+   * Info.
+   *
+   * @return array
+   *   The test info
+   */
+  public static function getInfo() {
+    return array(
+      'name' => 'Yoti',
+      'description' => 'Test Yoti.',
+      'group' => 'Yoti',
+    );
+  }
+
+  /**
+   * Setup.
+   */
+  public function setUp() {
+    parent::setUp($this->modules);
+
+    // Create admin user.
+    $this->adminUser = $this->drupalCreateUser(array(
+      'access administration pages',
+      'administer yoti',
+      'administer blocks',
+      'administer modules',
+      'administer site configuration',
+    ));
+
+    // Configure module.
+    $this->configureModule();
+
+    // Enable block caching.
+    variable_set('block_cache', TRUE);
+
+    // Create secure file directory.
+    if (!is_dir(YotiHelper::secureUploadDir())) {
+      mkdir(YotiHelper::secureUploadDir(), 0777, TRUE);
+    }
+
+    // Create test selfie file.
+    $this->selfieFilePath = YotiHelper::secureUploadDir() . DIRECTORY_SEPARATOR . 'test_selfie.jpg';
+    file_put_contents($this->selfieFilePath, 'test_selfie_contents');
+
+    // Create a linked user.
+    $this->linkedUser = $this->drupalCreateUser();
+    db_insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
+      'uid' => $this->linkedUser->uid,
+      'identifier' => 'some-remember-me-id',
+      'data' => serialize(array(
+        'selfie_filename' => $this->selfieFilePath,
+      )),
+    ])->execute();
+
+    // Create an unlinked user.
+    $this->unlinkedUser = $this->drupalCreateUser();
+  }
+
+  /**
+   * Clean up test data.
+   */
+  public function teardown() {
+    // Remove test file.
+    clearstatcache(NULL, $this->selfieFilePath);
+    if (is_file($this->selfieFilePath)) {
+      unlink($this->selfieFilePath);
+    }
+
+    // Remove test directory.
+    if (is_dir(YotiHelper::secureUploadDir())) {
+      rmdir(YotiHelper::secureUploadDir());
+    }
+
+    parent::teardown();
+  }
+
+  /**
+   * Configure module.
+   */
+  private function configureModule() {
+    foreach ($this->yotiConfig as $key => $value) {
+      variable_set($key, $value);
+    }
+
+    // Create a test pem file.
+    $pem_file = file_save_data($this->yotiConfig['yoti_pem'], 'private://yoti_test.pem', FILE_EXISTS_REPLACE);
+    variable_set('yoti_pem', $pem_file->fid);
+  }
+
+  /**
+   * Delete configuration.
+   */
+  private function deleteModuleConfiguration() {
+    foreach (array_keys($this->yotiConfig) as $key) {
+      variable_del($key);
+    }
+  }
+
+  /**
+   * Test Yoti block.
+   */
+  public function testBlock() {
+    $this->drupalLogin($this->adminUser);
+
+    // Place the block in the content region.
+    $edit = array(
+      'regions[bartik]' => 'content',
+      'regions[seven]' => 'content',
+    );
+    $this->drupalPost('admin/structure/block/manage/yoti/yoti_link/configure', $edit, t('Save block'));
+
+    // Check that the block is present with the correct configuration.
+    $this->drupalGet('<front>');
+    $this->assertText('Link to Yoti');
+
+    // Test that tokens were rendered correctly.
+    $attributes = array(
+      '[@data-size=:size]',
+      '[@data-yoti-application-id=:app_id]',
+      '[@data-yoti-scenario-id=:scenario_id]',
+      '[@data-yoti-type=:type]',
+    );
+    $attribute_values = array(
+      ':app_id' => $this->yotiConfig['yoti_app_id'],
+      ':scenario_id' => $this->yotiConfig['yoti_scenario_id'],
+      ':type' => 'inline',
+      ':size' => 'small',
+      ':class' => 'yoti-connect',
+    );
+    $this->assertElementByXpath(
+      '//div[@class=:class]/span' . implode('', $attributes),
+      $attribute_values,
+      'Check button markup is correct.'
+    );
+
+    // Check that SDK script is included on page.
+    $this->assertElementByXpath(
+      '//head/script[contains(@src,:base_url)][contains(@src,:ext)]',
+      array(
+        ':base_url' => 'https://sdk.yoti.com/clients/browser',
+        ':ext' => '.js',
+      ),
+      'Check SDK browser JS is present.'
+    );
+
+    // Check that button CSS is included on page.
+    $this->assertRaw('/yoti/css/yoti.css');
+
+    // Check that SDK script is included on page.
+    $this->assertElementByXpath(
+      '//body//script[contains(text(),:script)]',
+      array(
+        ':script' => '_ybg.init();',
+      ),
+      'Check SDK inline init script is present.'
+    );
+
+    // Check that linked users see linked message.
+    $this->drupalLogin($this->linkedUser);
+    $this->drupalGet('<front>');
+    $this->assertText('Yoti Linked');
+
+    // Check that unlinked users see link message.
+    $this->drupalLogin($this->unlinkedUser);
+    $this->drupalGet('<front>');
+    $this->assertText('Link to Yoti');
+  }
+
+  /**
+   * Test link menu item for linked users.
+   */
+  public function testLinkForLinkedUsers() {
+    $this->drupalLogin($this->linkedUser);
+    $this->drupalGet('yoti/link');
+    $this->assertResponse(403);
+    $this->assertText('Access denied');
+  }
+
+  /**
+   * Test link menu item for unlinked users.
+   */
+  public function testLinkForUnlinkedUsers() {
+    $this->drupalLogin($this->unlinkedUser);
+
+    $this->drupalGet('yoti/link', array('query' => array('token' => '')));
+    $this->assertText('Could not get Yoti token.');
+
+    $this->drupalGet('yoti/link', array('query' => array('token' => 'some-invalid-token')));
+    $this->assertText('Yoti could not successfully connect to your account.');
+  }
+
+  /**
+   * Test Unlink Form.
+   */
+  public function testUnlinkForm() {
+    // Log in as unlinked user.
+    $this->drupalLogin($this->unlinkedUser);
+
+    // Check selfie exists and cannot be viewed by another user.
+    $this->assertTrue(is_file($this->selfieFilePath), 'Check selfie exists');
+    $this->drupalGet('yoti/bin-file', array('query' => array('field' => 'selfie')));
+    $this->assertNoRaw('test_selfie_contents');
+
+    // Log in as linked user.
+    $this->drupalLogin($this->linkedUser);
+
+    // Check selfie can be viewed by current linked user.
+    $this->drupalGet('yoti/bin-file', array('query' => array('field' => 'selfie')));
+    $this->assertRaw('test_selfie_contents');
+
+    // Visit user profile.
+    $this->drupalGet('user');
+
+    $this->assertElementByXpath(
+      "//div[contains(@class,:wrapper_class)]//a[@href=:href][@id=:id]",
+      array(
+        ':wrapper_class' => 'yoti-connect',
+        ':href' => '/yoti/unlink',
+        ':id' => 'yoti-unlink-button',
+        ':class' => 'button',
+      ),
+      'Check unlink Yoti Account link'
+    );
+
+    // Check selfie img tag exists.
+    $this->assertElementByXpath(
+      "//img[contains(@src,:img_src)]",
+      array(
+        ':img_src' => '/yoti/bin-file?field=selfie',
+      ),
+      'Check selfie exists'
+    );
+
+    $this->clickLink('Unlink Yoti Account');
+    $this->assertElementByXpath(
+      "//h1[contains(text(),:text)]",
+      array(
+        ':text' => 'Unlink Yoti Account',
+      ),
+      'Check Unlink Yoti Account title'
+    );
+    $this->assertText('Are you sure you want to unlink your account from Yoti?');
+    $this->drupalPost('yoti/unlink', array(), t('Yes'));
+    $this->assertUrl('/');
+
+    // Check account was unlinked.
+    $this->drupalGet('user');
+    $this->assertNoText('Unlink Yoti Account');
+
+    // Check selfie was removed.
+    clearstatcache(NULL, $this->selfieFilePath);
+    $this->assertFalse(is_file($this->selfieFilePath), 'Check selfie has been deleted');
+  }
+
+  /**
+   * Test Yoti Requirements.
+   */
+  public function testRequirements() {
+    $this->drupalLogin($this->adminUser);
+    $this->drupalGet('admin/reports/status');
+    $this->assertNoText('Yoti Configuration');
+
+    $this->deleteModuleConfiguration();
+    $this->drupalGet('admin/reports/status');
+    $this->assertText('Yoti Configuration');
+    $this->assertText('Not Configured');
+    $this->assertText('Please configure the following:');
+    $this->assertText('Application ID (yoti_app_id)');
+    $this->assertText('Scenario ID (yoti_scenario_id)');
+    $this->assertText('SDK ID (yoti_sdk_id)');
+    $this->assertText('PEM File (yoti_pem)');
+  }
+
+  /**
+   * Test Register Form.
+   */
+  public function testRegisterForm() {
+    module_load_include('inc', 'yoti', 'yoti.pages');
+
+    // Set session data.
+    $_SESSION['yoti-user'] = serialize('test_user_data');
+
+    // Render form.
+    $form = drupal_get_form('yoti_register');
+    $form_markup = drupal_render($form);
+
+    $this->assertElementByXpath(
+      "//form//div[contains(@class,:class)]//input[@name=:name][@type=:type]",
+      array(
+        ':class' => 'yoti-login-message',
+        ':name' => 'yoti_nolink',
+        ':type' => 'checkbox',
+      ),
+      '"No link" checkbox exists',
+      $form_markup
+    );
+
+    $this->assertElementByXpath(
+      '//form//div[contains(@class,:class)]//label[@for=:id][contains(text(),:text)]',
+      array(
+        ':class' => 'yoti-login-message',
+        ':id' => 'edit-yoti-nolink',
+        ':text' => "Don't link my Yoti account",
+      ),
+      '"No link" checkbox label',
+      $form_markup
+    );
+
+    $messages = array(
+      'Warning: You are about to link your test_yoti_company_name account to your Yoti account.',
+      "If you don't want this to happen, tick the checkbox below.",
+    );
+    $this->assertElementByXpath(
+      '//form//div[contains(@class,:class)]//div/b[contains(text(),:text)]',
+      array(
+        ':class' => 'yoti-login-message',
+        ':text' => implode(' ', $messages),
+      ),
+      'Check login message',
+      $form_markup
+    );
+
+    $this->assertElementByXpath(
+      '//form//label[@for=:id][contains(text(),:text)]',
+      array(
+        ':id' => 'edit-name',
+        ':text' => "Your test_yoti_company_name Username",
+      ),
+      'Check username label',
+      $form_markup
+    );
+
+    $this->assertElementByXpath(
+      '//form//label[@for=:id][contains(text(),:text)]',
+      array(
+        ':id' => 'edit-pass',
+        ':text' => "Your test_yoti_company_name Password",
+      ),
+      'Check password label',
+      $form_markup
+    );
+
+    $this->assertTrue(
+      strstr($form['#attached']['css'][0]['data'], 'yoti/css/yoti.css'),
+      'Check CSS is attached to form'
+    );
+  }
+
+}

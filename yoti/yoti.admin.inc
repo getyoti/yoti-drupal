@@ -24,8 +24,9 @@ function yoti_api_keys_settings($form, &$form_state) {
 
   $form['some_text'] = [
     '#markup' => '<div>' .
-    t('You need to first create a Yoti App at <a href="@yoti-dev" target="_blank">@yoti-dev</a>.', ['@yoti-dev' => YotiClient::DASHBOARD_URL]) . '</br >' .
-    t('Note: On the Yoti Dashboard the callback URL should be set to:') . ' <strong>' . url('/yoti/link', ['absolute' => TRUE]) . '</strong>' .
+    t('You need to first create a Yoti App at <a href="@yoti-dev" target="_blank">@yoti-dev</a>.', ['@yoti-dev' => YotiClient::DASHBOARD_URL]) . '<br>' .
+    t('Note: On the Yoti Dashboard the callback URL should be set to:') . ' <strong>' . url('/yoti/link', ['absolute' => TRUE]) . '</strong><br>' .
+    t('Warning: User IDs provided by Yoti are unique to each Yoti Application. Using a different Yoti Application means you will receive a different Yoti User ID for all of your users.') .
     '</div>',
   ];
 
