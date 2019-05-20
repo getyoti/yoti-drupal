@@ -1,0 +1,80 @@
+langcode: en
+status: true
+id: user.user.default
+targetEntityType: user
+bundle: user
+mode: default
+content:
+  age_verified:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  date_of_birth:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  email_address:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  family_name:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  full_name:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  gender:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  given_names:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  member_for:
+    weight: 5
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  nationality:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  phone_number:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  postal_address:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  selfie:
+    weight: 10
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  user_picture:
+    type: image
+    weight: 0
+    region: content
+    settings: {}
+    third_party_settings: {  }
+    label: hidden
+  yoti_unlink:
+    weight: 15
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden: {  }
