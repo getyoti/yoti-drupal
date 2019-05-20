@@ -19,7 +19,7 @@ How to install our SDK
 4) [Plugin Setup](#plugin-setup)-
 How to set up the plugin in Drupal
 
-5) [Linking existing accounts to use Yotiauthentication
+5) [Linking existing accounts to use Yoti authentication
 ](#linking-existing-accounts-to-use-yoti-authentication)
 
 6) [API Coverage](#api-coverage) -
