@@ -1,12 +1,10 @@
 #!/bin/bash -x
 #####################
-# this script puts the latest SDK in the working module directory
+# this script puts the latest SDK in the working plugin directory
 #####################
 
-NAME="yoti-for-drupal-8.x-1.x-edge.zip"
 SDK_TAG=$1
 DEFAULT_SDK_TAG="2.0.0"
-SDK_RELATIVE_PATH="sdk"
 
 if [ "$SDK_TAG" = "" ]; then
     SDK_TAG=$DEFAULT_SDK_TAG
@@ -24,8 +22,8 @@ if [ ! -d "./yoti" ]; then
     exit
 fi
 
-cp -R "$SDK_RELATIVE_PATH" "./yoti/sdk"
-zip -r "$NAME" "./yoti"
+rm -fr ./yoti/sdk
+cp -R sdk ./yoti/sdk
 
 rm -rf sdk
 echo "Fetched PHP SDK TAG $SDK_TAG."
