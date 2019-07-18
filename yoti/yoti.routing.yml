@@ -35,6 +35,7 @@ yoti.bin-file:
     _controller: '\Drupal\yoti\Controller\YotiStartController::binFile'
   requirements:
     _permission: 'access content'
+    _csrf_token: 'TRUE'
   options:
     no_cache: TRUE
 

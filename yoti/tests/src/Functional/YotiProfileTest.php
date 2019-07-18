@@ -71,7 +71,8 @@ class YotiProfileTest extends YotiBrowserTestBase {
     unset($profile_data[YotiHelper::ATTR_SELFIE_FILE_NAME]);
     unset($profile_data[Profile::ATTR_SELFIE]);
 
-    foreach ($profile_data as $label) {
+    foreach ($profile_data as $key => $label) {
+      $assert->elementExists('css', '#yoti-profile-' . $key);
       $assert->responseContains($label . ' value');
     }
 
@@ -83,8 +84,20 @@ class YotiProfileTest extends YotiBrowserTestBase {
     );
 
     // Check selfie image is present.
-    $assert->elementExists('css', "img[src*='/yoti/bin-file/selfie'][width='100']");
-    $this->drupalGet('yoti/bin-file/selfie');
+    $selfie_selector = "img[src*='/yoti/bin-file/selfie'][width='100']";
+    $assert->elementExists('css', $selfie_selector);
+
+    // Visit selfie using img src attribute.
+    $selfie_url = $this
+      ->getSession()
+      ->getPage()
+      ->find('css', $selfie_selector)
+      ->getAttribute('src');
+
+    $path = parse_url($selfie_url, PHP_URL_PATH);
+    parse_str(parse_url($selfie_url, PHP_URL_QUERY), $query_params);
+
+    $this->drupalGet(trim($path, '/'), ['query' => $query_params]);
     $assert->responseContains('test_selfie_contents');
   }
 
