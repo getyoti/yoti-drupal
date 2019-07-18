@@ -75,6 +75,7 @@ class YotiSettingsForm extends ConfigFormBase {
       $this->t('Warning: User IDs provided by Yoti are unique to each Yoti Application. Using a different Yoti Application means you will receive a different Yoti User ID for all of your users.'),
     ];
 
+    // @deprecated `yoti_app_id` will be removed in next major release.
     $form['yoti_settings']['yoti_app_id'] = [
       '#type' => 'textfield',
       '#required' => TRUE,

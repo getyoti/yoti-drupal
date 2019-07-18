@@ -12,6 +12,7 @@ use Yoti\ActivityDetails;
 use Yoti\Entity\Profile;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Yoti\YotiClient;
 
 require_once __DIR__ . '/../sdk/boot.php';
 
@@ -746,13 +747,14 @@ class YotiHelper {
   /**
    * Get Yoti Dashboard app URL.
    *
-   * @deprecated use `yoti.sdk` service instead.
+   * @deprecated `yoti_app_id` will be removed in next major release.
    *
    * @return null|string
    *   Yoti App URL.
    */
   public static function getLoginUrl() {
-    return \Drupal::service('yoti.sdk')->getLoginUrl();
+    $settings = \Drupal::service('yoti.config')->getSettings();
+    return YotiClient::getLoginUrl($settings['yoti_app_id']);
   }
 
   /**
