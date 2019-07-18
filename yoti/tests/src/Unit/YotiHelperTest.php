@@ -21,7 +21,6 @@ use Drupal\user\UserInterface;
 use Drupal\yoti\YotiConfigInterface;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\YotiSdkInterface;
-use Egulias\EmailValidator\EmailValidatorInterface;
 use Psr\Log\LoggerInterface;
 use Yoti\YotiClient;
 use Yoti\Exception\ActivityDetailsException;
@@ -361,11 +360,19 @@ class YotiHelperTest extends YotiUnitTestBase {
   /**
    * Creates mock email validator.
    *
-   * @return \Egulias\EmailValidator\EmailValidatorInterface
+   * @return \Drupal\Component\Utility\EmailValidatorInterface
    *   Email validator.
    */
   private function createMockEmailValidator() {
-    $email_validator = $this->createMock(EmailValidatorInterface::class);
+    // Allow testing with Drupal 8.6.x and below.
+    // @see https://www.drupal.org/node/2997196
+    if (interface_exists('\Egulias\EmailValidator\EmailValidatorInterface')) {
+      $email_validator_class = '\Egulias\EmailValidator\EmailValidatorInterface';
+    }
+    else {
+      $email_validator_class = '\Drupal\Component\Utility\EmailValidatorInterface';
+    }
+    $email_validator = $this->createMock($email_validator_class);
     $email_validator
       ->method('isValid')
       ->willReturn(TRUE);
