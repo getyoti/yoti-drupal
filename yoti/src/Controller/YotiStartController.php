@@ -28,11 +28,6 @@ class YotiStartController extends ControllerBase {
     $helper = \Drupal::service('yoti.helper');
     $config = \Drupal::service('yoti.config');
 
-    // If no token is given check if we are in mock request mode.
-    if (!array_key_exists('token', $_GET)) {
-      return new TrustedRedirectResponse($helper::getLoginUrl());
-    }
-
     $result = $helper->link();
     if (!$result) {
       $failedURL = YotiHelper::getPathFullUrl($config->getFailUrl());

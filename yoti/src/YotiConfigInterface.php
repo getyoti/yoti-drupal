@@ -18,14 +18,6 @@ interface YotiConfigInterface {
   public function getSettings();
 
   /**
-   * Yoti App ID.
-   *
-   * @return string
-   *   App ID.
-   */
-  public function getAppId();
-
-  /**
    * Yoti Scenario ID.
    *
    * @return string

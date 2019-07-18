@@ -95,7 +95,7 @@ class YotiHelperTest extends YotiUnitTestBase {
       $cacheTagsInvalidator,
       $this->createMock(LoggerChannelFactoryInterface::class),
       $sdk,
-      $this->createMock(YotiConfigInterface::class)
+      $this->createMockConfig()
     );
 
     // Attempt link with no token.
@@ -140,7 +140,7 @@ class YotiHelperTest extends YotiUnitTestBase {
       $this->createMock(CacheTagsInvalidatorInterface::class),
       $this->createMockLoggerFactory($logger),
       $this->createMockSdk(),
-      $this->createMock(YotiConfigInterface::class)
+      $this->createMockConfig()
     );
 
     $_GET['token'] = 'test_token';
@@ -164,7 +164,7 @@ class YotiHelperTest extends YotiUnitTestBase {
       $cacheTagsInvalidator,
       $this->createMock(LoggerChannelFactoryInterface::class),
       $this->createMock(YotiSdkInterface::class),
-      $this->createMock(YotiConfigInterface::class)
+      $this->createMockConfig()
     );
 
     $helper->unlink();
@@ -179,7 +179,7 @@ class YotiHelperTest extends YotiUnitTestBase {
       $this->createMock(CacheTagsInvalidatorInterface::class),
       $this->createMock(LoggerChannelFactoryInterface::class),
       $this->createMock(YotiSdkInterface::class),
-      $this->createMock(YotiConfigInterface::class)
+      $this->createMockConfig()
     );
 
     $this->assertFileExists($this->selfieFilePath);
@@ -427,6 +427,7 @@ class YotiHelperTest extends YotiUnitTestBase {
     $container->set('language_manager', $this->createMockLanguageManager());
     $container->set('file_system', $this->createMockFileSystem());
     $container->set('yoti.sdk', $this->createMockSdk());
+    $container->set('yoti.config', $this->createMockConfig());
     \Drupal::setContainer($container);
   }
 
@@ -508,11 +509,26 @@ class YotiHelperTest extends YotiUnitTestBase {
     $sdk
       ->method('getClient')
       ->willReturn($client);
-    $sdk
-      ->method('getLoginUrl')
-      ->willReturn('https://www.yoti.com/connect/test_app_id');
 
     return $sdk;
+  }
+
+  /**
+   * Creates mock config service.
+   *
+   * @return \Drupal\yoti\YotiConfigInterface
+   *   Yoti Config service.
+   */
+  private function createMockConfig() {
+    $config = $this->createMock(YotiConfigInterface::class);
+    $config
+      ->method('getSettings')
+      ->willReturn([
+        'yoti_app_id' => 'test_app_id',
+        'yoti_scenario_id' => 'test_scenario_id',
+        'yoti_sdk_id' => 'test_sdk_id',
+      ]);
+    return $config;
   }
 
   /**
