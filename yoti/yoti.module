@@ -11,6 +11,7 @@ use Drupal\yoti\YotiHelper;
 use Yoti\Entity\Profile;
 use Drupal\yoti\Models\YotiUserModel;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Component\Utility\Html;
 
 require_once __DIR__ . '/sdk/boot.php';
 
@@ -69,7 +70,8 @@ function yoti_user_view(array &$build, UserInterface $account, EntityViewDisplay
 
   $user = \Drupal::currentUser();
   $isAdmin = in_array('administrator', $user->getRoles(), TRUE);
-  $dbProfile = YotiUserModel::getYotiUserById($user->id());
+
+  $dbProfile = YotiUserModel::getYotiUserById($account->id());
   if (!$dbProfile) {
     return;
   }
@@ -82,7 +84,8 @@ function yoti_user_view(array &$build, UserInterface $account, EntityViewDisplay
       continue;
     }
 
-    $value = isset($userProfileArr[$field]) ? $userProfileArr[$field] : '';
+    $field_content = [];
+
     if ($field === Profile::ATTR_SELFIE) {
       // Yoti user selfie file name.
       $selfieFileName = NULL;
@@ -91,25 +94,35 @@ function yoti_user_view(array &$build, UserInterface $account, EntityViewDisplay
       }
       $selfieFullPath = YotiHelper::uploadDir() . "/{$selfieFileName}";
       if (!empty($selfieFileName) && is_file($selfieFullPath)) {
-        $params = ['field' => 'selfie'];
+        $params = [
+          'field' => 'selfie',
+        ];
         if ($isAdmin) {
-          $params['user_id'] = $account->uid;
+          $params['user_id'] = $account->id();
         }
-        $selfieUrl = Url::fromRoute('yoti.bin-file', $params)->toString();
-        $value = '<img src="' . $selfieUrl . '" width="100" />';
+        $field_content = [
+          '#theme' => 'image',
+          '#uri' => Url::fromRoute('yoti.bin-file', [
+            'field' => 'selfie',
+          ])->toString(),
+          '#width' => 100,
+        ];
       }
-      else {
-        $value = '';
-      }
+    }
+    elseif (!empty($userProfileArr[$field])) {
+      $field_content['#plain_text'] = $userProfileArr[$field];
     }
 
-    if (!$value) {
-      $value = '<i>(empty)</i>';
+    if (empty($field_content)) {
+      $field_content['#markup'] = '<i>(empty)</i>';
     }
+
+    $field_content['#prefix'] = '<h4 class="label">' . Html::escape($label) . '</h4> ';
 
     $build[$field] = [
       '#type' => 'item',
-      '#markup' => '<h4 class="label">' . $label . '</h4> ' . $value,
+      '#id' => 'yoti-profile-' . $field,
+      'content' => $field_content,
     ];
   }
 
