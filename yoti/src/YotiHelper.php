@@ -747,7 +747,7 @@ class YotiHelper {
   /**
    * Get Yoti Dashboard app URL.
    *
-   * @deprecated `yoti_app_id` will be removed in next major release.
+   * @deprecated - `yoti_app_id` will be removed in next major release. Login will be through a Modal QR.
    *
    * @return null|string
    *   Yoti App URL.
