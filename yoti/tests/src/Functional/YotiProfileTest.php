@@ -33,7 +33,6 @@ class YotiProfileTest extends YotiBrowserTestBase {
    * Test viewing profile as user with permission.
    */
   public function testProfileLinkedAsUserWithPermission() {
-    // Create unlinked user.
     $userWithUserProfilePermission = $this->drupalCreateUser([
       'access user profiles',
     ]);
@@ -49,7 +48,6 @@ class YotiProfileTest extends YotiBrowserTestBase {
    * Test viewing profile as user without permission.
    */
   public function testProfileLinkedAsUserWithoutPermission() {
-    // Create unlinked user.
     $userWithoutUserProfilePermission = $this->drupalCreateUser();
     $this->drupalLogin($userWithoutUserProfilePermission);
     $this->drupalGet('user/' . $this->linkedUser->id());
