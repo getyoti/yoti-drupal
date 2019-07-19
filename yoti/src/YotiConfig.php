@@ -75,7 +75,7 @@ class YotiConfig implements YotiConfigInterface {
       $name = $file->getFileUri();
       $contents = file_get_contents($this->fileSystem->realpath($name));
     }
-    // @deprecated `yoti_app_id` will be removed in next major release.
+
     $this->settings = [
       'yoti_app_id' => $settings->get('yoti_app_id'),
       'yoti_scenario_id' => $settings->get('yoti_scenario_id'),
