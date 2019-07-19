@@ -6,9 +6,11 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\Models\YotiUserModel;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\user\Entity\User;
 
 require_once __DIR__ . '/../../sdk/boot.php';
 
@@ -46,11 +48,10 @@ class YotiStartController extends ControllerBase {
    */
   public function binFile($field) {
     $current = \Drupal::currentUser();
-    $isAdmin = in_array('administrator', $current->getRoles(), TRUE);
-    $userId = (!empty($_GET['user_id']) && $isAdmin) ? (int) $_GET['user_id'] : $current->id();
+    $userId = (!empty($_GET['user_id'])) ? (int) $_GET['user_id'] : $current->id();
     $dbProfile = YotiUserModel::getYotiUserById($userId);
     if (!$dbProfile) {
-      return;
+      return $this->notFoundResponse();
     }
 
     // Unserialize Yoti user data.
@@ -58,21 +59,17 @@ class YotiStartController extends ControllerBase {
 
     $field = ($field === 'selfie') ? 'selfie_filename' : $field;
     if (!is_array($userProfileArr) || !array_key_exists($field, $userProfileArr)) {
-      return;
+      return $this->notFoundResponse();
     }
 
     // Get user selfie file path.
     $file = YotiHelper::uploadDir() . "/{$userProfileArr[$field]}";
-    if (!file_exists($file)) {
-      return;
+    if (!is_file($file)) {
+      return $this->notFoundResponse();
     }
 
-    $type = 'image/png';
-    header('Content-Type:' . $type);
-    header('Content-Length: ' . filesize($file));
-    readfile($file);
     // Returning response here as required by Drupal controller action.
-    return new TrustedRedirectResponse('yoti.bin-file');
+    return new BinaryFileResponse($file, 200);
   }
 
   /**
@@ -88,6 +85,31 @@ class YotiStartController extends ControllerBase {
   public static function accessLink(AccountInterface $account) {
     $db_profile = YotiUserModel::getYotiUserById($account->id());
     return AccessResult::allowedIf(empty($db_profile));
+  }
+
+  /**
+   * Check access to bin files.
+   *
+   * @param AccountInterface $account
+   *   Run access checks for this account.
+   *
+   * @return \Drupal\Core\Access\AccessResult
+   *   If account can view target user isAllowed() will be TRUE.
+   */
+  public static function accessBinFile(AccountInterface $account) {
+    $userId = (!empty($_GET['user_id'])) ? (int) $_GET['user_id'] : $account->id();
+    $targetUser = User::load($userId);
+    return AccessResult::allowedIf($targetUser->access('view', $account));
+  }
+
+  /**
+   * Return a 404 response.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   The 404 response.
+   */
+  private function notFoundResponse() {
+    return new Response(NULL, 404, []);
   }
 
 }
