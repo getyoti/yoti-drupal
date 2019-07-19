@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\User;
+use Drupal\user\UserInterface;
 
 require_once __DIR__ . '/../../sdk/boot.php';
 
@@ -53,8 +54,13 @@ class YotiStartController extends ControllerBase {
    */
   public function binFile($field) {
     $current = \Drupal::currentUser();
-    $userId = (!empty($_GET['user_id'])) ? (int) $_GET['user_id'] : $current->id();
-    $dbProfile = YotiUserModel::getYotiUserById($userId);
+    $targetUser = self::getTargetUser($current);
+
+    if (!($targetUser instanceof UserInterface)) {
+      return $this->notFoundResponse();
+    }
+
+    $dbProfile = YotiUserModel::getYotiUserById($targetUser->id());
     if (!$dbProfile) {
       return $this->notFoundResponse();
     }
@@ -102,9 +108,26 @@ class YotiStartController extends ControllerBase {
    *   If account can view target user isAllowed() will be TRUE.
    */
   public static function accessBinFile(AccountInterface $account) {
+    if ($targetUser = self::getTargetUser($account)) {
+      return AccessResult::allowedIf($targetUser->access('view', $account));
+    }
+    return AccessResult::neutral();
+  }
+
+  /**
+   * Get the target user for this request defined by user_id GET parameter.
+   *
+   * Provided $account user will be returned by default.
+   *
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   Return this account when user_id is not specified as GET parameter.
+   *
+   * @return \Drupal\user\UserInterface|null
+   *   The target user.
+   */
+  private static function getTargetUser(AccountInterface $account) {
     $userId = (!empty($_GET['user_id'])) ? (int) $_GET['user_id'] : $account->id();
-    $targetUser = User::load($userId);
-    return AccessResult::allowedIf($targetUser->access('view', $account));
+    return User::load($userId);
   }
 
   /**
