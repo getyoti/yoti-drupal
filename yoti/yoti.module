@@ -72,7 +72,6 @@ function yoti_user_view(array &$build, UserInterface $account, EntityViewDisplay
   $map = yoti_map_params();
 
   $user = \Drupal::currentUser();
-  $isAdmin = in_array('administrator', $user->getRoles(), TRUE);
 
   $dbProfile = YotiUserModel::getYotiUserById($account->id());
   if (!$dbProfile) {
@@ -97,16 +96,11 @@ function yoti_user_view(array &$build, UserInterface $account, EntityViewDisplay
       }
       $selfieFullPath = YotiHelper::uploadDir() . "/{$selfieFileName}";
       if (!empty($selfieFileName) && is_file($selfieFullPath)) {
-        $params = [
-          'field' => 'selfie',
-        ];
-        if ($isAdmin) {
-          $params['user_id'] = $account->id();
-        }
         $field_content = [
           '#theme' => 'image',
           '#uri' => Url::fromRoute('yoti.bin-file', [
             'field' => 'selfie',
+            'user_id' => $account->id(),
           ])->toString(),
           '#width' => 100,
         ];

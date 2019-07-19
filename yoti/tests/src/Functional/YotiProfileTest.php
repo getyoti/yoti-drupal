@@ -20,6 +20,40 @@ class YotiProfileTest extends YotiBrowserTestBase {
     $this->drupalLogin($this->linkedUser);
     $this->drupalGet('user');
     $this->assertProfileFields(yoti_map_params());
+
+    // Check unlink button is present.
+    $this->assertSession()->elementTextContains(
+      'css',
+      "#yoti-unlink-button[href='/yoti/unlink']",
+      'Unlink Yoti account'
+    );
+  }
+
+  /**
+   * Test viewing profile as user with permission.
+   */
+  public function testProfileLinkedAsUserWithPermission() {
+    // Create unlinked user.
+    $userWithUserProfilePermission = $this->drupalCreateUser([
+      'access user profiles',
+    ]);
+    $this->drupalLogin($userWithUserProfilePermission);
+    $this->drupalGet('user/' . $this->linkedUser->id());
+    $this->assertProfileFields(yoti_map_params());
+
+    // Check unlink button is not present.
+    $this->assertSession()->responseNotContains('/yoti/unlink');
+  }
+
+  /**
+   * Test viewing profile as user without permission.
+   */
+  public function testProfileLinkedAsUserWithoutPermission() {
+    // Create unlinked user.
+    $userWithoutUserProfilePermission = $this->drupalCreateUser();
+    $this->drupalLogin($userWithoutUserProfilePermission);
+    $this->drupalGet('user/' . $this->linkedUser->id());
+    $this->assertSession()->statusCodeEquals(403);
   }
 
   /**
@@ -76,29 +110,26 @@ class YotiProfileTest extends YotiBrowserTestBase {
       $assert->responseContains($label . ' value');
     }
 
-    // Check unlink button is present.
-    $assert->elementTextContains(
-      'css',
-      "#yoti-unlink-button[href='/yoti/unlink']",
-      'Unlink Yoti account'
-    );
-
     // Check selfie image is present.
     $selfie_selector = "img[src*='/yoti/bin-file/selfie'][width='100']";
     $assert->elementExists('css', $selfie_selector);
 
     // Visit selfie using img src attribute.
-    $selfie_url = $this
+    $selfie_src_attr = $this
       ->getSession()
       ->getPage()
       ->find('css', $selfie_selector)
       ->getAttribute('src');
+    $selfie_url = htmlspecialchars_decode($selfie_src_attr);
 
     $path = parse_url($selfie_url, PHP_URL_PATH);
     parse_str(parse_url($selfie_url, PHP_URL_QUERY), $query_params);
 
     $this->drupalGet(trim($path, '/'), ['query' => $query_params]);
     $assert->responseContains('test_selfie_contents');
+
+    // Go back to previous page.
+    $this->getSession()->back();
   }
 
   /**
@@ -148,7 +179,7 @@ class YotiProfileTest extends YotiBrowserTestBase {
 
     foreach ($field_names as $field_name) {
       $config
-        ->set('hidden', [$field_name => TRUE])
+        ->set('hidden.' . $field_name, TRUE)
         ->save();
 
       $content = $config->get('content');
