@@ -95,7 +95,7 @@ class YotiStartController extends ControllerBase {
   /**
    * Check access to bin files.
    *
-   * @param AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
    *
    * @return \Drupal\Core\Access\AccessResult
