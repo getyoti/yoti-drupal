@@ -197,34 +197,38 @@ class YotiTest extends DrupalWebTestCase {
 
     // Check that the block is present with the correct configuration.
     $this->drupalGet('<front>');
-    $this->assertText('Link to Yoti');
 
-    // Test that tokens were rendered correctly.
-    $attributes = array(
-      '[@data-size=:size]',
-      '[@data-yoti-application-id=:app_id]',
-      '[@data-yoti-scenario-id=:scenario_id]',
-      '[@data-yoti-type=:type]',
-    );
-    $attribute_values = array(
-      ':app_id' => $this->yotiConfig['yoti_app_id'],
-      ':scenario_id' => $this->yotiConfig['yoti_scenario_id'],
-      ':type' => 'inline',
-      ':size' => 'small',
-      ':class' => 'yoti-connect',
-    );
     $this->assertElementByXpath(
-      '//div[@class=:class]/span' . implode('', $attributes),
-      $attribute_values,
+      '//div[@class=:class]/div[@id=:id]',
+      array(
+        ':id' => 'yoti-button-yoti_link',
+        ':class' => 'yoti-connect',
+      ),
       'Check button markup is correct.'
+    );
+
+    // Check JSON config is present.
+    $config = array(
+      'elements' => array(
+        array(
+          'domId' => 'yoti-button-yoti_link',
+          'scenarioId' => 'test_yoti_scenario_id',
+          'button' => array(
+            'label' => 'Link to Yoti',
+          ),
+        ),
+      ),
+    );
+    $this->assertRaw(
+      json_encode($config),
+      'Check button configuration is correct'
     );
 
     // Check that SDK script is included on page.
     $this->assertElementByXpath(
-      '//head/script[contains(@src,:base_url)][contains(@src,:ext)]',
+      '//head/script[@src=:base_url]',
       array(
-        ':base_url' => 'https://sdk.yoti.com/clients/browser',
-        ':ext' => '.js',
+        ':base_url' => 'https://www.yoti.com/share/client/',
       ),
       'Check SDK browser JS is present.'
     );
@@ -236,7 +240,7 @@ class YotiTest extends DrupalWebTestCase {
     $this->assertElementByXpath(
       '//body//script[contains(text(),:script)]',
       array(
-        ':script' => '_ybg.init();',
+        ':script' => 'window.Yoti.Share.init(Drupal.settings.yoti);',
       ),
       'Check SDK inline init script is present.'
     );
@@ -246,10 +250,11 @@ class YotiTest extends DrupalWebTestCase {
     $this->drupalGet('<front>');
     $this->assertText('Yoti Linked');
 
-    // Check that unlinked users see link message.
+    // Check that unlinked users don't see linked message.
     $this->drupalLogin($this->unlinkedUser);
     $this->drupalGet('<front>');
-    $this->assertText('Link to Yoti');
+    $this->assertRaw('Link to Yoti');
+    $this->assertNoText('Yoti Linked');
   }
 
   /**
