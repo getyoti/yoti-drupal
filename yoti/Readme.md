@@ -114,19 +114,8 @@ which allows Yoti accounts to link to email addresses.
 
 ## Customising User Profiles
 
-By default, all shared attributes are displayed on user profile pages. This
-can be customised using `hook_ENTITY_TYPE_view_alter()`.
-
-### Example
-
-```php
-/**
- * Implements hook_ENTITY_TYPE_view_alter().
- */
-function yoti_user_view_alter(array &$build) {
-  unset($build['full_name']);
-}
-```
+By default, all shared attributes are displayed on user profile pages.
+This can be customised at `/admin/config/people/accounts/display`.
 
 You can also control who can view user profiles using permissions
 at `/admin/people/permissions`.
