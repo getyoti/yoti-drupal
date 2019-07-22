@@ -13,6 +13,10 @@
   border-radius: 2px;
 }
 
+.yoti-connect .yoti-button {
+  height: 50px;
+}
+
 #yoti-register .yoti-login-message {
   margin: 0 0 15px 0;
 }
