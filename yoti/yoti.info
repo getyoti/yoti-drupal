@@ -3,6 +3,5 @@ description = "A simple module to allow users to login/signup with their Yoti ac
 package = Yoti
 core = 7.x
 configure = admin/config/people/yoti
-datestamp = "1459503240"
 
 files[] = tests/yoti.test
