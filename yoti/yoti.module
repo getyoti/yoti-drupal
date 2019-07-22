@@ -280,11 +280,10 @@ function yoti_permission() {
  */
 function yoti_user_view($account, $view_mode, $langcode) {
   global $user;
+  $current = $user;
 
   $map = yoti_map_params();
 
-  $current = $user;
-  $isAdmin = in_array('administrator', $current->roles, TRUE);
   $dbProfile = YotiHelper::getYotiUserProfile($account->uid);
   if (!$dbProfile) {
     return;
@@ -292,35 +291,37 @@ function yoti_user_view($account, $view_mode, $langcode) {
 
   $dbProfile = unserialize($dbProfile['data']);
 
-  foreach ($map as $param => $label) {
-    $value = isset($dbProfile[$param]) ? $dbProfile[$param] : '';
-    if ($param === ActivityDetails::ATTR_SELFIE && !empty($dbProfile['selfie_filename'])) {
+  foreach ($map as $field => $label) {
+    if ($field === ActivityDetails::ATTR_SELFIE && !empty($dbProfile['selfie_filename'])) {
       $selfieFullPath = YotiHelper::selfieFilePath($dbProfile['selfie_filename']);
       if (is_file($selfieFullPath)) {
-        $params = ['field' => 'selfie'];
-        if ($isAdmin) {
+        $params = [
+          'field' => 'selfie',
+          'token' => drupal_get_token('yoti_selfie'),
+        ];
+        if (user_access('access user profiles')) {
           $params['user_id'] = $account->uid;
         }
         $selfieUrl = url('/yoti/bin-file', ['query' => $params]);
-        $value = '<img src="' . $selfieUrl . '" width="100" />';
+        $field_content = array(
+          '#theme' => 'image',
+          '#width' => '100',
+          '#path' => $selfieUrl,
+        );
       }
-      else {
-        $value = '';
-      }
+    }
+    else {
+      $field_content = array(
+        '#markup' => isset($dbProfile[$field]) ? check_plain($dbProfile[$field]) : '<i>(empty)</i>',
+      );
     }
 
-    // Format date of birth.
-    if ($param === ActivityDetails::ATTR_DATE_OF_BIRTH && !empty($value)) {
-      $value = date('d-m-Y', strtotime($value));
-    }
+    $field_content['#prefix'] = '<label>' . check_plain($label) . '</label>';
 
-    if (!$value) {
-      $value = '<i>(empty)</i>';
-    }
-
-    $account->content['summary'][$param] = [
+    $account->content['summary'][$field] = [
       '#type' => 'item',
-      '#markup' => '<label>' . $label . '</label>' . $value,
+      '#id' => 'yoti-profile-' . $field,
+      'content' => $field_content,
     ];
   }
 
