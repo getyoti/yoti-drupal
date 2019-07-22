@@ -128,6 +128,7 @@ class YotiTest extends DrupalWebTestCase {
       'uid' => $this->linkedUser->uid,
       'identifier' => 'some-remember-me-id',
       'data' => serialize(array(
+        'full_name' => 'test full name',
         'selfie_filename' => $this->selfieFilePath,
       )),
     ])->execute();
@@ -273,20 +274,8 @@ class YotiTest extends DrupalWebTestCase {
    * Test Unlink Form.
    */
   public function testUnlinkForm() {
-    // Log in as unlinked user.
-    $this->drupalLogin($this->unlinkedUser);
-
-    // Check selfie exists and cannot be viewed by another user.
-    $this->assertTrue(is_file($this->selfieFilePath), 'Check selfie exists');
-    $this->drupalGet('yoti/bin-file', array('query' => array('field' => 'selfie')));
-    $this->assertNoRaw('test_selfie_contents');
-
     // Log in as linked user.
     $this->drupalLogin($this->linkedUser);
-
-    // Check selfie can be viewed by current linked user.
-    $this->drupalGet('yoti/bin-file', array('query' => array('field' => 'selfie')));
-    $this->assertRaw('test_selfie_contents');
 
     // Visit user profile.
     $this->drupalGet('user');
@@ -300,15 +289,6 @@ class YotiTest extends DrupalWebTestCase {
         ':class' => 'button',
       ),
       'Check unlink Yoti Account link'
-    );
-
-    // Check selfie img tag exists.
-    $this->assertElementByXpath(
-      "//img[contains(@src,:img_src)]",
-      array(
-        ':img_src' => '/yoti/bin-file?field=selfie',
-      ),
-      'Check selfie exists'
     );
 
     $this->clickLink('Unlink Yoti Account');
@@ -330,6 +310,63 @@ class YotiTest extends DrupalWebTestCase {
     // Check selfie was removed.
     clearstatcache(NULL, $this->selfieFilePath);
     $this->assertFalse(is_file($this->selfieFilePath), 'Check selfie has been deleted');
+  }
+
+  /**
+   * Test user profile page.
+   */
+  public function testProfile() {
+    // Log in as unlinked user.
+    $this->drupalLogin($this->unlinkedUser);
+
+    // Check selfie exists and cannot be viewed by another user.
+    $this->assertTrue(is_file($this->selfieFilePath), 'Check selfie exists');
+    $this->drupalGet('yoti/bin-file', array(
+      'query' => array(
+        'field' => 'selfie',
+        'user_id' => $this->linkedUser->uid,
+      ),
+    ));
+    $this->assertNoRaw('test_selfie_contents');
+    $this->assertResponse(404);
+
+    // Log in as linked user.
+    $this->drupalLogin($this->linkedUser);
+
+    // Visit user profile.
+    $this->drupalGet('user');
+
+    // Check full name is present.
+    $this->assertText('test full name');
+
+    // Check all attributes are present.
+    $attribute_ids = array(
+      'yoti-profile-selfie',
+      'yoti-profile-full_name',
+      'yoti-profile-given_names',
+      'yoti-profile-family_name',
+      'yoti-profile-phone_number',
+      'yoti-profile-email_address',
+      'yoti-profile-date_of_birth',
+      'yoti-profile-age_verified',
+      'yoti-profile-postal_address',
+      'yoti-profile-gender',
+      'yoti-profile-nationality',
+    );
+    foreach ($attribute_ids as $attribute_id) {
+      $this->assertElementByXpath(
+        '//div[@id=:id]',
+        array(':id' => $attribute_id),
+        sprintf('Check #%s element exists', $attribute_id));
+    }
+
+    // Check selfie can be viewed by current linked user.
+    $result = $this->xpath("//div[@id='yoti-profile-selfie']//img");
+    $url = parse_url((string) $result[0]['src']);
+    parse_str($url['query'], $query);
+    $this->drupalGet(trim($url['path'], '/'), array('query' => $query));
+    $this->assertRaw('test_selfie_contents');
+    $this->assertResponse(200);
   }
 
   /**
