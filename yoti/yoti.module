@@ -5,7 +5,6 @@
  * Enables yoti login system capability.
  */
 
-use Yoti\YotiClient;
 use Yoti\Entity\Profile;
 
 require_once __DIR__ . '/YotiHelper.php';
@@ -17,10 +16,8 @@ function yoti_theme($existing, $type, $theme, $path) {
   return array(
     'yoti_button' => array(
       'variables' => array(
-        'app_id' => NULL,
-        'scenario_id' => NULL,
+        'button_id' => NULL,
         'is_linked' => FALSE,
-        'button_text' => NULL,
       ),
       'path' => $path . '/templates',
       'template' => 'yoti-button',
@@ -120,12 +117,12 @@ function yoti_block_view($delta = '') {
         $is_linked = !empty(YotiHelper::getYotiUserProfile($user->uid));
       }
 
+      $button_id = 'yoti-button-' . $delta;
+
       $block['content'] = array(
         '#theme' => 'yoti_button',
         '#is_linked' => $is_linked,
-        '#button_text' => check_plain($button_text),
-        '#app_id' => check_plain($config['yoti_app_id']),
-        '#scenario_id' => check_plain($config['yoti_scenario_id']),
+        '#button_id' => check_plain($button_id),
         '#attached' => array(
           'css' => array(
             array(
@@ -136,8 +133,25 @@ function yoti_block_view($delta = '') {
           ),
           'js' => array(
             array(
+              'type' => 'setting',
+              'data' => array(
+                'yoti' => array(
+                  'elements' => array(
+                    array(
+                      'domId' => check_plain($button_id),
+                      'scenarioId' => check_plain($config['yoti_scenario_id']),
+                      'button' => array(
+                        'label' => check_plain($button_text),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              'scope' => 'footer',
+            ),
+            array(
               'type' => 'inline',
-              'data' => yoti_get_inline_script(),
+              'data' => 'window.Yoti.Share.init(Drupal.settings.yoti);',
               'scope' => 'footer',
             ),
             array(
@@ -152,31 +166,6 @@ function yoti_block_view($delta = '') {
   }
 
   return $block;
-}
-
-/**
- * Returns the inline button JavaScript.
- *
- * @return string
- *   Inline button JavaScript,
- */
-function yoti_get_inline_script() {
-  $script = [];
-
-  // If connect url starts with 'https://staging' then we are in staging mode.
-  $isStaging = strpos(YotiClient::CONNECT_BASE_URL, 'https://staging') === 0;
-  if ($isStaging) {
-    // Base url for connect.
-    $baseUrl = preg_replace('/^(.+)\/connect$/', '$1', YotiClient::CONNECT_BASE_URL);
-
-    $script[] = sprintf('_ybg.config.qr = "%s/qr/";', $baseUrl);
-    $script[] = sprintf('_ybg.config.service = "%s/connect/";', $baseUrl);
-  }
-
-  // Add init()
-  $script[] = '_ybg.init();';
-
-  return implode("\r\n", $script);
 }
 
 /**
