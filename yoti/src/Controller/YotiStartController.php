@@ -7,7 +7,7 @@ use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\Models\YotiUserModel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\User;
@@ -57,12 +57,12 @@ class YotiStartController extends ControllerBase {
     $targetUser = self::getTargetUser($current);
 
     if (!($targetUser instanceof UserInterface)) {
-      return $this->notFoundResponse();
+      throw new NotFoundHttpException();
     }
 
     $dbProfile = YotiUserModel::getYotiUserById($targetUser->id());
     if (!$dbProfile) {
-      return $this->notFoundResponse();
+      throw new NotFoundHttpException();
     }
 
     // Unserialize Yoti user data.
@@ -70,13 +70,13 @@ class YotiStartController extends ControllerBase {
 
     $field = ($field === 'selfie') ? 'selfie_filename' : $field;
     if (!is_array($userProfileArr) || !array_key_exists($field, $userProfileArr)) {
-      return $this->notFoundResponse();
+      throw new NotFoundHttpException();
     }
 
     // Get user selfie file path.
     $file = YotiHelper::uploadDir() . "/{$userProfileArr[$field]}";
     if (!is_file($file)) {
-      return $this->notFoundResponse();
+      throw new NotFoundHttpException();
     }
 
     // Returning response here as required by Drupal controller action.
@@ -128,16 +128,6 @@ class YotiStartController extends ControllerBase {
   private static function getTargetUser(AccountInterface $account) {
     $userId = (!empty($_GET['user_id'])) ? (int) $_GET['user_id'] : $account->id();
     return User::load($userId);
-  }
-
-  /**
-   * Return a 404 response.
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   The 404 response.
-   */
-  private function notFoundResponse() {
-    return new Response(NULL, 404, []);
   }
 
 }
