@@ -57,12 +57,19 @@ function yoti_unlink_submit() {
 function yoti_bin_file() {
   global $user;
 
+  // Check that request token is valid before serving the image.
+  if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], 'yoti_selfie')) {
+    drupal_not_found();
+    drupal_exit();
+  }
+
   $current = $user;
-  $isAdmin = in_array('administrator', $current->roles, TRUE);
-  $userId = (!empty($_GET['user_id']) && $isAdmin) ? (int) $_GET['user_id'] : $current->uid;
+  $userId = (!empty($_GET['user_id']) && user_access('access user profiles')) ? (int) $_GET['user_id'] : $current->uid;
+
   $dbProfile = YotiHelper::getYotiUserProfile($userId);
   if (!$dbProfile) {
-    return;
+    drupal_not_found();
+    drupal_exit();
   }
 
   $dbProfile = unserialize($dbProfile['data']);
@@ -74,12 +81,14 @@ function yoti_bin_file() {
 
   $field = ($field === 'selfie') ? 'selfie_filename' : $field;
   if (!$dbProfile || !array_key_exists($field, $dbProfile)) {
-    return;
+    drupal_not_found();
+    drupal_exit();
   }
 
   $file = YotiHelper::selfieFilePath($dbProfile[$field]);
   if (!is_file($file)) {
-    return;
+    drupal_not_found();
+    drupal_exit();
   }
 
   $type = 'image/png';
