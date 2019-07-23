@@ -13,3 +13,7 @@ a#yoti-unlink-button {
   border-radius: 2px;
   border-bottom: 0;
 }
+
+.yoti-connect .yoti-button {
+  height: 50px;
+}
