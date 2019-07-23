@@ -135,6 +135,11 @@ class YotiTest extends DrupalWebTestCase {
 
     // Create an unlinked user.
     $this->unlinkedUser = $this->drupalCreateUser();
+
+    // Create a user that can view user profiles.
+    $this->userWithUserProfilesPermission = $this->drupalCreateUser(array(
+      'access user profiles',
+    ));
   }
 
   /**
@@ -330,6 +335,11 @@ class YotiTest extends DrupalWebTestCase {
     $this->assertNoRaw('test_selfie_contents');
     $this->assertResponse(404);
 
+    // Log in as user with access to view user profiles.
+    $this->drupalLogin($this->userWithUserProfilesPermission);
+    $this->drupalGet('user/' . $this->linkedUser->uid);
+    $this->assertProfileSelfieCanBeViewed();
+
     // Log in as linked user.
     $this->drupalLogin($this->linkedUser);
 
@@ -360,13 +370,7 @@ class YotiTest extends DrupalWebTestCase {
         sprintf('Check #%s element exists', $attribute_id));
     }
 
-    // Check selfie can be viewed by current linked user.
-    $result = $this->xpath("//div[@id='yoti-profile-selfie']//img");
-    $url = parse_url((string) $result[0]['src']);
-    parse_str($url['query'], $query);
-    $this->drupalGet(trim($url['path'], '/'), array('query' => $query));
-    $this->assertRaw('test_selfie_contents');
-    $this->assertResponse(200);
+    $this->assertProfileSelfieCanBeViewed();
   }
 
   /**
@@ -461,6 +465,18 @@ class YotiTest extends DrupalWebTestCase {
       strstr($form['#attached']['css'][0]['data'], 'yoti/css/yoti.css'),
       'Check CSS is attached to form'
     );
+  }
+
+  /**
+   * Assert that the selfie on the profile can be viewed.
+   */
+  private function assertProfileSelfieCanBeViewed() {
+    $result = $this->xpath("//div[@id='yoti-profile-selfie']//img");
+    $url = parse_url((string) $result[0]['src']);
+    parse_str($url['query'], $query);
+    $this->drupalGet(trim($url['path'], '/'), array('query' => $query));
+    $this->assertRaw('test_selfie_contents');
+    $this->assertResponse(200);
   }
 
 }
