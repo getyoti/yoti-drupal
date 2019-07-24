@@ -53,6 +53,7 @@ class YotiBlock extends BlockBase {
     return [
       '#theme' => 'yoti_button',
       '#button_id' => 'yoti-button-' . $this->getPluginId(),
+      '#sdk_id' => $config->getSdkId(),
       '#scenario_id' => $config->getScenarioId(),
       '#button_text' => $button_text,
       '#is_linked' => $is_linked,

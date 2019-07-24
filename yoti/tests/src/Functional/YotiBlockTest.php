@@ -24,6 +24,7 @@ class YotiBlockTest extends YotiBrowserTestBase {
 
     $this->config('yoti.settings')
       ->set('yoti_scenario_id', 'test_scenario_id')
+      ->set('yoti_sdk_id', 'test_sdk_id')
       ->save();
   }
 
@@ -43,7 +44,12 @@ class YotiBlockTest extends YotiBrowserTestBase {
     $assert->elementExists('css', 'script[src*=\'js/browser-loader.js\']');
     $assert->responseMatches('~"domId":.*?"yoti-button-yoti_block"~');
     $assert->responseMatches('~"scenarioId":.*?"test_scenario_id"~');
+    $assert->responseMatches('~"clientSdkId":.*?"test_sdk_id"~');
     $assert->responseMatches('~"label":.*?"Use Yoti"~');
+
+    $this->drupalLogin($this->unlinkedUser);
+    $this->drupalGet('<front>');
+    $assert->responseMatches('~"label":.*?"Link to Yoti"~');
   }
 
 }
