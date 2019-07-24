@@ -212,6 +212,7 @@ class YotiTest extends DrupalWebTestCase {
       'elements' => array(
         array(
           'domId' => 'yoti-button-yoti_link',
+          'clientSdkId' => 'test_yoti_sdk_id',
           'scenarioId' => 'test_yoti_scenario_id',
           'button' => array(
             'label' => 'Link to Yoti',
