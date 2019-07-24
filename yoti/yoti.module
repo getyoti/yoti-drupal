@@ -31,6 +31,7 @@ function yoti_theme($existing, $type, $theme, $path) {
       'variables' => [
         'button_id' => NULL,
         'scenario_id' => NULL,
+        'sdk_id' => NULL,
         'button_text' => NULL,
         'is_linked' => NULL,
       ],
