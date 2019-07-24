@@ -132,6 +132,7 @@ function yoti_block_view($delta = '') {
                   'elements' => array(
                     array(
                       'domId' => check_plain($button_id),
+                      'clientSdkId' => check_plain($config['yoti_sdk_id']),
                       'scenarioId' => check_plain($config['yoti_scenario_id']),
                       'button' => array(
                         'label' => check_plain($button_text),
