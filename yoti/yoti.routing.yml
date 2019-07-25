@@ -46,12 +46,3 @@ yoti.settings_form:
     _form: '\Drupal\yoti\Form\YotiSettingsForm'
   requirements:
     _permission: 'administer yoti'
-
-yoti.account:
-  path: '/user/{user}/custom'
-  defaults:
-    _form: '\Drupal\yoti\Form\YotiProfileForm'
-    _title: 'Yoti Profile'
-    user: \d+
-  requirements:
-    _permission: 'access content'
