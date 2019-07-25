@@ -64,7 +64,7 @@ function yoti_requirements($phase) {
       $required_config = array(
         'yoti_app_id' => 'Application ID',
         'yoti_scenario_id' => 'Scenario ID',
-        'yoti_sdk_id' => 'SDK ID',
+        'yoti_sdk_id' => 'Client SDK ID',
         'yoti_pem' => 'PEM File',
       );
 
