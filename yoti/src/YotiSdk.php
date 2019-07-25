@@ -40,7 +40,7 @@ class YotiSdk implements YotiSdkInterface {
    */
   public function getClient() {
     return new YotiClient(
-      $this->config->getSdkId(),
+      $this->config->getClientSdkId(),
       $this->config->getPemContents(),
       YotiClient::DEFAULT_CONNECT_API,
       self::SDK_IDENTIFIER
