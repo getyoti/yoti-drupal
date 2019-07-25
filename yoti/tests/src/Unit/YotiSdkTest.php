@@ -30,6 +30,9 @@ class YotiSdkTest extends YotiUnitTestBase {
     $config
       ->method('getClientSdkId')
       ->willReturn('test_sdk_id');
+    $config
+      ->method('getAppId')
+      ->willReturn('test_app_id');
 
     openssl_pkey_export(openssl_pkey_new(), $pem_contents);
     $config
@@ -45,6 +48,14 @@ class YotiSdkTest extends YotiUnitTestBase {
   public function testGetClient() {
     $sdk = new YotiSdk($this->config);
     $this->assertInstanceOf(YotiClient::class, $sdk->getClient());
+  }
+
+  /**
+   * @covers ::getLoginUrl
+   */
+  public function testGetLoginUrl() {
+    $sdk = new YotiSdk($this->config);
+    $this->assertEquals('https://www.yoti.com/connect/test_app_id', $sdk->getLoginUrl());
   }
 
 }

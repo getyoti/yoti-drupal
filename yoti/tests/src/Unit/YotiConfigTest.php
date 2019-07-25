@@ -94,6 +94,13 @@ class YotiConfigTest extends YotiUnitTestBase {
   }
 
   /**
+   * @covers ::getAppId
+   */
+  public function testGetAppId() {
+    $this->assertEquals($this->config->getAppId(), $this->settings['yoti_app_id']);
+  }
+
+  /**
    * @covers ::getScenarioId
    */
   public function testGetScenarioId() {
