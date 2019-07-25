@@ -73,13 +73,6 @@ class YotiStreamWrapper extends DrupalLocalStreamWrapper {
 }
 
 /**
- * Implements hook_menu_alter().
- */
-function yoti_menu_alter(&$items) {
-  return $items;
-}
-
-/**
  * Implements hook_block_info().
  */
 function yoti_block_info() {
