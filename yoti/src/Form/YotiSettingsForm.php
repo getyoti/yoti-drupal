@@ -8,7 +8,6 @@ use Drupal\Core\Url;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\yoti\YotiHelper;
-use Yoti\YotiClient;
 
 /**
  * Class YotiSettingsForm.
@@ -66,10 +65,10 @@ class YotiSettingsForm extends ConfigFormBase {
 
     $form['yoti_settings'] = [
       '#type' => 'details',
-      '#title' => $this->t('Yoti Dashboard'),
+      '#title' => $this->t('Yoti settings'),
       '#open' => TRUE,
-      '#description' => $this->t('You need to first create a Yoti App at <a href="@yoti-dev" target="_blank">@yoti-dev</a>.', ['@yoti-dev' => YotiClient::DASHBOARD_URL]) . '</br >' .
-      $this->t('Note: On the Yoti Dashboard the callback URL should be set to: <code>@cb</code>', [
+      '#description' => $this->t('You need to first create a Yoti App at <a href="@yoti-dev" target="_blank">@yoti-dev</a>.', ['@yoti-dev' => YotiHelper::YOTI_HUB_URL]) . '</br >' .
+      $this->t('Note: On the Yoti Hub the callback URL should be set to: <code>@cb</code>', [
         '@cb' => $callbackUrl,
       ]) . '<br>' .
       $this->t('Warning: User IDs provided by Yoti are unique to each Yoti Application. Using a different Yoti Application means you will receive a different Yoti User ID for all of your users.'),
@@ -139,7 +138,7 @@ class YotiSettingsForm extends ConfigFormBase {
       '#type' => 'checkbox',
       '#title' => t('Prevent users who have not passed age verification to access your site'),
       '#default_value' => $config->get('yoti_age_verification'),
-      '#description' => $this->t('Requires Age over/under attribute to be set in the <a href="@yoti-dev" target="_blank">Yoti Dashboard</a>', ['@yoti-dev' => YotiClient::DASHBOARD_URL]),
+      '#description' => $this->t('Requires Age over/under attribute to be set in the <a href="@yoti-dev" target="_blank">Yoti Hub</a>', ['@yoti-dev' => YotiHelper::YOTI_HUB_URL]),
     ];
 
     $form['yoti_settings']['yoti_only_existing'] = [
