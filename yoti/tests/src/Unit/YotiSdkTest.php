@@ -28,7 +28,7 @@ class YotiSdkTest extends YotiUnitTestBase {
 
     $config = $this->createMock(YotiConfigInterface::class);
     $config
-      ->method('getSdkId')
+      ->method('getClientSdkId')
       ->willReturn('test_sdk_id');
 
     openssl_pkey_export(openssl_pkey_new(), $pem_contents);

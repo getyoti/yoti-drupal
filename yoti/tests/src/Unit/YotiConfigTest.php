@@ -101,10 +101,10 @@ class YotiConfigTest extends YotiUnitTestBase {
   }
 
   /**
-   * @covers ::getSdkId
+   * @covers ::getClientSdkId
    */
-  public function testGetSdkId() {
-    $this->assertEquals($this->config->getSdkId(), $this->settings['yoti_sdk_id']);
+  public function testGetClientSdkId() {
+    $this->assertEquals($this->config->getClientSdkId(), $this->settings['yoti_sdk_id']);
   }
 
   /**

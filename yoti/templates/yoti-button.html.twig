@@ -6,7 +6,7 @@
  * Available variables:
  * - button_id: Yoti Button ID
  * - scenario_id: Yoti Scenario ID
- * - sdk_id: Yoti SDK ID
+ * - client_sdk_id: Yoti Client SDK ID
  * - button_text: Button Text
  * - is_linked: Flag for linked accounts
  */
@@ -20,7 +20,7 @@
     var yotiConfig = yotiConfig || { elements: [] };
     yotiConfig.elements.push({
         "domId": "{{button_id}}",
-        "clientSdkId": "{{sdk_id}}",
+        "clientSdkId": "{{client_sdk_id}}",
         "scenarioId": "{{scenario_id}}",
         "button": {
             "label": "{{button_text}}"
