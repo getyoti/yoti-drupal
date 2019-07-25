@@ -37,19 +37,24 @@ class YotiHelper {
   const YOTI_PEM_FILE_UPLOAD_LOCATION = 'private://yoti';
 
   /**
-     * Yoti selfie filename attribute.
-     */
+   * Yoti selfie filename attribute.
+   */
   const ATTR_SELFIE_FILE_NAME = 'selfie_filename';
 
   /**
-     * Yoti Drupal SDK identifier.
-     */
+   * Yoti Drupal SDK identifier.
+   */
   const SDK_IDENTIFIER = 'Drupal';
 
   /**
-     * Age verification attribute.
-     */
+   * Age verification attribute.
+   */
   const AGE_VERIFICATION_ATTR = 'age_verified';
+
+  /**
+   * Yoti Hub URL.
+   */
+  const YOTI_HUB_URL = 'https://hub.yoti.com';
 
   /**
    * MySQL Database connection.
@@ -744,7 +749,7 @@ class YotiHelper {
   }
 
   /**
-   * Get Yoti Dashboard app URL.
+   * Get Yoti app login URL.
    *
    * @deprecated use `yoti.sdk` service instead.
    *
