@@ -75,6 +75,7 @@ class YotiConfig implements YotiConfigInterface {
       $name = $file->getFileUri();
       $contents = file_get_contents($this->fileSystem->realpath($name));
     }
+
     $this->settings = [
       'yoti_app_id' => $settings->get('yoti_app_id'),
       'yoti_scenario_id' => $settings->get('yoti_scenario_id'),
@@ -113,7 +114,7 @@ class YotiConfig implements YotiConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSdkId() {
+  public function getClientSdkId() {
     return $this->settings['yoti_sdk_id'];
   }
 
