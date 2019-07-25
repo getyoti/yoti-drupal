@@ -509,6 +509,9 @@ class YotiHelperTest extends YotiUnitTestBase {
     $sdk
       ->method('getClient')
       ->willReturn($client);
+    $sdk
+      ->method('getLoginUrl')
+      ->willReturn('https://www.yoti.com/connect/test_app_id');
 
     return $sdk;
   }
@@ -520,15 +523,7 @@ class YotiHelperTest extends YotiUnitTestBase {
    *   Yoti Config service.
    */
   private function createMockConfig() {
-    $config = $this->createMock(YotiConfigInterface::class);
-    $config
-      ->method('getSettings')
-      ->willReturn([
-        'yoti_app_id' => 'test_app_id',
-        'yoti_scenario_id' => 'test_scenario_id',
-        'yoti_sdk_id' => 'test_sdk_id',
-      ]);
-    return $config;
+    return $this->createMock(YotiConfigInterface::class);
   }
 
   /**

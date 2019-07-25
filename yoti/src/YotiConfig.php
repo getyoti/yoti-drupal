@@ -100,6 +100,13 @@ class YotiConfig implements YotiConfigInterface {
   /**
    * {@inheritdoc}
    */
+  public function getAppId() {
+    return $this->settings['yoti_app_id'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getScenarioId() {
     return $this->settings['yoti_scenario_id'];
   }
