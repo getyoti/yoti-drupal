@@ -39,9 +39,14 @@ class YotiHelper {
   const YOTI_SECURE_FILES_UPLOAD_LOCATION = 'private://yoti';
 
   /**
-     * Yoti SDK javascript library.
-     */
+   * Yoti SDK javascript library.
+   */
   const YOTI_SDK_JAVASCRIPT_LIBRARY = 'https://www.yoti.com/share/client/';
+
+  /**
+   * Yoti Hub URL.
+   */
+  const YOTI_HUB_URL = 'https://hub.yoti.com';
 
   /**
    * Yoti module config.
