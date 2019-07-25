@@ -34,12 +34,12 @@ interface YotiConfigInterface {
   public function getScenarioId();
 
   /**
-   * Yoti SDK ID.
+   * Yoti Client SDK ID.
    *
    * @return string
-   *   SDK ID.
+   *   Client SDK ID.
    */
-  public function getSdkId();
+  public function getClientSdkId();
 
   /**
    * Only allow existing Drupal users to link their Yoti account.

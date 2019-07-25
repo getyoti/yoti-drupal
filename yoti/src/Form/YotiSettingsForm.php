@@ -75,6 +75,7 @@ class YotiSettingsForm extends ConfigFormBase {
       $this->t('Warning: User IDs provided by Yoti are unique to each Yoti Application. Using a different Yoti Application means you will receive a different Yoti User ID for all of your users.'),
     ];
 
+    // @deprecated `yoti_app_id` will be removed in next major release.
     $form['yoti_settings']['yoti_app_id'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
@@ -94,9 +95,9 @@ class YotiSettingsForm extends ConfigFormBase {
     $form['yoti_settings']['yoti_sdk_id'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
-      '#title' => $this->t('SDK ID'),
+      '#title' => $this->t('Client SDK ID'),
       '#default_value' => $config->get('yoti_sdk_id'),
-      '#description' => $this->t('Copy the SDK ID of your Yoti App here'),
+      '#description' => $this->t('Copy the Client SDK ID of your Yoti App here'),
     ];
 
     $form['yoti_settings']['yoti_company_name'] = [
