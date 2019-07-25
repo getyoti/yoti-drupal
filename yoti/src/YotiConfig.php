@@ -107,7 +107,7 @@ class YotiConfig implements YotiConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSdkId() {
+  public function getClientSdkId() {
     return $this->settings['yoti_sdk_id'];
   }
 

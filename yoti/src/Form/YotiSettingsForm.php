@@ -95,9 +95,9 @@ class YotiSettingsForm extends ConfigFormBase {
     $form['yoti_settings']['yoti_sdk_id'] = [
       '#type' => 'textfield',
       '#required' => TRUE,
-      '#title' => $this->t('SDK ID'),
+      '#title' => $this->t('Client SDK ID'),
       '#default_value' => $config->get('yoti_sdk_id'),
-      '#description' => $this->t('Copy the SDK ID of your Yoti App here'),
+      '#description' => $this->t('Copy the Client SDK ID of your Yoti App here'),
     ];
 
     $form['yoti_settings']['yoti_company_name'] = [

@@ -10,7 +10,7 @@ yoti.settings:
       label: 'Scenario ID'
     yoti_sdk_id:
       type: string
-      label: 'SDK ID'
+      label: 'Client SDK ID'
     yoti_success_url:
       type: string
       label: 'Success URL'
