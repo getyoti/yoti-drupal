@@ -393,7 +393,7 @@ class YotiTest extends DrupalWebTestCase {
     $this->assertText('Please configure the following:');
     $this->assertText('Application ID (yoti_app_id)');
     $this->assertText('Scenario ID (yoti_scenario_id)');
-    $this->assertText('SDK ID (yoti_sdk_id)');
+    $this->assertText('Client SDK ID (yoti_sdk_id)');
     $this->assertText('PEM File (yoti_pem)');
   }
 
