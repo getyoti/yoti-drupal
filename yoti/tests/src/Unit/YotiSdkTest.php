@@ -28,7 +28,7 @@ class YotiSdkTest extends YotiUnitTestBase {
 
     $config = $this->createMock(YotiConfigInterface::class);
     $config
-      ->method('getSdkId')
+      ->method('getClientSdkId')
       ->willReturn('test_sdk_id');
     $config
       ->method('getAppId')
