@@ -98,15 +98,22 @@ class YotiStartController extends ControllerBase {
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
+   * @param string $field
+   *   The field used to retrive the bin file.
    *
    * @return \Drupal\Core\Access\AccessResult
    *   If account can view target user isAllowed() will be TRUE.
    */
-  public static function accessBinFile(AccountInterface $account) {
-    if ($targetUser = self::getTargetUser($account)) {
-      return AccessResult::allowedIf($targetUser->access('view', $account));
+  public static function accessBinFile(AccountInterface $account, $field) {
+    $targetUser = self::getTargetUser($account);
+    $targetUserIsCurrent = $targetUser->id() === $account->id();
+
+    if ($field === 'selfie') {
+      return AccessResult::allowedIfHasPermission($account, YotiHelper::YOTI_PERMISSION_VIEW_SELFIE)
+        ->orIf(AccessResult::allowedIf($targetUserIsCurrent));
     }
-    return AccessResult::neutral();
+
+    return AccessResult::allowedIf($targetUser->access('view', $account));
   }
 
   /**
