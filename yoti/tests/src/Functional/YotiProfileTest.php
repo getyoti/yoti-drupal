@@ -20,6 +20,7 @@ class YotiProfileTest extends YotiBrowserTestBase {
     $this->drupalLogin($this->linkedUser);
     $this->drupalGet('user');
     $this->assertProfileFields(yoti_map_params());
+    $this->assertSelfieImage();
 
     // Check unlink button is present.
     $this->assertSession()->elementTextContains(
@@ -30,15 +31,38 @@ class YotiProfileTest extends YotiBrowserTestBase {
   }
 
   /**
-   * Test viewing profile as user with permission.
+   * Test viewing profile as user with only profile permission.
    */
-  public function testProfileLinkedAsUserWithPermission() {
+  public function testProfileLinkedAsUserWithProfilePermission() {
     $userWithUserProfilePermission = $this->drupalCreateUser([
       'access user profiles',
     ]);
     $this->drupalLogin($userWithUserProfilePermission);
     $this->drupalGet('user/' . $this->linkedUser->id());
+
+    $profile_data = yoti_map_params();
+    unset($profile_data[Profile::ATTR_SELFIE]);
+    $this->assertProfileFields($profile_data);
+
+    // Check selfie is not present.
+    $this->assertSession()->responseNotContains('/yoti/bin-file/selfie');
+
+    // Check unlink button is not present.
+    $this->assertSession()->responseNotContains('/yoti/unlink');
+  }
+
+  /**
+   * Test viewing profile as user with profile and selfie permission.
+   */
+  public function testProfileLinkedAsUserWithProfileAndSelfiePermission() {
+    $userWithUserProfilePermission = $this->drupalCreateUser([
+      'access user profiles',
+      'view yoti selfie images',
+    ]);
+    $this->drupalLogin($userWithUserProfilePermission);
+    $this->drupalGet('user/' . $this->linkedUser->id());
     $this->assertProfileFields(yoti_map_params());
+    $this->assertSelfieImage();
 
     // Check unlink button is not present.
     $this->assertSession()->responseNotContains('/yoti/unlink');
@@ -78,6 +102,7 @@ class YotiProfileTest extends YotiBrowserTestBase {
     }
 
     $this->assertProfileFields($profile_data);
+    $this->assertSelfieImage();
     $this->assertNotProfileFields($disabled_data);
   }
 
@@ -107,6 +132,13 @@ class YotiProfileTest extends YotiBrowserTestBase {
       $assert->elementExists('css', '#yoti-profile-' . $key);
       $assert->responseContains($label . ' value');
     }
+  }
+
+  /**
+   * Assert that the selfie image is present and can be viewed.
+   */
+  private function assertSelfieImage() {
+    $assert = $this->assertSession();
 
     // Check selfie image is present.
     $selfie_selector = "img[src*='/yoti/bin-file/selfie'][width='100']";
