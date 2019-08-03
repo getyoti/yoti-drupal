@@ -63,7 +63,7 @@ class YotiStartController extends ControllerBase {
     // Unserialize Yoti user data.
     $userProfileArr = unserialize($dbProfile['data']);
 
-    $field = ($field === 'selfie') ? 'selfie_filename' : $field;
+    $field = ($field === YotiHelper::YOTI_BIN_FIELD_SELFIE) ? 'selfie_filename' : $field;
     if (!is_array($userProfileArr) || !array_key_exists($field, $userProfileArr)) {
       throw new NotFoundHttpException();
     }
@@ -108,7 +108,7 @@ class YotiStartController extends ControllerBase {
     $targetUser = self::getTargetUser($account);
     $targetUserIsCurrent = $targetUser->id() === $account->id();
 
-    if ($field === 'selfie') {
+    if ($field === YotiHelper::YOTI_BIN_FIELD_SELFIE) {
       return AccessResult::allowedIfHasPermission($account, YotiHelper::YOTI_PERMISSION_VIEW_SELFIE)
         ->orIf(AccessResult::allowedIf($targetUserIsCurrent));
     }
