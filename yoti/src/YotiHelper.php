@@ -62,6 +62,11 @@ class YotiHelper {
   const YOTI_PERMISSION_VIEW_SELFIE = 'view yoti selfie images';
 
   /**
+   * Field for selfie bin file.
+   */
+  const YOTI_BIN_FIELD_SELFIE = 'selfie';
+
+  /**
    * MySQL Database connection.
    *
    * @var \Drupal\Core\Database\Driver\mysql\Connection
