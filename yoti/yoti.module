@@ -103,7 +103,7 @@ function yoti_user_view(array &$build, UserInterface $account, EntityViewDisplay
         $field_content = [
           '#theme' => 'image',
           '#uri' => Url::fromRoute('yoti.bin-file', [
-            'field' => 'selfie',
+            'field' => YotiHelper::YOTI_BIN_FIELD_SELFIE,
             'user_id' => $account->id(),
           ])->toString(),
           '#width' => 100,
