@@ -34,10 +34,24 @@ class YotiProfileTest extends YotiBrowserTestBase {
    * Test viewing profile as user with only profile permission.
    */
   public function testProfileLinkedAsUserWithProfilePermission() {
-    $userWithUserProfilePermission = $this->drupalCreateUser([
+    $userWithUserProfilePermission = $this->createLinkedUser([
       'access user profiles',
     ]);
     $this->drupalLogin($userWithUserProfilePermission);
+
+    // Check user can view own profile and selfie.
+    $this->drupalGet('user/' . $userWithUserProfilePermission->id());
+    $this->assertProfileFields(yoti_map_params());
+    $this->assertSelfieImage();
+
+    // Check they cannot see other user profile images.
+    $url = $this->getSelfieImageUrl();
+    $url['query']['user_id'] = $this->linkedUser->id();
+    $this->drupalGet(trim($url['path'], '/'), ['query' => $url['query']]);
+    $this->assertSession()->statusCodeEquals(403);
+    $this->assertSession()->responseNotContains('test_selfie_contents');
+
+    // Check other users profile.
     $this->drupalGet('user/' . $this->linkedUser->id());
 
     $profile_data = yoti_map_params();
@@ -135,14 +149,15 @@ class YotiProfileTest extends YotiBrowserTestBase {
   }
 
   /**
-   * Assert that the selfie image is present and can be viewed.
+   * Get selfie url from current page.
+   *
+   * @return array
+   *   Parsed URL consisting of `path` and `query`.
    */
-  private function assertSelfieImage() {
-    $assert = $this->assertSession();
-
+  private function getSelfieImageUrl() {
     // Check selfie image is present.
     $selfie_selector = "img[src*='/yoti/bin-file/selfie'][width='100']";
-    $assert->elementExists('css', $selfie_selector);
+    $this->assertSession()->elementExists('css', $selfie_selector);
 
     // Visit selfie using img src attribute.
     $selfie_src_attr = $this
@@ -150,13 +165,25 @@ class YotiProfileTest extends YotiBrowserTestBase {
       ->getPage()
       ->find('css', $selfie_selector)
       ->getAttribute('src');
-    $selfie_url = htmlspecialchars_decode($selfie_src_attr);
 
-    $path = parse_url($selfie_url, PHP_URL_PATH);
-    parse_str(parse_url($selfie_url, PHP_URL_QUERY), $query_params);
+    $url = htmlspecialchars_decode($selfie_src_attr);
+    $path = parse_url($url, PHP_URL_PATH);
+    parse_str(parse_url($url, PHP_URL_QUERY), $query_params);
 
-    $this->drupalGet(trim($path, '/'), ['query' => $query_params]);
-    $assert->responseContains('test_selfie_contents');
+    return [
+      'path' => $path,
+      'query' => $query_params,
+    ];
+  }
+
+  /**
+   * Assert that the selfie image on current page is present and can be viewed.
+   */
+  private function assertSelfieImage() {
+    $url = $this->getSelfieImageUrl();
+
+    $this->drupalGet(trim($url['path'], '/'), ['query' => $url['query']]);
+    $this->assertSession()->responseContains('test_selfie_contents');
 
     // Go back to previous page.
     $this->getSession()->back();

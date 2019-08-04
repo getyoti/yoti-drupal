@@ -47,7 +47,9 @@ class YotiBrowserTestBase extends BrowserTestBase {
     parent::setup();
 
     // Create linked user.
-    $this->createLinkedUser();
+    $this->linkedUser = $this->createLinkedUser([
+      'access content',
+    ]);
 
     // Create unlinked user.
     $this->unlinkedUser = $this->drupalCreateUser([
@@ -57,12 +59,16 @@ class YotiBrowserTestBase extends BrowserTestBase {
 
   /**
    * Create a linked Drupal User.
+   *
+   * @param array $permssions
+   *   List of permssions to grant to this user.
+   *
+   * @return \Drupal\user\Entity\User
+   *   The linked user.
    */
-  private function createLinkedUser() {
+  protected function createLinkedUser(array $permssions = []) {
     // Create linked user.
-    $this->linkedUser = $this->drupalCreateUser([
-      'access content',
-    ]);
+    $linkedUser = $this->drupalCreateUser($permssions);
 
     // Generate test user data from known attributes.
     foreach (yoti_map_params() as $field => $label) {
@@ -70,17 +76,20 @@ class YotiBrowserTestBase extends BrowserTestBase {
     }
 
     // Create test selfie file.
-    mkdir(YotiHelper::uploadDir(), 0777, TRUE);
+    if (!is_dir(YotiHelper::uploadDir())) {
+      mkdir(YotiHelper::uploadDir(), 0777, TRUE);
+    }
     $this->selfieFilePath = YotiHelper::uploadDir() . DIRECTORY_SEPARATOR . 'test_selfie.jpg';
     file_put_contents($this->selfieFilePath, 'test_selfie_contents');
     $user_data[YotiHelper::ATTR_SELFIE_FILE_NAME] = basename($this->selfieFilePath);
 
     \Drupal::database()->insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
-      'uid' => $this->linkedUser->id(),
+      'uid' => $linkedUser->id(),
       'identifier' => 'some-remember-me-id',
       'data' => serialize($user_data),
     ])->execute();
 
+    return $linkedUser;
   }
 
   /**
