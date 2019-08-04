@@ -130,6 +130,12 @@ function my_module_user_view_alter(&$build) {
 You can also control who can view user profiles using permissions
 at `/admin/people/permissions`.
 
+## Permissions
+
+* `administer yoti`: Allow users to configure the Yoti module.
+* `view yoti selfie images`: Allow users to view other user selfie images.
+  Users can always view their own selfie images.
+
 ## API Coverage
 
 * Activity Details
