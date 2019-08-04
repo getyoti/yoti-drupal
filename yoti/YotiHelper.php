@@ -49,6 +49,16 @@ class YotiHelper {
   const YOTI_HUB_URL = 'https://hub.yoti.com';
 
   /**
+   * Permission to view Yoti selfie images.
+   */
+  const YOTI_PERMISSION_VIEW_SELFIE = 'view yoti selfie images';
+
+  /**
+   * Field for selfie bin file.
+   */
+  const YOTI_BIN_FIELD_SELFIE = 'selfie';
+
+  /**
    * Yoti module config.
    *
    * @var array
