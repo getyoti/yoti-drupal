@@ -56,15 +56,40 @@ function yoti_unlink_submit() {
  */
 function yoti_bin_file() {
   global $user;
+  $current = $user;
 
-  // Check that request token is valid before serving the image.
+  // Check that request token is valid before serving the bin file.
   if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], 'yoti_selfie')) {
     drupal_not_found();
     drupal_exit();
   }
 
-  $current = $user;
-  $userId = (!empty($_GET['user_id']) && user_access('access user profiles')) ? (int) $_GET['user_id'] : $current->uid;
+  // Field must be provided to fetch a bin file.
+  if (empty($_GET['field'])) {
+    drupal_not_found();
+    drupal_exit();
+  }
+  $field = $_GET['field'];
+
+  // Check access and set field based on requested field name.
+  switch ($field) {
+    case YotiHelper::YOTI_BIN_FIELD_SELFIE:
+      $canAccess = user_access(YotiHelper::YOTI_PERMISSION_VIEW_SELFIE);
+      $field = 'selfie_filename';
+      break;
+
+    default:
+      $canAccess = user_access('access user profiles');
+  }
+
+  // Use requested user ID if provided and default to current user.
+  $userId = !empty($_GET['user_id']) ? (int) $_GET['user_id'] : (int) $current->uid;
+
+  // Prevent access to other user files for users without permission.
+  if (($userId != $current->uid) && !$canAccess) {
+    drupal_access_denied();
+    drupal_exit();
+  }
 
   $dbProfile = YotiHelper::getYotiUserProfile($userId);
   if (!$dbProfile) {
@@ -74,12 +99,6 @@ function yoti_bin_file() {
 
   $dbProfile = unserialize($dbProfile['data']);
 
-  $field = NULL;
-  if (!empty($_GET['field'])) {
-    $field = $_GET['field'];
-  }
-
-  $field = ($field === 'selfie') ? 'selfie_filename' : $field;
   if (!$dbProfile || !array_key_exists($field, $dbProfile)) {
     drupal_not_found();
     drupal_exit();

@@ -166,3 +166,13 @@ function yoti_uninstall() {
 function yoti_enable() {
   drupal_set_message(t('Yoti enabled. <a href="@path">Check module settings</a>.', ['@path' => url('admin/config/people/yoti')]));
 }
+
+/**
+ * Grant 'view yoti selfie images' permission to administrator role.
+ */
+function yoti_update_7001() {
+  $rid = variable_get('user_admin_role', 0);
+  if ($rid) {
+    user_role_grant_permissions($rid, array(YotiHelper::YOTI_PERMISSION_VIEW_SELFIE));
+  }
+}
