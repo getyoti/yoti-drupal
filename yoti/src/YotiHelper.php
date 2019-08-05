@@ -52,6 +52,11 @@ class YotiHelper {
   const AGE_VERIFICATION_ATTR = 'age_verified';
 
   /**
+   * Yoti Hub URL.
+   */
+  const YOTI_HUB_URL = 'https://hub.yoti.com';
+
+  /**
    * Permission to view Yoti selfie images.
    */
   const YOTI_PERMISSION_VIEW_SELFIE = 'view yoti selfie images';
@@ -702,7 +707,7 @@ class YotiHelper {
   }
 
   /**
-   * Get Yoti Dashboard app URL.
+   * Get Yoti app login URL.
    *
    * @deprecated use `yoti.sdk` service instead.
    *
