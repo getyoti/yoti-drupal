@@ -37,19 +37,29 @@ class YotiHelper {
   const YOTI_PEM_FILE_UPLOAD_LOCATION = 'private://yoti';
 
   /**
-     * Yoti selfie filename attribute.
-     */
+   * Yoti selfie filename attribute.
+   */
   const ATTR_SELFIE_FILE_NAME = 'selfie_filename';
 
   /**
-     * Yoti Drupal SDK identifier.
-     */
+   * Yoti Drupal SDK identifier.
+   */
   const SDK_IDENTIFIER = 'Drupal';
 
   /**
-     * Age verification attribute.
-     */
+   * Age verification attribute.
+   */
   const AGE_VERIFICATION_ATTR = 'age_verified';
+
+  /**
+   * Permission to view Yoti selfie images.
+   */
+  const YOTI_PERMISSION_VIEW_SELFIE = 'view yoti selfie images';
+
+  /**
+   * Field for selfie bin file.
+   */
+  const YOTI_BIN_FIELD_SELFIE = 'selfie';
 
   /**
    * MySQL Database connection.
