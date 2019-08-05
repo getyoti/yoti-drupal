@@ -45,7 +45,7 @@ function yoti_api_keys_settings($form, &$form_state) {
     '#required' => TRUE,
     '#title' => t('Scenario ID'),
     '#default_value' => variable_get('yoti_scenario_id'),
-    '#description' => t('Scenario ID is used to render the inline QR code.'),
+    '#description' => t('Scenario ID is used to render the modal window containing the QR code, for the scenario specified in Yoti Hub.'),
   ];
 
   $form['yoti_settings']['yoti_sdk_id'] = [
