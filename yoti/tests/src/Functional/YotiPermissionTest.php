@@ -47,7 +47,7 @@ class YotiPermissionTest extends YotiBrowserTestBase {
 
     $assert = $this->assertSession();
     $assert->statusCodeEquals(200);
-    $assert->pageTextContains('YOTI DASHBOARD');
+    $assert->pageTextContains('YOTI SETTINGS');
     $assert->elementExists('css', '#yoti-admin-form');
   }
 
