@@ -113,7 +113,7 @@ class YotiStartController extends ControllerBase {
         ->orIf(AccessResult::allowedIf($targetUserIsCurrent));
     }
 
-    return AccessResult::allowedIf($targetUser->access('view', $account));
+    return AccessResult::allowedIf($targetUser->access('update', $account));
   }
 
   /**
