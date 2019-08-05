@@ -68,7 +68,7 @@ class YotiStartController extends ControllerBase {
     // Unserialize Yoti user data.
     $userProfileArr = unserialize($dbProfile['data']);
 
-    $field = ($field === 'selfie') ? 'selfie_filename' : $field;
+    $field = ($field === YotiHelper::YOTI_BIN_FIELD_SELFIE) ? 'selfie_filename' : $field;
     if (!is_array($userProfileArr) || !array_key_exists($field, $userProfileArr)) {
       throw new NotFoundHttpException();
     }
@@ -103,15 +103,22 @@ class YotiStartController extends ControllerBase {
    *
    * @param \Drupal\Core\Session\AccountInterface $account
    *   Run access checks for this account.
+   * @param string $field
+   *   The field used to retrive the bin file.
    *
    * @return \Drupal\Core\Access\AccessResult
    *   If account can view target user isAllowed() will be TRUE.
    */
-  public static function accessBinFile(AccountInterface $account) {
-    if ($targetUser = self::getTargetUser($account)) {
-      return AccessResult::allowedIf($targetUser->access('view', $account));
+  public static function accessBinFile(AccountInterface $account, $field) {
+    $targetUser = self::getTargetUser($account);
+    $targetUserIsCurrent = $targetUser->id() === $account->id();
+
+    if ($field === YotiHelper::YOTI_BIN_FIELD_SELFIE) {
+      return AccessResult::allowedIfHasPermission($account, YotiHelper::YOTI_PERMISSION_VIEW_SELFIE)
+        ->orIf(AccessResult::allowedIf($targetUserIsCurrent));
     }
-    return AccessResult::neutral();
+
+    return AccessResult::allowedIf($targetUser->access('update', $account));
   }
 
   /**

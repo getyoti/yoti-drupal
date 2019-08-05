@@ -2,3 +2,6 @@ administer yoti:
   title: 'Administer Yoti'
   description: 'Administer the Yoti module'
   restrict access: true
+view yoti selfie images:
+  title: 'View Yoti Selfie Images'
+  description: 'Allows users to see other user selfie images'
