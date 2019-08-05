@@ -43,6 +43,16 @@ class YotiHelper {
   const YOTI_SDK_JAVASCRIPT_LIBRARY = 'https://sdk.yoti.com/clients/browser.2.0.1.js';
 
   /**
+   * Permission to view Yoti selfie images.
+   */
+  const YOTI_PERMISSION_VIEW_SELFIE = 'view yoti selfie images';
+
+  /**
+   * Field for selfie bin file.
+   */
+  const YOTI_BIN_FIELD_SELFIE = 'selfie';
+
+  /**
    * Yoti module config.
    *
    * @var array
