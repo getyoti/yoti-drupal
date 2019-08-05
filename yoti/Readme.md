@@ -39,7 +39,7 @@ must expose a GET endpoint that Yoti will use to forward tokens.
 The endpoint can be configured in the Yoti Hub when you create/update
 your application. For more information on how to create an application please
 check our [developer
-page](https://www.yoti.com/developers/documentation/#integration-steps).
+page](https://developers.yoti.com/yoti-app/web-integration#step-2-creating-an-application).
 
 The image below shows how your application back-end and Yoti integrate into
 the context of a Login flow.
