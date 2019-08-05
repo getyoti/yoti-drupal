@@ -79,7 +79,7 @@ function yoti_bin_file() {
       break;
 
     default:
-      $canAccess = user_access('access user profiles');
+      $canAccess = user_access('administer users');
   }
 
   // Use requested user ID if provided and default to current user.
