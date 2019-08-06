@@ -88,7 +88,7 @@ class YotiSettingsForm extends ConfigFormBase {
       '#required' => TRUE,
       '#title' => t('Scenario ID'),
       '#default_value' => $config->get('yoti_scenario_id'),
-      '#description' => t('Scenario ID is used to render the modal window containing the QR code, for the scenario specified in Yoti Hub.'),
+      '#description' => t('Scenario ID identifies the attributes associated with your Yoti application. This value can be found on your application page in Yoti Hub.'),
     ];
 
     $form['yoti_settings']['yoti_sdk_id'] = [
@@ -96,7 +96,7 @@ class YotiSettingsForm extends ConfigFormBase {
       '#required' => TRUE,
       '#title' => $this->t('Client SDK ID'),
       '#default_value' => $config->get('yoti_sdk_id'),
-      '#description' => $this->t('Copy the Client SDK ID of your Yoti App here'),
+      '#description' => $this->t('Client SDK ID identifies your Yoti Hub application. This value can be found in the Hub, within your application section, in the keys tab.'),
     ];
 
     $form['yoti_settings']['yoti_company_name'] = [
