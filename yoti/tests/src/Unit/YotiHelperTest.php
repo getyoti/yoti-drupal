@@ -51,21 +51,11 @@ class YotiHelperTest extends YotiUnitTestBase {
 
     // Create test selfie file.
     $this->selfieFilePath = $this->tmpDir . DIRECTORY_SEPARATOR . 'test_selfie.jpg';
-    file_put_contents($this->selfieFilePath, 'test_selfie_contents');
-
-    $this->createContainer();
-  }
-
-  /**
-   * Clean up test data.
-   */
-  public function teardown() {
-    // Remove test file.
-    if (is_file($this->selfieFilePath)) {
-      unlink($this->selfieFilePath);
+    if (!is_file($this->selfieFilePath)) {
+      file_put_contents($this->selfieFilePath, 'test_selfie_contents');
     }
 
-    parent::teardown();
+    $this->createContainer();
   }
 
   /**

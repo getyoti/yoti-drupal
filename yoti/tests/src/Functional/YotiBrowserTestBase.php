@@ -80,7 +80,9 @@ abstract class YotiBrowserTestBase extends BrowserTestBase {
       mkdir(YotiHelper::uploadDir(), 0777, TRUE);
     }
     $this->selfieFilePath = YotiHelper::uploadDir() . DIRECTORY_SEPARATOR . 'test_selfie.jpg';
-    file_put_contents($this->selfieFilePath, 'test_selfie_contents');
+    if (!is_file($this->selfieFilePath)) {
+      file_put_contents($this->selfieFilePath, 'test_selfie_contents');
+    }
     $user_data[YotiHelper::ATTR_SELFIE_FILE_NAME] = basename($this->selfieFilePath);
 
     \Drupal::database()->insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
@@ -90,21 +92,6 @@ abstract class YotiBrowserTestBase extends BrowserTestBase {
     ])->execute();
 
     return $linkedUser;
-  }
-
-  /**
-   * Teardown Tests.
-   */
-  public function teardown() {
-    // Cleanup selfie.
-    if (is_file($this->selfieFilePath)) {
-      unlink($this->selfieFilePath);
-    }
-
-    // Cleanup private directory.
-    rmdir(YotiHelper::uploadDir());
-
-    parent::teardown();
   }
 
 }

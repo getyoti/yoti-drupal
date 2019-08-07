@@ -43,12 +43,6 @@ abstract class YotiUnitTestBase extends UnitTestCase {
    */
   public function teardown() {
     $_GET = $this->originalGet;
-
-    // Remove test file directory.
-    if (is_dir($this->tmpDir)) {
-      rmdir($this->tmpDir);
-    }
-
     parent::teardown();
   }
 
