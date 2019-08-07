@@ -25,7 +25,7 @@ class YotiProfileTest extends YotiBrowserTestBase {
     // Check unlink button is present.
     $this->assertSession()->elementTextContains(
       'css',
-      "#yoti-unlink-button[href='/yoti/unlink']",
+      "#yoti-unlink-button[href*='/yoti/unlink']",
       'Unlink Yoti account'
     );
   }
