@@ -294,7 +294,7 @@ class YotiTest extends DrupalWebTestCase {
     $this->drupalGet('user');
 
     $this->assertElementByXpath(
-      "//div[@class=:wrapper_class]//a[@href=:href][@id=:id][@class=:class]",
+      "//div[@class=:wrapper_class]//a[contains(@href,:href)][@id=:id][@class=:class]",
       array(
         ':wrapper_class' => 'yoti-connect',
         ':href' => '/yoti/unlink',
