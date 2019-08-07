@@ -430,6 +430,9 @@ class YotiTest extends DrupalWebTestCase {
    * Test Register Form.
    */
   public function testRegisterForm() {
+    global $user;
+    $user = drupal_anonymous_user();
+
     module_load_include('inc', 'yoti', 'yoti.pages');
 
     // Set session data.
