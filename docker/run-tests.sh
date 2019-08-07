@@ -2,7 +2,7 @@
 TARGET="drupal-7-dev"
 
 # Coding Standards
-docker-compose exec $TARGET ./vendor/bin/phpcs --standard=Drupal --ignore=*yoti/sdk* ./sites/all/modules/yoti
+docker-compose exec $TARGET sh -c "cd ./sites/all/modules/yoti && /var/www/html/vendor/bin/phpcs"
 
 # Enable Yoti module
 docker-compose exec $TARGET drush en simpletest -y
