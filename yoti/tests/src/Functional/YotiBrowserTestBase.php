@@ -10,7 +10,7 @@ use Drupal\yoti\YotiHelper;
  *
  * @group yoti
  */
-class YotiBrowserTestBase extends BrowserTestBase {
+abstract class YotiBrowserTestBase extends BrowserTestBase {
 
   /**
    * Linked User.
