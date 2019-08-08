@@ -430,9 +430,6 @@ class YotiTest extends DrupalWebTestCase {
    * Test Register Form.
    */
   public function testRegisterForm() {
-    global $user;
-    $user = drupal_anonymous_user();
-
     module_load_include('inc', 'yoti', 'yoti.pages');
 
     // Set session data.
@@ -502,6 +499,9 @@ class YotiTest extends DrupalWebTestCase {
       strstr($form['#attached']['css'][0]['data'], 'yoti/css/yoti.css'),
       'Check CSS is attached to form'
     );
+
+    // Clean up session.
+    unset($_SESSION['yoti-user']);
   }
 
   /**
