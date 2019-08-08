@@ -55,7 +55,9 @@ class YotiConfigTest extends YotiUnitTestBase {
 
     // Create test pem file.
     $this->pemFilePath = $this->tmpDir . DIRECTORY_SEPARATOR . 'yoti_config_test.pem';
-    file_put_contents($this->pemFilePath, 'test_pem_content');
+    if (!is_file($this->pemFilePath)) {
+      file_put_contents($this->pemFilePath, 'test_pem_content');
+    }
 
     // Mock the config factory with Yoti settings.
     $configFactory = $this->getConfigFactoryStub([
@@ -67,18 +69,6 @@ class YotiConfigTest extends YotiUnitTestBase {
       $this->createMockFileSystem(),
       $this->createMockEntityTypeManager()
     );
-  }
-
-  /**
-   * Clean up test data.
-   */
-  public function teardown() {
-    // Remove test file.
-    if (is_file($this->pemFilePath)) {
-      unlink($this->pemFilePath);
-    }
-
-    parent::teardown();
   }
 
   /**
