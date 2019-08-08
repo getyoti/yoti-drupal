@@ -4,7 +4,6 @@
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
-         checkForUnintentionallyCoveredCode="false"
          verbose="true">
     <php>
         <!-- Set error reporting to E_ALL. -->
