@@ -19,7 +19,7 @@ class YotiUnlinkFormTest extends YotiBrowserTestBase {
     $assert = $this->assertSession();
     $assert->elementTextContains(
       'css',
-      "#yoti-unlink-button[href='/yoti/unlink']",
+      "#yoti-unlink-button[href*='/yoti/unlink']",
       'Unlink Yoti account'
     );
 

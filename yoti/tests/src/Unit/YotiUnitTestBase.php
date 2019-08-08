@@ -10,6 +10,13 @@ use Drupal\Tests\UnitTestCase;
 abstract class YotiUnitTestBase extends UnitTestCase {
 
   /**
+   * Original $_GET value.
+   *
+   * @var array
+   */
+  private $originalGet;
+
+  /**
    * Test file directory.
    *
    * @var string
@@ -20,6 +27,8 @@ abstract class YotiUnitTestBase extends UnitTestCase {
    * Setup Yoti tests.
    */
   public function setup() {
+    $this->originalGet = $_GET;
+
     parent::setup();
 
     // Create tmp file directory.
@@ -33,11 +42,7 @@ abstract class YotiUnitTestBase extends UnitTestCase {
    * Clean up test data.
    */
   public function teardown() {
-    // Remove test file directory.
-    if (is_dir($this->tmpDir)) {
-      rmdir($this->tmpDir);
-    }
-
+    $_GET = $this->originalGet;
     parent::teardown();
   }
 
