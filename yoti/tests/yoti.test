@@ -297,7 +297,7 @@ class YotiTest extends DrupalWebTestCase {
       "//div[@class=:wrapper_class]//a[contains(@href,:href)][@id=:id][@class=:class]",
       array(
         ':wrapper_class' => 'yoti-connect',
-        ':href' => '/yoti/unlink',
+        ':href' => 'yoti/unlink',
         ':id' => 'yoti-unlink-button',
         ':class' => 'button',
       ),
