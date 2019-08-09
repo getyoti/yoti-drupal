@@ -43,6 +43,11 @@ class YotiHelper {
   const YOTI_SDK_JAVASCRIPT_LIBRARY = 'https://sdk.yoti.com/clients/browser.2.0.1.js';
 
   /**
+   * Yoti Hub URL.
+   */
+  const YOTI_HUB_URL = 'https://hub.yoti.com';
+
+  /**
    * Permission to view Yoti selfie images.
    */
   const YOTI_PERMISSION_VIEW_SELFIE = 'view yoti selfie images';
