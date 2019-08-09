@@ -124,22 +124,10 @@ class YotiTest extends DrupalWebTestCase {
 
     // Create a linked user.
     $this->linkedUser = $this->drupalCreateUser();
-    db_insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
-      'uid' => $this->linkedUser->uid,
-      'identifier' => 'some-remember-me-id',
-      'data' => serialize(array(
-        'full_name' => 'test full name',
-        'selfie_filename' => $this->selfieFilePath,
-      )),
-    ])->execute();
+    $this->linkUser($this->linkedUser->uid);
 
     // Create an unlinked user.
     $this->unlinkedUser = $this->drupalCreateUser();
-
-    // Create a user that can view user profiles.
-    $this->userWithUserProfilesPermission = $this->drupalCreateUser(array(
-      'access user profiles',
-    ));
   }
 
   /**
@@ -158,6 +146,20 @@ class YotiTest extends DrupalWebTestCase {
     }
 
     parent::teardown();
+  }
+
+  /**
+   * Links provided user.
+   */
+  private function linkUser($uid) {
+    db_insert(YotiHelper::YOTI_USER_TABLE_NAME)->fields([
+      'uid' => $uid,
+      'identifier' => 'some-remember-me-id',
+      'data' => serialize(array(
+        'full_name' => 'test full name',
+        'selfie_filename' => $this->selfieFilePath,
+      )),
+    ])->execute();
   }
 
   /**
@@ -318,9 +320,9 @@ class YotiTest extends DrupalWebTestCase {
   }
 
   /**
-   * Test user profile page.
+   * Test user profile permissions.
    */
-  public function testProfile() {
+  public function testProfilePermissions() {
     // Log in as unlinked user.
     $this->drupalLogin($this->unlinkedUser);
 
@@ -328,18 +330,44 @@ class YotiTest extends DrupalWebTestCase {
     $this->assertTrue(is_file($this->selfieFilePath), 'Check selfie exists');
     $this->drupalGet('yoti/bin-file', array(
       'query' => array(
-        'field' => 'selfie',
+        'field' => YotiHelper::YOTI_BIN_FIELD_SELFIE,
         'user_id' => $this->linkedUser->uid,
       ),
     ));
     $this->assertNoRaw('test_selfie_contents');
     $this->assertResponse(404);
 
-    // Log in as user with access to view user profiles.
-    $this->drupalLogin($this->userWithUserProfilesPermission);
+    // Log in as user with access to view user profiles and selfies.
+    $userWithUserProfilesAndSelfiePermission = $this->drupalCreateUser(array(
+      'access user profiles',
+      YotiHelper::YOTI_PERMISSION_VIEW_SELFIE,
+    ));
+    $this->drupalLogin($userWithUserProfilesAndSelfiePermission);
     $this->drupalGet('user/' . $this->linkedUser->uid);
     $this->assertProfileSelfieCanBeViewed();
 
+    // Log in as user with access to view user profiles.
+    $userWithUserProfilesPermission = $this->drupalCreateUser(array(
+      'access user profiles',
+    ));
+    $this->linkUser($userWithUserProfilesPermission->uid);
+    $this->drupalLogin($userWithUserProfilesPermission);
+    $this->drupalGet('user/' . $this->linkedUser->uid);
+    $this->assertNoRaw('yoti/bin-file');
+
+    // Check user without selfie permission cannot see other selfie images.
+    $this->drupalGet('user');
+    $url = $this->getSelfieUrl();
+    $url['query']['user_id'] = $this->linkedUser->uid;
+    $this->drupalGet(trim($url['path'], '/'), array('query' => $url['query']));
+    $this->assertNoRaw('test_selfie_contents');
+    $this->assertResponse(403);
+  }
+
+  /**
+   * Test user profile display.
+   */
+  public function testProfileDisplay() {
     // Log in as linked user.
     $this->drupalLogin($this->linkedUser);
 
@@ -468,13 +496,28 @@ class YotiTest extends DrupalWebTestCase {
   }
 
   /**
+   * Get selfie URL on current page.
+   *
+   * @return array
+   *   URL consisting of `path` and `query`
+   */
+  private function getSelfieUrl() {
+    $result = $this->xpath("//div[@id='yoti-profile-selfie']//img");
+    $url_parts = parse_url((string) $result[0]['src']);
+    parse_str($url_parts['query'], $query);
+
+    return array(
+      'path' => $url_parts['path'],
+      'query' => $query,
+    );
+  }
+
+  /**
    * Assert that the selfie on the profile can be viewed.
    */
   private function assertProfileSelfieCanBeViewed() {
-    $result = $this->xpath("//div[@id='yoti-profile-selfie']//img");
-    $url = parse_url((string) $result[0]['src']);
-    parse_str($url['query'], $query);
-    $this->drupalGet(trim($url['path'], '/'), array('query' => $query));
+    $url = $this->getSelfieUrl();
+    $this->drupalGet(trim($url['path'], '/'), array('query' => $url['query']));
     $this->assertRaw('test_selfie_contents');
     $this->assertResponse(200);
   }

@@ -272,6 +272,9 @@ function yoti_permission() {
   $items['administer yoti'] = [
     'title' => 'Administer Yoti Module settings',
   ];
+  $items[YotiHelper::YOTI_PERMISSION_VIEW_SELFIE] = [
+    'title' => 'View Yoti selfie images',
+  ];
   return $items;
 }
 
@@ -293,13 +296,20 @@ function yoti_user_view($account, $view_mode, $langcode) {
 
   foreach ($map as $field => $label) {
     if ($field === ActivityDetails::ATTR_SELFIE && !empty($dbProfile['selfie_filename'])) {
+      // Hide selfie for users that don't have access.
+      if (!user_access(YotiHelper::YOTI_PERMISSION_VIEW_SELFIE) &&
+        $current->uid != $account->uid
+      ) {
+        continue;
+      }
+
       $selfieFullPath = YotiHelper::selfieFilePath($dbProfile['selfie_filename']);
       if (is_file($selfieFullPath)) {
         $params = [
-          'field' => 'selfie',
+          'field' => YotiHelper::YOTI_BIN_FIELD_SELFIE,
           'token' => drupal_get_token('yoti_selfie'),
         ];
-        if (user_access('access user profiles')) {
+        if (user_access(YotiHelper::YOTI_PERMISSION_VIEW_SELFIE)) {
           $params['user_id'] = $account->uid;
         }
         $selfieUrl = url('/yoti/bin-file', ['query' => $params]);
