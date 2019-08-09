@@ -294,10 +294,10 @@ class YotiTest extends DrupalWebTestCase {
     $this->drupalGet('user');
 
     $this->assertElementByXpath(
-      "//div[contains(@class,:wrapper_class)]//a[@href=:href][@id=:id]",
+      "//div[@class=:wrapper_class]//a[contains(@href,:href)][@id=:id][@class=:class]",
       array(
         ':wrapper_class' => 'yoti-connect',
-        ':href' => '/yoti/unlink',
+        ':href' => 'yoti/unlink',
         ':id' => 'yoti-unlink-button',
         ':class' => 'button',
       ),
@@ -499,6 +499,9 @@ class YotiTest extends DrupalWebTestCase {
       strstr($form['#attached']['css'][0]['data'], 'yoti/css/yoti.css'),
       'Check CSS is attached to form'
     );
+
+    // Clean up session.
+    unset($_SESSION['yoti-user']);
   }
 
   /**
