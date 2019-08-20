@@ -6,6 +6,7 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\Models\YotiUserModel;
 use Drupal\Core\Cache\Cache;
+use Drupal\Component\Utility\Html;
 
 /**
  * Provides a 'Yoti' Block.
@@ -52,7 +53,7 @@ class YotiBlock extends BlockBase {
 
     return [
       '#theme' => 'yoti_button',
-      '#button_id' => 'yoti-button-' . $this->getPluginId(),
+      '#button_id' => Html::getUniqueId('yoti-button-' . $this->getPluginId()),
       '#client_sdk_id' => $config->getClientSdkId(),
       '#scenario_id' => $config->getScenarioId(),
       '#button_text' => $button_text,
