@@ -17,6 +17,9 @@ function yoti_theme($existing, $type, $theme, $path) {
     'yoti_button' => array(
       'variables' => array(
         'button_id' => NULL,
+        'button_text' => '',
+        'yoti_sdk_id' => '',
+        'yoti_scenario_id' => '',
         'is_linked' => FALSE,
       ),
       'path' => $path . '/templates',
@@ -93,7 +96,7 @@ function yoti_block_view($delta = '') {
 
   $block = [];
 
-  // No config? no button.
+  // Button cannot be displayed without configuration.
   $config = YotiHelper::getConfig();
   if (!$config) {
     return $block;
@@ -116,6 +119,9 @@ function yoti_block_view($delta = '') {
         '#theme' => 'yoti_button',
         '#is_linked' => $is_linked,
         '#button_id' => check_plain($button_id),
+        '#button_text' => check_plain($button_text),
+        '#yoti_sdk_id' => check_plain($config['yoti_sdk_id']),
+        '#yoti_scenario_id' => check_plain($config['yoti_scenario_id']),
         '#attached' => array(
           'css' => array(
             array(
@@ -124,42 +130,58 @@ function yoti_block_view($delta = '') {
               'every_page' => TRUE,
             ),
           ),
-          'js' => array(
-            array(
-              'type' => 'setting',
-              'data' => array(
-                'yoti' => array(
-                  'elements' => array(
-                    array(
-                      'domId' => check_plain($button_id),
-                      'clientSdkId' => check_plain($config['yoti_sdk_id']),
-                      'scenarioId' => check_plain($config['yoti_scenario_id']),
-                      'button' => array(
-                        'label' => check_plain($button_text),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              'scope' => 'footer',
-            ),
-            array(
-              'type' => 'inline',
-              'data' => 'window.Yoti.Share.init(Drupal.settings.yoti);',
-              'scope' => 'footer',
-            ),
-            array(
-              'type' => 'external',
-              'data' => YotiHelper::YOTI_SDK_JAVASCRIPT_LIBRARY,
-              'scope' => 'header',
-            ),
-          ),
         ),
       );
       break;
   }
 
   return $block;
+}
+
+/**
+ * Implements template_preprocess_HOOK().
+ */
+function template_preprocess_yoti_button(&$variables) {
+  // Only add JavaScript to page when button is present.
+  if ($variables['is_linked']) {
+    return;
+  }
+
+  drupal_add_js(
+    array(
+      'yoti' => array(
+        'elements' => array(
+          array(
+            'domId' => $variables['button_id'],
+            'clientSdkId' => $variables['yoti_sdk_id'],
+            'scenarioId' => $variables['yoti_scenario_id'],
+            'button' => array(
+              'label' => $variables['button_text'],
+            ),
+          ),
+        ),
+      ),
+    ),
+    array(
+      'type' => 'setting',
+      'scope' => 'footer',
+    )
+  );
+
+  drupal_add_js("
+    if (typeof Drupal.settings.yoti != 'undefined') {
+      window.Yoti.Share.init(Drupal.settings.yoti);
+    }",
+    array(
+      'type' => 'inline',
+      'scope' => 'footer',
+    )
+  );
+
+  drupal_add_js(YotiHelper::YOTI_SDK_JAVASCRIPT_LIBRARY, array(
+    'type' => 'external',
+    'scope' => 'header',
+  ));
 }
 
 /**
