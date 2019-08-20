@@ -7,7 +7,9 @@
 
     // Initialise button once browser JS is loaded.
     script.addEventListener('load', function() {
-        window.Yoti.Share.init(yotiConfig);
+        if (typeof yotiConfig != 'undefined') {
+            window.Yoti.Share.init(yotiConfig);
+        }
     });
 
     document.head.appendChild(script);
