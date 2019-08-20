@@ -176,16 +176,16 @@ class YotiSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $values = $form_state->getValues();
     $this->config('yoti.settings')
-      ->set('yoti_app_id', $values['yoti_app_id'])
-      ->set('yoti_scenario_id', $values['yoti_scenario_id'])
-      ->set('yoti_sdk_id', $values['yoti_sdk_id'])
-      ->set('yoti_success_url', $values['yoti_success_url'])
-      ->set('yoti_fail_url', $values['yoti_fail_url'])
+      ->set('yoti_app_id', trim($values['yoti_app_id']))
+      ->set('yoti_scenario_id', trim($values['yoti_scenario_id']))
+      ->set('yoti_sdk_id', trim($values['yoti_sdk_id']))
+      ->set('yoti_success_url', trim($values['yoti_success_url']))
+      ->set('yoti_fail_url', trim($values['yoti_fail_url']))
       ->set('yoti_pem', $values['yoti_pem'])
       ->set('yoti_age_verification', $values['yoti_age_verification'])
       ->set('yoti_only_existing', $values['yoti_only_existing'])
       ->set('yoti_user_email', $values['yoti_user_email'])
-      ->set('yoti_company_name', $values['yoti_company_name'])
+      ->set('yoti_company_name', trim($values['yoti_company_name']))
       ->save();
 
     parent::submitForm($form, $form_state);
