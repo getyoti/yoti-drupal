@@ -40,9 +40,9 @@ class YotiBlockTest extends YotiBrowserTestBase {
 
     // Check the block has been placed.
     $assert = $this->assertSession();
-    $assert->elementExists('css', "div[id='yoti-button-yoti_block']");
+    $assert->elementExists('css', "div[id='yoti-button-yoti-block']");
     $assert->elementExists('css', 'script[src*=\'js/browser-loader.js\']');
-    $assert->responseMatches('~"domId":.*?"yoti-button-yoti_block"~');
+    $assert->responseMatches('~"domId":.*?"yoti-button-yoti-block"~');
     $assert->responseMatches('~"scenarioId":.*?"test_scenario_id"~');
     $assert->responseMatches('~"clientSdkId":.*?"test_sdk_id"~');
     $assert->responseMatches('~"label":.*?"Use Yoti"~');
