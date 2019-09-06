@@ -74,7 +74,7 @@ class YotiSettingsFormTest extends YotiBrowserTestBase {
     }
     $page->pressButton('Save configuration');
 
-    foreach($form_values as $value) {
+    foreach ($form_values as $value) {
       $assert->elementExists('css', sprintf("input[value='%s']", htmlspecialchars($value)));
     }
 
