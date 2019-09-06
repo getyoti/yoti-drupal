@@ -19,6 +19,11 @@ class YotiSdk implements YotiSdkInterface {
   const SDK_IDENTIFIER = 'Drupal';
 
   /**
+   * Yoti Drupal SDK identifier.
+   */
+  const SDK_VERSION = '8.x-2.3';
+
+  /**
    * Yoti plugin config data.
    *
    * @var \Drupal\yoti\YotiConfigInterface
@@ -39,12 +44,14 @@ class YotiSdk implements YotiSdkInterface {
    * {@inheritdoc}
    */
   public function getClient() {
-    return new YotiClient(
+    $client = new YotiClient(
       $this->config->getClientSdkId(),
       $this->config->getPemContents(),
-      YotiClient::DEFAULT_CONNECT_API,
-      self::SDK_IDENTIFIER
+      YotiClient::DEFAULT_CONNECT_API
     );
+    $client->setSdkIdentifier(self::SDK_IDENTIFIER);
+    $client->setSdkVersion(self::SDK_VERSION);
+    return $client;
   }
 
   /**
