@@ -19,7 +19,7 @@ class YotiSdk implements YotiSdkInterface {
   const SDK_IDENTIFIER = 'Drupal';
 
   /**
-   * Yoti Drupal SDK identifier.
+   * Yoti Drupal SDK version.
    */
   const SDK_VERSION = '8.x-2.3';
 
