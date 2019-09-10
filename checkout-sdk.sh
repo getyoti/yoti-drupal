@@ -4,7 +4,7 @@
 #####################
 
 SDK_TAG=$1
-DEFAULT_SDK_TAG="1.2.1"
+DEFAULT_SDK_TAG="1.2.2"
 
 if [ "$SDK_TAG" = "" ]; then
     SDK_TAG=$DEFAULT_SDK_TAG
