@@ -34,6 +34,11 @@ class YotiHelper {
   const SDK_IDENTIFIER = 'Drupal';
 
   /**
+   * Yoti Drupal SDK version.
+   */
+  const SDK_VERSION = '7.x-2.3';
+
+  /**
    * Yoti secure files upload location.
    */
   const YOTI_SECURE_FILES_UPLOAD_LOCATION = 'private://yoti';
@@ -103,9 +108,11 @@ class YotiHelper {
       $yotiClient = new YotiClient(
           $this->config['yoti_sdk_id'],
           $this->config['yoti_pem']['contents'],
-          YotiClient::DEFAULT_CONNECT_API,
-          self::SDK_IDENTIFIER
+          YotiClient::DEFAULT_CONNECT_API
       );
+      $yotiClient->setSdkIdentifier(self::SDK_IDENTIFIER);
+      $yotiClient->setSdkVersion(self::SDK_VERSION);
+
       $activityDetails = $yotiClient->getActivityDetails($token);
       $profile = $activityDetails->getProfile();
     }
