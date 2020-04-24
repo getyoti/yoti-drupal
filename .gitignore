@@ -2,3 +2,4 @@
 .vscode
 .idea
 docker/profiler_output
+*.code-workspace
