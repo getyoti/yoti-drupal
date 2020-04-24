@@ -2,7 +2,6 @@
 
 namespace Drupal\yoti\Plugin\Block;
 
-use Drupal\Component\Utility\Html;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Form\FormStateInterface;
@@ -208,7 +207,7 @@ class YotiBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
     return [
       '#theme' => 'yoti_button',
-      '#button_id' => Html::getUniqueId('yoti-button-' . $this->getPluginId()),
+      '#button_id' => 'yoti-button',
       '#client_sdk_id' => $this->yotiConfig->getClientSdkId(),
       '#scenario_id' => $this->getScenarioId(),
       '#button_text' => $this->getButtonText(),
