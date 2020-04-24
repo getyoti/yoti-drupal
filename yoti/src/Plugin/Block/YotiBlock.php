@@ -2,11 +2,15 @@
 
 namespace Drupal\yoti\Plugin\Block;
 
-use Drupal\Core\Block\BlockBase;
-use Drupal\yoti\YotiHelper;
-use Drupal\yoti\Models\YotiUserModel;
-use Drupal\Core\Cache\Cache;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\yoti\Models\YotiUserModel;
+use Drupal\yoti\YotiConfigInterface;
+use Drupal\yoti\YotiHelper;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides a 'Yoti' Block.
@@ -16,7 +20,64 @@ use Drupal\Component\Utility\Html;
  *   admin_label = @Translation("Yoti"),
  * )
  */
-class YotiBlock extends BlockBase {
+class YotiBlock extends BlockBase implements ContainerFactoryPluginInterface {
+  /**
+   * Yoti configuration.
+   *
+   * @var \Drupal\yoti\YotiConfigInterface
+   */
+  private $yotiConfig;
+
+  /**
+   * Current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  private $currentUser;
+
+  /**
+   * YotiBlock Constructor.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Drupal\yoti\YotiConfigInterface $yoti_config
+   *   Yoti configuration.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   Current user.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    YotiConfigInterface $yoti_config,
+    AccountInterface $current_user
+  ) {
+    $this->yotiConfig = $yoti_config;
+    $this->currentUser = $current_user;
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(
+    ContainerInterface $container,
+    array $configuration,
+    $plugin_id,
+    $plugin_definition
+  ) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('yoti.config'),
+      $container->get('current_user')
+    );
+  }
 
   /**
    * Builds and returns the renderable array for this block plugin.
@@ -32,16 +93,13 @@ class YotiBlock extends BlockBase {
    * @see \Drupal\block\BlockViewBuilder
    */
   public function build() {
-    $user = \Drupal::currentUser();
-
     // No config? no button.
-    $config = \Drupal::service('yoti.config');
-    if (!$config->getSettings()) {
+    if (!$this->yotiConfig->getSettings()) {
       return [];
     }
 
     // Set button text based on current user.
-    $userId = $user->id();
+    $userId = $this->currentUser->id();
     if (!$userId) {
       $button_text = YotiHelper::YOTI_LINK_BUTTON_DEFAULT_TEXT;
       $is_linked = FALSE;
@@ -54,8 +112,8 @@ class YotiBlock extends BlockBase {
     return [
       '#theme' => 'yoti_button',
       '#button_id' => Html::getUniqueId('yoti-button-' . $this->getPluginId()),
-      '#client_sdk_id' => $config->getClientSdkId(),
-      '#scenario_id' => $config->getScenarioId(),
+      '#client_sdk_id' => $this->yotiConfig->getClientSdkId(),
+      '#scenario_id' => $this->yotiConfig->getScenarioId(),
       '#button_text' => $button_text,
       '#is_linked' => $is_linked,
       '#attached' => [
