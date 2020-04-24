@@ -7,25 +7,26 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\Query\Delete;
 use Drupal\Core\Database\Query\Select;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityTypeRepositoryInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
-use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Entity\EntityTypeRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\Tests\yoti\Unit\Util\MockFunctions;
 use Drupal\user\UserInterface;
 use Drupal\yoti\YotiConfigInterface;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\YotiSdkInterface;
 use Psr\Log\LoggerInterface;
-use Yoti\YotiClient;
+use Yoti\ActivityDetails;
 use Yoti\Entity\Profile;
 use Yoti\Exception\ActivityDetailsException;
-use Yoti\ActivityDetails;
+use Yoti\YotiClient;
 
 require_once __DIR__ . '/../../../sdk/boot.php';
 
@@ -105,6 +106,14 @@ class YotiHelperTest extends YotiUnitTestBase {
   public function testUserSaveFailure() {
     // Set current user to anonymous so that a new user is created.
     $current_user = $this->createMockCurrentUser(0);
+
+    MockFunctions::mock('user_load_by_mail', function () {
+      return FALSE;
+    });
+
+    MockFunctions::mock('user_password', function () {
+      return 'some-password';
+    });
 
     // Return FALSE when new user is saved.
     $user = $this->createMock(UserInterface::class);
@@ -528,25 +537,6 @@ class YotiHelperTest extends YotiUnitTestBase {
     $container = \Drupal::getContainer();
     $container->set($id, $service);
     \Drupal::setContainer($container);
-  }
-
-}
-
-/**
- * Mock global functions.
- */
-namespace Drupal\yoti;
-
-if (!function_exists('user_load_by_mail')) {
-
-  /**
-   * Mock user_load_by_mail().
-   *
-   * @return bool
-   *   True if a user with mail exists.
-   */
-  function user_load_by_mail() {
-    return FALSE;
   }
 
 }
