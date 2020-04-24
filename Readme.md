@@ -1,5 +1,7 @@
 # Yoti Drupal 8 Module
 
+[![Build Status](https://travis-ci.com/getyoti/yoti-drupal.svg?branch=8.x-2.x)](https://travis-ci.com/getyoti/yoti-drupal)
+
 This repository contains the tools you need to quickly integrate your Drupal 8 backend with Yoti so that your users can share their identity details with your application in a secure and trusted way. The module uses the Yoti PHP SDK. If you're interested in finding out more about the SDK, click [here](https://github.com/getyoti/yoti-php-sdk).
 
 ## Installing the module
