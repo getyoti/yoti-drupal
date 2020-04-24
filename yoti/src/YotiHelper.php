@@ -507,30 +507,6 @@ class YotiHelper {
   }
 
   /**
-   * User generic password.
-   *
-   * @param int $length
-   *   Password length.
-   *
-   * @return string
-   *   Generated password.
-   */
-  private function generatePassword($length = 10) {
-    // Generate user password.
-    $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-    // Remember to declare $pass as an array.
-    $password = '';
-    // Put the length -1 in cache.
-    $alphaLength = strlen($alphabet) - 1;
-    for ($i = 0; $i < $length; $i++) {
-      $n = rand(0, $alphaLength);
-      $password .= $alphabet[$n];
-    }
-
-    return $password;
-  }
-
-  /**
    * Create Drupal user.
    *
    * @param \Yoti\ActivityDetails $activityDetails
@@ -555,7 +531,7 @@ class YotiHelper {
     $userEmail = $userProvidedEmailCanBeUsed ? $userProvidedEmail : $this->generateEmail();
 
     // Mandatory settings.
-    $user->setPassword($this->generatePassword());
+    $user->setPassword(user_password());
     $user->enforceIsNew();
     $user->setEmail($userEmail);
     // This username must be unique and accept only a-Z,0-9, - _ @ .
