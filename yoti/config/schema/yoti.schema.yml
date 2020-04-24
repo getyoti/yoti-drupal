@@ -35,3 +35,14 @@ yoti.settings:
     yoti_company_name:
       type: string
       label: 'Company name'
+
+block.settings.yoti_block:
+  type: block_settings
+  label: 'Yoti'
+  mapping:
+    button_text:
+      type: string
+      label: 'Button Text'
+    scenario_id:
+      type: string
+      label: 'Scenario ID'
