@@ -3,6 +3,9 @@
 namespace Drupal\Tests\yoti\Unit;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\Tests\yoti\Unit\Util\MockFunctions;
+
+require_once __DIR__ . '/fixtures/functions.php';
 
 /**
  * Yoti unit test base class.
@@ -36,6 +39,8 @@ abstract class YotiUnitTestBase extends UnitTestCase {
     if (!is_dir($this->tmpDir)) {
       mkdir($this->tmpDir, 0777, TRUE);
     }
+
+    MockFunctions::reset();
   }
 
   /**
@@ -43,6 +48,9 @@ abstract class YotiUnitTestBase extends UnitTestCase {
    */
   public function teardown() {
     $_GET = $this->originalGet;
+
+    MockFunctions::reset();
+
     parent::teardown();
   }
 
