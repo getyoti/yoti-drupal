@@ -218,7 +218,7 @@ class YotiProfileTest extends YotiBrowserTestBase {
   private function importUserDisplayConfig() {
     $config = $this->getUserDisplayConfig();
 
-    $yaml = file_get_contents(__DIR__ . '/../../fixtures/config/core.entity_view_display.user.user.default.yml');
+    $yaml = file_get_contents(__DIR__ . '/fixtures/config/core.entity_view_display.user.user.default.yml');
 
     $config
       ->setData(Yaml::parse($yaml))
