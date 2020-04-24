@@ -2,16 +2,15 @@
 
 namespace Drupal\yoti;
 
-use Drupal\Core\Url;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\yoti\Models\YotiUserModel;
-use Exception;
 use Yoti\ActivityDetails;
 use Yoti\Entity\Profile;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 require_once __DIR__ . '/../sdk/boot.php';
 
@@ -186,7 +185,7 @@ class YotiHelper {
       $activityDetails = $yotiClient->getActivityDetails($token);
       $profile = $activityDetails->getProfile();
     }
-    catch (Exception $e) {
+    catch (\Exception $e) {
       YotiHelper::setFlash('Yoti could not successfully connect to your account.', 'error');
 
       return FALSE;
@@ -229,7 +228,7 @@ class YotiHelper {
             try {
               $drupalUid = $this->createUser($activityDetails);
             }
-            catch (Exception $e) {
+            catch (\Exception $e) {
               $this->logger->error($e->getMessage());
             }
           }
@@ -515,7 +514,7 @@ class YotiHelper {
    * @return int
    *   Yoti user ID.
    *
-   * @throws Exception
+   * @throws \RuntimeException
    */
   private function createUser(ActivityDetails $activityDetails) {
     $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
@@ -544,7 +543,7 @@ class YotiHelper {
     $user->set('preferred_admin_langcode', $language);
     $user->activate();
     if (!$user->save()) {
-      throw new \Exception('Could not save Yoti user');
+      throw new \RuntimeException('Could not save Yoti user');
     }
 
     // Set new user ID.
@@ -578,7 +577,7 @@ class YotiHelper {
    * @param \Yoti\ActivityDetails $activityDetails
    *   Yoti user data.
    *
-   * @throws Exception
+   * @throws \Exception
    */
   public function createYotiUser($userId, ActivityDetails $activityDetails) {
     $profile = $activityDetails->getProfile();
