@@ -17,7 +17,6 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Tests\yoti\Unit\Util\MockFunctions;
 use Drupal\user\UserInterface;
 use Drupal\yoti\YotiConfigInterface;
 use Drupal\yoti\YotiHelper;

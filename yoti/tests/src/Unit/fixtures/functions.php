@@ -7,7 +7,7 @@
 
 namespace Drupal\yoti;
 
-use Drupal\Tests\yoti\Unit\Util\MockFunctions;
+use Drupal\Tests\yoti\Unit\MockFunctions;
 
 if (!function_exists('user_load_by_mail')) {
 
