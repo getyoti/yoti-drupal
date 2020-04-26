@@ -3,7 +3,6 @@
 namespace Drupal\Tests\yoti\Unit;
 
 use Drupal\Tests\UnitTestCase;
-use Drupal\Tests\yoti\Unit\Util\MockFunctions;
 
 require_once __DIR__ . '/fixtures/functions.php';
 

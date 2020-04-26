@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\yoti\Unit\Util;
+namespace Drupal\Tests\yoti\Unit;
 
 /**
  * Allows mocking of functions.
@@ -26,7 +26,7 @@ class MockFunctions {
    *
    * The function being mocked must be implemented in the same
    * namespace as the class being tested and must return
-   * ::callFunction(__FUNCTION__, func_get_args());
+   * ::call(__FUNCTION__, func_get_args());
    *
    * @param string $function
    *   The function name to mock.
