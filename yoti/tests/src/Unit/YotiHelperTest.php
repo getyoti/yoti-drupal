@@ -22,6 +22,7 @@ use Drupal\yoti\YotiConfigInterface;
 use Drupal\yoti\YotiHelper;
 use Drupal\yoti\YotiSdkInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Yoti\ActivityDetails;
 use Yoti\Entity\Profile;
 use Yoti\Exception\ActivityDetailsException;
@@ -85,7 +86,8 @@ class YotiHelperTest extends YotiUnitTestBase {
       $cacheTagsInvalidator,
       $this->createMock(LoggerChannelFactoryInterface::class),
       $sdk,
-      $this->createMockConfig()
+      $this->createMockConfig(),
+      $this->createMockConfigEventDispatcher()
     );
 
     // Attempt link with no token.
@@ -138,7 +140,8 @@ class YotiHelperTest extends YotiUnitTestBase {
       $this->createMock(CacheTagsInvalidatorInterface::class),
       $this->createMockLoggerFactory($logger),
       $this->createMockSdk(),
-      $this->createMockConfig()
+      $this->createMockConfig(),
+      $this->createMockConfigEventDispatcher()
     );
 
     $_GET['token'] = 'test_token';
@@ -162,7 +165,8 @@ class YotiHelperTest extends YotiUnitTestBase {
       $cacheTagsInvalidator,
       $this->createMock(LoggerChannelFactoryInterface::class),
       $this->createMock(YotiSdkInterface::class),
-      $this->createMockConfig()
+      $this->createMockConfig(),
+      $this->createMockConfigEventDispatcher()
     );
 
     $helper->unlink();
@@ -177,7 +181,8 @@ class YotiHelperTest extends YotiUnitTestBase {
       $this->createMock(CacheTagsInvalidatorInterface::class),
       $this->createMock(LoggerChannelFactoryInterface::class),
       $this->createMock(YotiSdkInterface::class),
-      $this->createMockConfig()
+      $this->createMockConfig(),
+      $this->createMockConfigEventDispatcher()
     );
 
     $this->assertFileExists($this->selfieFilePath);
@@ -217,7 +222,7 @@ class YotiHelperTest extends YotiUnitTestBase {
    */
   private function createMockEntityTypeManager() {
     // Mock user storage.
-    $user = $this->createMock(EntityInterface::class);
+    $user = $this->createMock(UserInterface::class);
     $user
       ->method('id')
       ->willReturn('2');
@@ -522,6 +527,18 @@ class YotiHelperTest extends YotiUnitTestBase {
    */
   private function createMockConfig() {
     return $this->createMock(YotiConfigInterface::class);
+  }
+
+  /**
+   * Creates mock event dispatcher.
+   *
+   * @return \Symfony\Component\EventDispatcher\EventDispatcher
+   *   Event dispatcher.
+   */
+  private function createMockConfigEventDispatcher() {
+    $eventDispatcher = $this->createMock(EventDispatcher::class);
+    $eventDispatcher->method('dispatch')->willReturn(null);
+    return $eventDispatcher;
   }
 
   /**

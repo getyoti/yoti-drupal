@@ -1,14 +1,28 @@
-yoti.user_login:
+yoti_user_login:
   label: 'User has logged in via Yoti login'
   category: 'User'
   context:
     account:
       type: 'entity:user'
-      label: 'Logged in user'
-yoti.user_created:
+      label: 'Logged in Yoti user'
+yoti_user_created:
   label: 'User has been created via Yoti login'
   category: 'User'
   context:
     account:
       type: 'entity:user'
-      label: 'Logged in user'
+      label: 'Created Yoti user'
+yoti_user_linked:
+  label: 'User has been linked to Yoti'
+  category: 'User'
+  context:
+    account:
+      type: 'entity:user'
+      label: 'Linked Yoti user'
+yoti_user_unlinked:
+  label: 'User has been unlinked from Yoti'
+  category: 'User'
+  context:
+    account:
+      type: 'entity:user'
+      label: 'Unlinked Yoti user'

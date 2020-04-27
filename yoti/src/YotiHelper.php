@@ -8,7 +8,12 @@ use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
+use Drupal\yoti\Event\UserCreatedEvent;
+use Drupal\yoti\Event\UserLinkedEvent;
+use Drupal\yoti\Event\UserLoginEvent;
+use Drupal\yoti\Event\UserUnlinkedEvent;
 use Drupal\yoti\Models\YotiUserModel;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Yoti\ActivityDetails;
 use Yoti\Entity\Profile;
 
@@ -108,6 +113,13 @@ class YotiHelper {
   private $cacheTagsInvalidator;
 
   /**
+   * Event Dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  private $eventDispatcher;
+
+  /**
    * YotiHelper constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityManager
@@ -120,13 +132,16 @@ class YotiHelper {
    *   Yoti SDK.
    * @param \Drupal\yoti\YotiConfigInterface $config
    *   Yoti Configuration.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher.
    */
   public function __construct(
     EntityTypeManagerInterface $entityManager,
     CacheTagsInvalidatorInterface $cacheTagsInvalidator = NULL,
     LoggerChannelFactoryInterface $loggerFactory = NULL,
     YotiSdkInterface $sdk = NULL,
-    YotiConfigInterface $config = NULL
+    YotiConfigInterface $config = NULL,
+    EventDispatcherInterface $eventDispatcher = NULL
   ) {
     try {
       $this->userStorage = $entityManager->getStorage('user');
@@ -149,11 +164,15 @@ class YotiHelper {
     if (is_null($config)) {
       $config = \Drupal::service('yoti.config');
     }
+    if (is_null($eventDispatcher)) {
+      $eventDispatcher = \Drupal::service('event_dispatcher');
+    }
 
     $this->config = $config;
     $this->cacheTagsInvalidator = $cacheTagsInvalidator;
     $this->logger = $loggerFactory->get('yoti');
     $this->sdk = $sdk;
+    $this->eventDispatcher = $eventDispatcher;
   }
 
   /**
@@ -208,7 +227,7 @@ class YotiHelper {
         $drupalUid
         && $currentUser
         && $currentUser->id() !== $drupalUid
-        && !User::load($drupalUid)
+        && !$this->userStorage->load($drupalUid)
     ) {
       // Remove user account.
       YotiUserModel::deleteYotiUserById($drupalUid);
@@ -260,6 +279,8 @@ class YotiHelper {
       // If Drupal user not found in Yoti table then create new Yoti user.
       elseif (!$drupalUid) {
         $this->createYotiUser($currentUser->id(), $activityDetails);
+        $event = new UserLinkedEvent($this->userStorage->load($currentUser->id()));
+        $this->eventDispatcher->dispatch(UserLinkedEvent::EVENT_NAME, $event);
       }
     }
 
@@ -322,6 +343,10 @@ class YotiHelper {
     if (!$currentUser->isAnonymous()) {
       $this->deleteSelfie($currentUser->id());
       YotiUserModel::deleteYotiUserById($currentUser->id());
+
+      $event = new UserUnlinkedEvent($this->userStorage->load($currentUser->id()));
+      $this->eventDispatcher->dispatch(UserUnlinkedEvent::EVENT_NAME, $event);
+
       $this->invalidateUserCache($currentUser->id());
       return TRUE;
     }
@@ -550,6 +575,9 @@ class YotiHelper {
     $userId = $user->id();
     $this->createYotiUser($userId, $activityDetails);
 
+    $event = new UserCreatedEvent($user);
+    $this->eventDispatcher->dispatch(UserCreatedEvent::EVENT_NAME, $event);
+
     return $userId;
   }
 
@@ -692,8 +720,10 @@ class YotiHelper {
    *   User ID.
    */
   private function loginUser($userId) {
-    if ($user = User::load($userId)) {
+    if ($user = $this->userStorage->load($userId)) {
       user_login_finalize($user);
+      $event = new UserLoginEvent($user);
+      $this->eventDispatcher->dispatch(UserLoginEvent::EVENT_NAME, $event);
     }
   }
 
