@@ -21,7 +21,7 @@ class YotiSdk implements YotiSdkInterface {
   /**
    * Yoti Drupal SDK version.
    */
-  const SDK_VERSION = '8.x-2.3';
+  const SDK_VERSION = '8.x-2.5';
 
   /**
    * Yoti plugin config data.
