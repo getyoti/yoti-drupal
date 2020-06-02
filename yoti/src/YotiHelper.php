@@ -2,16 +2,15 @@
 
 namespace Drupal\yoti;
 
-use Drupal\Core\Url;
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Drupal\yoti\Models\YotiUserModel;
-use Exception;
 use Yoti\ActivityDetails;
 use Yoti\Entity\Profile;
-use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
-use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 
 require_once __DIR__ . '/../sdk/boot.php';
 
@@ -186,7 +185,7 @@ class YotiHelper {
       $activityDetails = $yotiClient->getActivityDetails($token);
       $profile = $activityDetails->getProfile();
     }
-    catch (Exception $e) {
+    catch (\Exception $e) {
       YotiHelper::setFlash('Yoti could not successfully connect to your account.', 'error');
 
       return FALSE;
@@ -229,7 +228,7 @@ class YotiHelper {
             try {
               $drupalUid = $this->createUser($activityDetails);
             }
-            catch (Exception $e) {
+            catch (\Exception $e) {
               $this->logger->error($e->getMessage());
             }
           }
@@ -507,30 +506,6 @@ class YotiHelper {
   }
 
   /**
-   * User generic password.
-   *
-   * @param int $length
-   *   Password length.
-   *
-   * @return string
-   *   Generated password.
-   */
-  private function generatePassword($length = 10) {
-    // Generate user password.
-    $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
-    // Remember to declare $pass as an array.
-    $password = '';
-    // Put the length -1 in cache.
-    $alphaLength = strlen($alphabet) - 1;
-    for ($i = 0; $i < $length; $i++) {
-      $n = rand(0, $alphaLength);
-      $password .= $alphabet[$n];
-    }
-
-    return $password;
-  }
-
-  /**
    * Create Drupal user.
    *
    * @param \Yoti\ActivityDetails $activityDetails
@@ -539,7 +514,7 @@ class YotiHelper {
    * @return int
    *   Yoti user ID.
    *
-   * @throws Exception
+   * @throws \RuntimeException
    */
   private function createUser(ActivityDetails $activityDetails) {
     $language = \Drupal::languageManager()->getCurrentLanguage()->getId();
@@ -555,7 +530,7 @@ class YotiHelper {
     $userEmail = $userProvidedEmailCanBeUsed ? $userProvidedEmail : $this->generateEmail();
 
     // Mandatory settings.
-    $user->setPassword($this->generatePassword());
+    $user->setPassword(user_password());
     $user->enforceIsNew();
     $user->setEmail($userEmail);
     // This username must be unique and accept only a-Z,0-9, - _ @ .
@@ -568,7 +543,7 @@ class YotiHelper {
     $user->set('preferred_admin_langcode', $language);
     $user->activate();
     if (!$user->save()) {
-      throw new \Exception('Could not save Yoti user');
+      throw new \RuntimeException('Could not save Yoti user');
     }
 
     // Set new user ID.
@@ -602,7 +577,7 @@ class YotiHelper {
    * @param \Yoti\ActivityDetails $activityDetails
    *   Yoti user data.
    *
-   * @throws Exception
+   * @throws \Exception
    */
   public function createYotiUser($userId, ActivityDetails $activityDetails) {
     $profile = $activityDetails->getProfile();

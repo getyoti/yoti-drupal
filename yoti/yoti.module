@@ -40,6 +40,16 @@ function yoti_theme($existing, $type, $theme, $path) {
 }
 
 /**
+ * Implements hook_preprocess_block().
+ */
+function yoti_preprocess_block(&$variables) {
+  // Append block ID to button ID to ensure uniqueness.
+  if ($variables['plugin_id'] == 'yoti_block') {
+    $variables['content']['#button_id'] .= '-' . $variables['elements']['#id'];
+  }
+}
+
+/**
  * Implements hook_entity_extra_field_info().
  */
 function yoti_entity_extra_field_info() {
