@@ -1,3 +1,5 @@
+**This module is no longer maintained. The PHP SDK, which this module makes calls through, is still available at <https://github.com/getyoti/yoti-php-sdk>**
+
 # Yoti Drupal 8 Module
 
 [![Build Status](https://travis-ci.com/getyoti/yoti-drupal.svg?branch=8.x-2.x)](https://travis-ci.com/getyoti/yoti-drupal)
